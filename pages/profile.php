@@ -71,9 +71,7 @@ if (isset($_SESSION["username"])) {
                   <div class="col-md-12">
                     <div class="row">
                       <div class="col-lg-4 col-sm-12">
-                        <center>
-                          <img src="http://localhost/wvsu4/otas/dist/img/no-image-available.png" alt="Student Image" class="img-fluid student-img bg-gradient-dark border">
-                        </center>
+                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border">
                       </div>
                       <div class="col-lg-8 col-sm-12">
                         <dl>
@@ -117,7 +115,8 @@ if (isset($_SESSION["username"])) {
 <script src="../assets/dist/js/adminlte.min.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="../assets/dist/js/demo.js"></script>
-
+<!-- Alert -->
+<script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <script>
   if (sessionStorage.getItem("searchInput")) {
     $("#searchInput").val(sessionStorage.getItem("searchInput"))
@@ -133,6 +132,58 @@ if (isset($_SESSION["username"])) {
       window.location.replace(`${window.location.origin}/west/pages/archives?s=${$("#searchInput").val()}`)
     }
   });
+
+  $("#update-form").on("submit", function(e) {
+    swal.showLoading()
+    $.ajax({
+      url: "../backend/nodes?action=updateUser",
+      type: "POST",
+      data: new FormData(this),
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function(data) {
+        swal.close();
+        const resp = JSON.parse(data);
+        if (resp.success) {
+          swal.fire({
+            title: 'Success!',
+            text: resp.message,
+            icon: 'success',
+          })
+        } else {
+          swal.fire({
+            title: 'Error!',
+            text: resp.message,
+            icon: 'error',
+          })
+        }
+      },
+      error: function(data) {
+        swal.fire({
+          title: 'Oops...',
+          text: 'Something went wrong.',
+          icon: 'error',
+        })
+      }
+    });
+
+    e.preventDefault();
+  })
+
+
+  function displayImg(input, _this) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        $('#cimg').attr('src', e.target.result);
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $('#cimg').attr('src', "../assets/dist/img/no-image-available.png");
+    }
+  }
 </script>
 
 </html>

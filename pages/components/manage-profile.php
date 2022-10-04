@@ -4,8 +4,9 @@
   </div>
   <div class="card-body rounded-0">
     <div class="container-fluid">
-      <form action="" id="update-form">
-        <input type="hidden" name="id" value="12">
+      <form method="POST" id="update-form" enctype="multipart/form-data">
+        <input type="text" name="userId" value="<?= $user->id ?>" hidden readonly>
+        <input type="text" name="role" value="<?= $user->role ?>" hidden readonly>
         <div class="row">
           <div class="col-lg-4">
             <div class="form-group">
@@ -63,21 +64,21 @@
 
             <div class="form-group">
               <label for="cpassword" class="control-label text-navy">Confirm New Password</label>
-              <input type="password" id="cpassword" placeholder="Confirm Password" class="form-control form-control-border">
+              <input type="password" name="cpassword" placeholder="Confirm Password" class="form-control form-control-border">
             </div>
 
             <small class="text-muted">Leave the New Password and Confirm New Password Blank if you don't wish to change your password.</small>
 
             <div class="form-group mt-4">
               <label for="oldpassword">Please Enter your Current Password</label>
-              <input type="password" name="oldpassword" id="oldpassword" placeholder="Current Password" class="form-control form-control-border" required>
+              <input type="password" name="oldpassword" id="oldpassword" placeholder="Current Password" class="form-control form-control-border">
             </div>
           </div>
 
           <div class="col-lg-6">
             <div class="form-group">
               <label for="img" class="control-label text-muted">Choose Image</label>
-              <input type="file" id="img" name="img" class="form-control form-control-border" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
+              <input type="file" name="avatar" class="form-control form-control-border" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
             </div>
             <div class="form-group text-center">
               <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border">
