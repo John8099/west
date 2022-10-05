@@ -18,5 +18,10 @@ $links = array(
     "url" => "$SERVER_NAME/west/pages/profile",
     "config" => array("student")
   ),
+  array(
+    "title" => "My Groupings",
+    "url" => "$SERVER_NAME/west/pages/student/my-groupings",
+    "config" => array("student")
+  ),
 
 );

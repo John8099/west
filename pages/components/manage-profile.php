@@ -31,6 +31,10 @@
         <div class="row">
           <div class="col-lg-6">
             <div class="form-group">
+              <label class="control-label text-navy">Roll</label>
+              <input type="text" name="roll" class="form-control form-control-border" value="<?= $user->roll ?>" required>
+            </div>
+            <div class="form-group">
               <label class="control-label text-navy">Group number</label>
               <input type="number" name="group_number" class="form-control form-control-border" value="<?= $user->group_number ?>" required>
             </div>

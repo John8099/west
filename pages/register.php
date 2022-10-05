@@ -44,14 +44,21 @@
 
       <!-- Main content -->
       <div class="content" style="padding: 0;">
-        <div class="row" style="height: 100vh; width: 100vw;">
+        <div class="row" style="width: 99vw;">
           <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" style="height: 100%;">
-            <div class="card card-outline card-primary rounded-0 shadow col-lg-10 col-sm-12">
+            <div class="card card-outline card-primary rounded-0 shadow col-lg-10 col-sm-12 mt-2">
               <div class="card-header">
                 <h5 class="card-title text-center text-dark"><b>Registration</b></h5>
               </div>
               <div class="card-body text-dark">
                 <form id="registration-form" method="POST">
+                  <div class="form-group">
+                    <label class="col-form-label">
+                      Roll
+                    </label>
+                    <input type="text" name="roll" class="form-control form-control-sm form-control-border" placeholder="Your roll ..." required>
+
+                  </div>
                   <div class="form-group">
                     <label class="col-form-label">
                       Leader's name

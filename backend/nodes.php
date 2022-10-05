@@ -1,5 +1,7 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
+if (session_status() === PHP_SESSION_NONE) {
+  session_start();
+}
 include("conn.php");
 date_default_timezone_set("Asia/Manila");
 $dateNow = date("Y-m-d h:i:s");
@@ -21,6 +23,12 @@ if (isset($_GET['action'])) {
       case "updateUser":
         updateUser();
         break;
+      case "addGroupMate":
+        addGroupMate();
+        break;
+      case "deleteUser":
+        deleteUser();
+        break;
       default:
         null;
         break;
@@ -31,17 +39,112 @@ if (isset($_GET['action'])) {
   }
 }
 
+function deleteUser()
+{
+  global $conn, $_POST, $SERVER_NAME;
+
+  $user = get_user_by_id($_POST['id']);
+  $path = str_replace("$SERVER_NAME/west/", "../", $user->avatar);
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM users WHERE id='$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "User successfully deleted.";
+    unlink($path);
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function addGroupMate()
+{
+  global $conn, $_POST, $_FILES, $dateNow, $SERVER_NAME;
+
+  $group_number = $_POST["group_number"];
+
+  $fname = $_POST["fname"];
+  $mname = $_POST["mname"];
+  $lname = $_POST["lname"];
+  $roll = $_POST["roll"];
+  $email = $_POST["email"];
+  $year = $_POST["year"];
+  $section = $_POST["section"];
+  $avatar = $_FILES["avatar"];
+
+  $role = "student";
+
+  $username = strtolower("$fname-$lname-") . base64_encode(random_bytes(9));
+
+  if (!isEmailAlreadyUse($email) || !isStudentRollExist($roll)) {
+    $query = null;
+
+    if (intval($avatar["error"]) == 0) {
+      $uploadFile = date("mdY-his") . "_" . basename($avatar['name']);
+      $target_dir = "../media/avatar";
+
+      if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+      }
+
+      if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
+        $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+
+        $query = mysqli_query(
+          $conn,
+          "INSERT INTO 
+          users(roll, first_name, middle_name, last_name, group_number, year_and_section, avatar, username, email, `role`, date_added)
+          VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$img_url', '$username', '$email', '$role', '$dateNow')"
+        );
+      } else {
+        $response["message"] = "Error Uploading file.";
+      }
+    } else {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO 
+        users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `role`, date_added)
+        VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$role', '$dateNow')"
+      );
+    }
+
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Group mate added successfully<br>Would you like to add another?";
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    if (!isEmailAlreadyUse($email)) {
+      $response["success"] = false;
+      $response["message"] = "Email already use by other user.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Roll already use by other user.";
+    }
+  }
+
+  returnResponse($response);
+}
+
 function updateUser()
 {
-  global $conn, $_POST, $_SESSION, $_FILES, $SERVER_NAME;
+  global $_POST, $_FILES, $SERVER_NAME;
 
   $userId = $_POST["userId"];
   $email = $_POST["email"];
   $avatar = $_FILES["avatar"];
 
-  $password = $_POST["password"];
-  $cpassword = $_POST["cpassword"];
-  $oldpassword = $_POST["oldpassword"];
+  $password = isset($_POST["password"]) ? $_POST["password"] : "";
+  $cpassword = isset($_POST["cpassword"]) ? $_POST["cpassword"] : "";
+  $oldpassword = isset($_POST["oldpassword"]) ? $_POST["oldpassword"] : "";
 
   if (!checkIsEmailExist($email, $userId)) {
     if ($password != "" || $cpassword != "" || $oldpassword != "") {
@@ -58,7 +161,7 @@ function updateUser()
           }
 
           if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
-            $img_url = "$SERVER_NAME/west/media/$uploadFile";
+            $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
 
             updateUserDB($_POST, $img_url, $passwordHash);
             exit();
@@ -114,6 +217,8 @@ function updateUserDB($post, $img_url = null, $hash)
   $mname = $post["mname"];
   $lname = $post["lname"];
   $email = $post["email"];
+
+  $roll = isset($post["roll"]) ? $post["roll"] : null;
   $group_number = isset($post["group_number"]) ? $post["group_number"] : null;
   $year = isset($post["year"]) ? $post["year"] : null;
   $section = isset($post["section"]) ? $post["section"] : null;
@@ -122,9 +227,9 @@ function updateUserDB($post, $img_url = null, $hash)
 
   $query = "";
   if ($role == "student") {
-    $query = "UPDATE users SET first_name='$fname', middle_name='$mname', last_name='$lname', group_number='$group_number', year_and_section='$year-$section', " . ($img_url == null ? '' : "avatar='$img_url', ") . "username='$username', email='$email' " . ($hash == null ? '' : ", password='$hash'") . " WHERE id='$userId'";
+    $query = "UPDATE users SET roll='$roll', first_name='$fname', middle_name='$mname', last_name='$lname', group_number='$group_number', year_and_section='$year-$section', " . ($img_url == null ? '' : "avatar='$img_url', ") . "username='$username', email='$email' " . ($hash == null ? '' : ", password='$hash'") . " WHERE id='$userId'";
   } else {
-    $query = "UPDATE users SET first_name='$fname', middle_name='$mname', last_name='$lname', avatar='$img_url', " . ($img_url == null ? '' : "avatar='$img_url', ") . " email='$email' " . ($hash == null ? '' : ", password='$hash'") . "  WHERE id='$userId'";
+    $query = "UPDATE users SET roll='$roll', first_name='$fname', middle_name='$mname', last_name='$lname', avatar='$img_url', " . ($img_url == null ? '' : "avatar='$img_url', ") . " email='$email' " . ($hash == null ? '' : ", password='$hash'") . "  WHERE id='$userId'";
   };
 
   $insertQuery = mysqli_query($conn, $query);
@@ -261,6 +366,7 @@ function student_registration()
 {
   global $conn, $_SESSION, $_POST, $dateNow;
 
+  $roll = $_POST["roll"];
   $fname = $_POST["fname"];
   $mname = $_POST["mname"] == "" ? null : $_POST["mname"];
   $lname = $_POST["lname"];
@@ -274,12 +380,12 @@ function student_registration()
 
   $role = "student";
 
-  if (!isEmailAlreadyUse($email)) {
+  if (!isEmailAlreadyUse($email) || !isStudentRollExist($roll)) {
     $query = mysqli_query(
       $conn,
       "INSERT INTO 
-      users(first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, date_added)
-      VALUES('$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
+      users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, date_added)
+      VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
     );
 
     if ($query) {
@@ -292,8 +398,14 @@ function student_registration()
       $response["message"] = mysqli_error($conn);
     }
   } else {
-    $response["success"] = false;
-    $response["message"] = "Email already use by other user.";
+
+    if (!isEmailAlreadyUse($email)) {
+      $response["success"] = false;
+      $response["message"] = "Email already use by other user.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Roll already use by other user.";
+    }
   }
 
   returnResponse($response);
@@ -306,6 +418,22 @@ function isEmailAlreadyUse($email)
   $query = mysqli_query(
     $conn,
     "SELECT * FROM users WHERE email='$email'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function isStudentRollExist($roll)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM users WHERE roll='$roll'"
   );
 
   if (mysqli_num_rows($query) > 0) {

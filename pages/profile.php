@@ -48,15 +48,13 @@ if (isset($_SESSION["username"])) {
 
         <div class="content" style="padding-top: 9rem">
           <?php
-          if (isset($_GET["page"])) :
+          if (isset($_GET["page"])) {
             if ($_GET["page"] == "my_archive") {
               include("components/student-achieve.php");
-            } elseif ($_GET["page"] == "manage_profile") {
+            } else if ($_GET["page"] == "manage_profile") {
               include("components/manage-profile.php");
-            }
-          ?>
-          <?php
-          else :
+            } 
+          } else {
           ?>
             <div class="card card-outline card-primary shadow rounded-0">
               <div class="card-header rounded-0">
@@ -93,7 +91,7 @@ if (isset($_SESSION["username"])) {
               </div>
             </div>
           <?php
-          endif;
+          }
           ?>
         </div>
       </div>

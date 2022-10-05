@@ -122,11 +122,11 @@
           let location = `${window.location.origin}/west/pages/`
 
           const locations = {
-            student: `${window.location.origin}/west/pages/student/`,
-            instructor: `${window.location.origin}/west/pages/instructor/`,
-            coordinator: `${window.location.origin}/west/pages/coordinator/`,
-            panel: `${window.location.origin}/west/pages/panel/`,
-            adviser: `${window.location.origin}/west/pages/adviser/`,
+            student: `${window.location.origin}/west/pages/student/index`,
+            instructor: `${window.location.origin}/west/pages/instructor/index`,
+            coordinator: `${window.location.origin}/west/pages/coordinator/index`,
+            panel: `${window.location.origin}/west/pages/panel/index`,
+            adviser: `${window.location.origin}/west/pages/adviser/index`,
           }
 
           if (resp.role === "student") {

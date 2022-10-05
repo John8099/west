@@ -1,3 +1,7 @@
+<?php
+include_once("removeFiles.php");
+folderFiles("media", listOfFilesUploadedInDb());
+?>
 <!DOCTYPE html>
 <html lang="en">
 
