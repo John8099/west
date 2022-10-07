@@ -2,7 +2,15 @@
   <div class="card-header">
     <h3 class="card-title">My Group list</h3>
     <div class="card-tools">
-      <a href="<?= $SERVER_NAME ?>/west/pages/student/my-groupings?page=add-group-mate" class="btn btn-flat btn-sm btn-primary"><span class="fas fa-plus"></span> Add New group mate</a>
+
+      <button type="button" id="btnSubmitToInstructor" class="btn btn-success btn-sm">
+        <i class="fa fa-check"></i>
+        Submit list to instructor
+      </button>
+      <a href="<?= $SERVER_NAME ?>/west/pages/student/my-groupings?page=add-group-mate" class="btn btn-sm btn-primary">
+        <i class="fas fa-plus"></i>
+        Add New group mate
+      </a>
     </div>
   </div>
   <div class="card-body">
@@ -40,18 +48,20 @@
             while ($member = mysqli_fetch_object($query)) :
               $memberMiddleName = $member->middle_name != null ? $member->middle_name[0] : "";
             ?>
-              <td class="text-center"><?= $count ?></td>
-              <td><?= date("Y-m-d H:i", strtotime($member->date_added)) ?></td>
-              <td>
-                <?= $member->roll ?>
-              </td>
-              <td>Member</td>
-              <td>
-                <p class="m-0 truncate-1"><?= ucwords("$member->last_name, $member->first_name $memberMiddleName") ?></p>
-              </td>
-              <td align="center">
-                <a href="<?= "$SERVER_NAME/west/pages/student/my-groupings?page=member_profile&&u=$member->username" ?>" class="btn btn-flat btn-default btn-sm border"><i class="fa fa-eye"></i> View</a>
-              </td>
+              <tr>
+                <td class="text-center"><?= $count ?></td>
+                <td><?= date("Y-m-d H:i", strtotime($member->date_added)) ?></td>
+                <td>
+                  <?= $member->roll ?>
+                </td>
+                <td>Member</td>
+                <td>
+                  <p class="m-0 truncate-1"><?= ucwords("$member->last_name, $member->first_name $memberMiddleName") ?></p>
+                </td>
+                <td align="center">
+                  <a href="<?= "$SERVER_NAME/west/pages/student/my-groupings?page=member_profile&&u=$member->username" ?>" class="btn btn-flat btn-default btn-sm border"><i class="fa fa-eye"></i> View</a>
+                </td>
+              </tr>
             <?php
               $count++;
             endwhile;

@@ -6,15 +6,25 @@
     <div class="card-header">
       <h5 class="card-title"><?= ucwords("$member->last_name's") ?> Profile</h5>
       <div class="card-tools">
-        <button type="submit" class="btn btn-sm btn-primary btn-flat"><i class="fa fa-edit"></i> Edit</button>
-        <button type="button" class="btn btn-sm btn-danger btn-flat" onclick="handleDeleteMember('<?= $member->id ?>')"><i class="fa fa-trash"></i> Delete</button>
-        <button type="button" onclick="return window.history.back()" class="btn btn-default border btn-sm btn-flat"><i class="fa fa-angle-left"></i> Back to List</button>
+        <button type="submit" class="btn btn-sm btn-primary">
+          <i class="fa fa-edit"></i>
+          Edit
+        </button>
+        <button type="button" class="btn btn-sm btn-danger " onclick="handleDeleteMember('<?= $member->id ?>')">
+          <i class="fa fa-trash"></i>
+          Delete
+        </button>
+        <button type="button" onclick="return window.history.back()" class="btn btn-default border btn-sm">
+          <i class="fa fa-angle-left"></i>
+          Back to List
+        </button>
       </div>
     </div>
     <div class="card-body rounded-0">
       <div class="container-fluid">
         <input type="number" name="userId" value="<?= $member->id ?>" hidden readonly>
         <input type="text" name="role" value="<?= $member->role ?>" hidden readonly>
+        <input type="text" name="group_number" value="<?= $member->group_number ?>" hidden readonly>
         <div class="row">
           <div class="col-lg-4">
             <div class="form-group">

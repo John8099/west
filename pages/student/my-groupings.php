@@ -61,6 +61,7 @@ if (isset($_SESSION["username"])) {
   </div>
   <!-- ./wrapper -->
 
+
 </body>
 
 <!-- REQUIRED SCRIPTS -->
@@ -96,6 +97,84 @@ if (isset($_SESSION["username"])) {
       window.location.replace(`${window.location.origin}/west/pages/archives?s=${$("#searchInput").val()}`)
     }
   });
+
+  $("#btnSubmitToInstructor").on("click", function() {
+    swal.showLoading();
+    $.get(
+      "../../backend/nodes?action=checkAssignedInstructor",
+      (data, status) => {
+        const resp = JSON.parse(data)
+
+        if (resp.success) {
+          $.get(
+            "../../backend/nodes?action=getAllInstructor",
+            (data, status) => {
+              const resp = JSON.parse(data)
+              let options = resp.instructors.map((data) => {
+                return `<option value="${data.id}" >
+                    ${data.first_name} ${data.last_name}
+                  </option>`
+              });
+
+              swal.fire({
+                title: 'Select your instructor',
+                icon: 'question',
+                html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
+                          ${options}
+                        </select>`,
+                showDenyButton: true,
+                confirmButtonText: 'Submit',
+                denyButtonText: 'Cancel',
+              }).then((res) => {
+                if (res.isConfirmed) {
+                  submitToInstructor($("#inputInstructorId option:selected").val())
+                }
+              })
+            }).fail(function(e) {
+            swal.fire({
+              title: 'Error!',
+              text: e.statusText,
+              icon: 'error',
+            })
+          });
+        } else {
+          swal.fire({
+            title: 'Error!',
+            text: resp.message,
+            icon: 'error',
+          })
+        }
+
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+
+  })
+
+  function submitToInstructor(selectedId) {
+    $.post(
+      "../../backend/nodes?action=sendToInstructor", {
+        instructorId: selectedId
+      },
+      (data, status) => {
+        const resp = JSON.parse(data)
+        swal.fire({
+          title: resp.success ? 'Success!' : 'Error!',
+          text: resp.message,
+          icon: resp.success ? 'success' : 'error',
+        })
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+  }
 
   function handleDeleteMember(memberId) {
     swal.fire({
@@ -155,11 +234,6 @@ if (isset($_SESSION["username"])) {
         if (resp.success) {
           swal.fire({
             title: 'Success!',
-            text: resp.message,
-            icon: 'success',
-          })
-          swal.fire({
-            title: 'Success!',
             icon: 'success',
             html: resp.message,
             showDenyButton: true,
@@ -173,6 +247,48 @@ if (isset($_SESSION["username"])) {
               window.location.href = "./my-groupings"
             }
           })
+
+        } else {
+          swal.fire({
+            title: 'Error!',
+            text: resp.message,
+            icon: 'error',
+          })
+        }
+      },
+      error: function(data) {
+        swal.fire({
+          title: 'Oops...',
+          text: 'Something went wrong.',
+          icon: 'error',
+        })
+      }
+    });
+
+    e.preventDefault();
+  })
+
+  $("#update-member").on("submit", function(e) {
+    swal.showLoading()
+    $.ajax({
+      url: "../../backend/nodes?action=updateUser",
+      type: "POST",
+      data: new FormData(this),
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function(data) {
+        swal.close();
+        const resp = JSON.parse(data);
+        if (resp.success) {
+          swal.fire({
+            title: 'Success!',
+            text: resp.message,
+            icon: 'success',
+          }).then(() => {
+            window.location.href = "./my-groupings"
+          })
+
         } else {
           swal.fire({
             title: 'Error!',

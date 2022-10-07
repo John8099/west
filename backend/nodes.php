@@ -29,6 +29,15 @@ if (isset($_GET['action'])) {
       case "deleteUser":
         deleteUser();
         break;
+      case "getAllInstructor":
+        getAllInstructor();
+        break;
+      case "sendToInstructor":
+        sendToInstructor();
+        break;
+      case "checkAssignedInstructor":
+        checkAssignedInstructor();
+        break;
       default:
         null;
         break;
@@ -37,6 +46,103 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function sendToInstructor()
+{
+  global $conn, $_POST, $_SESSION;
+
+  $currentUser = get_user_by_username($_SESSION["username"]);
+
+  $group_mate_id = getGroupMateIds($currentUser->group_number, $currentUser->id);
+  $instructorId = $_POST['instructorId'];
+
+  $query = mysqli_query(
+    $conn,
+    "INSERT INTO thesis_groups(group_number, group_leader_id, group_member_ids, instructor_id) VALUES('$currentUser->group_number', '$currentUser->id', '$group_mate_id', '$instructorId')"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Group list submitted to instructor";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+  returnResponse($response);
+}
+
+function getGroupMateIds($group_number, $leader_id)
+{
+  global $conn;
+
+  $arr = array();
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM users WHERE group_number='$group_number' and leader_id='$leader_id'"
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($arr, $row->id);
+  }
+
+  return json_encode($arr);
+}
+
+function checkAssignedInstructor()
+{
+  global $_SESSION;
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  $isAlreadySubmitted = isGroupListSubmitted($currentUser);
+
+  if (!$isAlreadySubmitted) {
+    $response["success"] = true;
+  } else {
+    $response["success"] = false;
+    $response["message"] = "You can only submitted once.";
+  }
+
+  returnResponse($response);
+}
+
+function isGroupListSubmitted($currentUser)
+{
+  global $conn;
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_number='$currentUser->group_number' and group_leader_id='$currentUser->id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    while ($row = mysqli_fetch_object($query)) {
+      if ($row->group_leader_id == $currentUser->id) {
+        return true;
+        break;
+      }
+    }
+  } else {
+    return false;
+  }
+}
+
+function getAllInstructor()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='instructor'"
+  );
+
+  $response["instructors"] = array();
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($response["instructors"], $row);
+  }
+
+  returnResponse($response);
 }
 
 function deleteUser()
@@ -54,6 +160,7 @@ function deleteUser()
   if ($query) {
     $response["success"] = true;
     $response["message"] = "User successfully deleted.";
+    updateGroupList();
     unlink($path);
   } else {
     $response["success"] = false;
@@ -61,6 +168,20 @@ function deleteUser()
   }
 
   returnResponse($response);
+}
+
+function updateGroupList()
+{
+  global $conn;
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  if (!isGroupListSubmitted($currentUser)) {
+    $group_mate_id = getGroupMateIds($currentUser->group_number, $currentUser->id);
+    mysqli_query(
+      $conn,
+      "UPDATE thesis_groups set group_member_ids = '$group_mate_id' WHERE group_leader_id='$currentUser->id' and group_number='$currentUser->group_number'"
+    );
+  }
 }
 
 function addGroupMate()
@@ -82,9 +203,9 @@ function addGroupMate()
 
   $username = strtolower("$fname-$lname-") . base64_encode(random_bytes(9));
 
-  if (!isEmailAlreadyUse($email) || !isStudentRollExist($roll)) {
+  if (!isEmailAlreadyUse($email) && !isStudentRollExist($roll)) {
     $query = null;
-
+    $currentUser = get_user_by_username($_SESSION['username']);
     if (intval($avatar["error"]) == 0) {
       $uploadFile = date("mdY-his") . "_" . basename($avatar['name']);
       $target_dir = "../media/avatar";
@@ -99,8 +220,8 @@ function addGroupMate()
         $query = mysqli_query(
           $conn,
           "INSERT INTO 
-          users(roll, first_name, middle_name, last_name, group_number, year_and_section, avatar, username, email, `role`, date_added)
-          VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$img_url', '$username', '$email', '$role', '$dateNow')"
+          users(roll, first_name, middle_name, last_name, group_number, year_and_section, avatar, username, email, `role`, leader_id, date_added)
+          VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$img_url', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
         );
       } else {
         $response["message"] = "Error Uploading file.";
@@ -109,14 +230,15 @@ function addGroupMate()
       $query = mysqli_query(
         $conn,
         "INSERT INTO 
-        users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `role`, date_added)
-        VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$role', '$dateNow')"
+        users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `role`, leader_id, date_added)
+        VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
       );
     }
 
     if ($query) {
       $response["success"] = true;
       $response["message"] = "Group mate added successfully<br>Would you like to add another?";
+      updateGroupList();
     } else {
       $response["success"] = false;
       $response["message"] = mysqli_error($conn);
@@ -384,8 +506,8 @@ function student_registration()
     $query = mysqli_query(
       $conn,
       "INSERT INTO 
-      users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, date_added)
-      VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
+      users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, isLeader, date_added)
+      VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '1', '$dateNow')"
     );
 
     if ($query) {
