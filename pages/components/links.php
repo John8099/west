@@ -23,5 +23,10 @@ $links = array(
     "url" => "$SERVER_NAME/west/pages/student/my-groupings",
     "config" => array("student")
   ),
+  array(
+    "title" => "Submit Documents",
+    "url" => "$SERVER_NAME/west/pages/student/submit-documents",
+    "config" => array("student")
+  ),
 
 );

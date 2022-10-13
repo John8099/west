@@ -1,12 +1,44 @@
 <div class="card card-outline card-primary rounded-0 shadow">
   <div class="card-header">
-    <h3 class="card-title">My Group list</h3>
+    <h3 class="card-title">
+      My Group list
+      <div class='mt-2'>
+        <?php
+        $query = mysqli_query(
+          $conn,
+          "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id' and group_number='$user->group_number'"
+        );
+        if (mysqli_num_rows($query) > 0) {
+
+          $thesisGroupData = mysqli_fetch_object($query);
+          $currentInstructor = get_user_by_id($thesisGroupData->instructor_id);
+          echo "<h6> Instructor: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+
+          if ($thesisGroupData->panel_id != null) {
+            echo "<h6> Panel: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+          } else {
+            echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+          }
+        } else {
+          echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
+          echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+        }
+        ?>
+      </div>
+    </h3>
+
     <div class="card-tools">
 
-      <button type="button" id="btnSubmitToInstructor" class="btn btn-success btn-sm">
+      <button type="button" id="btnSubmitToInstructor" class="btn btn-success btn-sm" style="display: none;">
         <i class="fa fa-check"></i>
         Submit list to instructor
       </button>
+
+      <button type="button" id="btnEditInstructor" class="btn btn-warning btn-sm" style="display: none;">
+        <i class="fa fa-edit"></i>
+        Edit instructor
+      </button>
+
       <a href="<?= $SERVER_NAME ?>/west/pages/student/my-groupings?page=add-group-mate" class="btn btn-sm btn-primary">
         <i class="fas fa-plus"></i>
         Add New group mate

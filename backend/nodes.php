@@ -38,6 +38,15 @@ if (isset($_GET['action'])) {
       case "checkAssignedInstructor":
         checkAssignedInstructor();
         break;
+      case "checkAssignedInstructor":
+        checkAssignedInstructor();
+        break;
+      case "getCurrentInstructorWithOther":
+        getCurrentInstructorWithOther();
+        break;
+      case "updateInstructor":
+        updateInstructor();
+        break;
       default:
         null;
         break;
@@ -46,6 +55,64 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function updateInstructor()
+{
+  global $conn, $_SESSION, $_POST;
+
+  $instructorId = $_POST["instructorId"];
+  $currentUser = get_user_by_username($_SESSION["username"]);
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE thesis_groups SET instructor_id='$instructorId' WHERE group_leader_id='$currentUser->id' and group_number='$currentUser->group_number'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Instructor updated successfully.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function getCurrentInstructorWithOther()
+{
+  global $conn, $_SESSION;
+  $currentUser = get_user_by_username($_SESSION["username"]);
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$currentUser->id' and group_number='$currentUser->group_number'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    $thesisGroupData = mysqli_fetch_object($query);
+    $currentInstructor = get_user_by_id($thesisGroupData->instructor_id);
+
+    $response["otherInstructors"] = array();
+
+    $otherInstructorQuery = mysqli_query(
+      $conn,
+      "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='instructor' and id != '$currentInstructor->id'"
+    );
+
+    while ($row = mysqli_fetch_object($otherInstructorQuery)) {
+      array_push($response["otherInstructors"], $row);
+    }
+
+    $response["currentInstructor"] = ucwords("$currentInstructor->first_name $currentInstructor->last_name");
+    $response["success"] = true;
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Error updating instructor.<br>Please try again later.";
+  }
+
+  returnResponse($response);
 }
 
 function sendToInstructor()
@@ -97,11 +164,10 @@ function checkAssignedInstructor()
 
   $isAlreadySubmitted = isGroupListSubmitted($currentUser);
 
-  if (!$isAlreadySubmitted) {
-    $response["success"] = true;
+  if ($isAlreadySubmitted) {
+    $response["isAlreadySubmitted"] = true;
   } else {
-    $response["success"] = false;
-    $response["message"] = "You can only submitted once.";
+    $response["isAlreadySubmitted"] = false;
   }
 
   returnResponse($response);

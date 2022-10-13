@@ -98,45 +98,61 @@ if (isset($_SESSION["username"])) {
     }
   });
 
-  $("#btnSubmitToInstructor").on("click", function() {
-    swal.showLoading();
+  try {
     $.get(
       "../../backend/nodes?action=checkAssignedInstructor",
       (data, status) => {
         const resp = JSON.parse(data)
+        if (resp.isAlreadySubmitted) {
+          $("#btnSubmitToInstructor").hide()
+          $("#btnEditInstructor").show()
+        } else {
+          $("#btnSubmitToInstructor").show()
+          $("#btnEditInstructor").hide()
+        }
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+
+  } catch (err) {
+    console.log(err)
+  }
+
+  $("#btnEditInstructor").on("click", function() {
+    swal.showLoading();
+    $.get(
+      "../../backend/nodes?action=getCurrentInstructorWithOther",
+      (data, status) => {
+        const resp = JSON.parse(data)
 
         if (resp.success) {
-          $.get(
-            "../../backend/nodes?action=getAllInstructor",
-            (data, status) => {
-              const resp = JSON.parse(data)
-              let options = resp.instructors.map((data) => {
-                return `<option value="${data.id}" >
+          let options = resp.otherInstructors.map((data) => {
+            return `<option value="${data.id}" >
                     ${data.first_name} ${data.last_name}
                   </option>`
-              });
-
-              swal.fire({
-                title: 'Select your instructor',
-                icon: 'question',
-                html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
-                          ${options}
-                        </select>`,
-                showDenyButton: true,
-                confirmButtonText: 'Submit',
-                denyButtonText: 'Cancel',
-              }).then((res) => {
-                if (res.isConfirmed) {
-                  submitToInstructor($("#inputInstructorId option:selected").val())
-                }
-              })
-            }).fail(function(e) {
-            swal.fire({
-              title: 'Error!',
-              text: e.statusText,
-              icon: 'error',
-            })
           });
+
+          swal.fire({
+            title: 'Select your instructor',
+            icon: 'question',
+            html: `<span style="margin-bottom: 12px; float: left">
+                      Your current instructor is: <strong>${resp.currentInstructor}</strong>
+                    </span>
+                    <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
+                      ${options}
+                    </select>`,
+            showDenyButton: true,
+            confirmButtonText: 'Submit',
+            denyButtonText: 'Cancel',
+          }).then((res) => {
+            if (res.isConfirmed) {
+              submitToInstructor($("#inputInstructorId option:selected").val(), "edit")
+            }
+          })
         } else {
           swal.fire({
             title: 'Error!',
@@ -152,12 +168,48 @@ if (isset($_SESSION["username"])) {
         icon: 'error',
       })
     });
+  })
+
+  $("#btnSubmitToInstructor").on("click", function() {
+    swal.showLoading();
+
+    $.get(
+      "../../backend/nodes?action=getAllInstructor",
+      (data, status) => {
+        const resp = JSON.parse(data)
+        let options = resp.instructors.map((data) => {
+          return `<option value="${data.id}" >
+                    ${data.first_name} ${data.last_name}
+                  </option>`
+        });
+
+        swal.fire({
+          title: 'Select your instructor',
+          icon: 'question',
+          html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
+                    ${options}
+                  </select>`,
+          showDenyButton: true,
+          confirmButtonText: 'Submit',
+          denyButtonText: 'Cancel',
+        }).then((res) => {
+          if (res.isConfirmed) {
+            submitToInstructor($("#inputInstructorId option:selected").val(), "add")
+          }
+        })
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
 
   })
 
-  function submitToInstructor(selectedId) {
+  function submitToInstructor(selectedId, action) {
     $.post(
-      "../../backend/nodes?action=sendToInstructor", {
+      `../../backend/nodes?action=${action == "add" ? "sendToInstructor" : "updateInstructor"}`, {
         instructorId: selectedId
       },
       (data, status) => {
@@ -166,6 +218,9 @@ if (isset($_SESSION["username"])) {
           title: resp.success ? 'Success!' : 'Error!',
           text: resp.message,
           icon: resp.success ? 'success' : 'error',
+        }).then(() => {
+          location.reload();
+
         })
       }).fail(function(e) {
       swal.fire({
