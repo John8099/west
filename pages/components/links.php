@@ -6,27 +6,75 @@ $links = array(
   array(
     "title" => "Home",
     "url" => "$SERVER_NAME/west/pages/student/index",
-    "config" => array("student")
+    "allowedViews" => array("student")
   ),
   array(
     "title" => "Thesis Documents",
     "url" => "$SERVER_NAME/west/pages/archives",
-    "config" => array("student")
+    "allowedViews" => array("student")
   ),
   array(
     "title" => "Profile",
     "url" => "$SERVER_NAME/west/pages/profile",
-    "config" => array("student")
+    "allowedViews" => array("student")
   ),
   array(
     "title" => "My Groupings",
     "url" => "$SERVER_NAME/west/pages/student/my-groupings",
-    "config" => array("student")
+    "allowedViews" => array("student")
   ),
   array(
     "title" => "Submit Documents",
     "url" => "$SERVER_NAME/west/pages/student/submit-documents",
-    "config" => array("student")
+    "allowedViews" => array("student")
+  ),
+  array(
+    "title" => "Dashboard",
+    "url" => "$SERVER_NAME/west/pages/coordinator/index",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "tachometer-alt"
+    )
+  ),
+  array(
+    "title" => "Task Category",
+    "url" => "$SERVER_NAME/west/pages/coordinator/task-category",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "th-list"
+    )
+  ),
+  array(
+    "title" => "Scheduled task",
+    "url" => "$SERVER_NAME/west/pages/coordinator/scheduled-task",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "calendar-week"
+    )
+  ),
+  array(
+    "title" => "Users",
+    "url" => "$SERVER_NAME/west/pages/coordinator/user-lists",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "users-cog"
+    )
+  ),
+  array(
+    "title" => "Admins",
+    "url" => "$SERVER_NAME/west/pages/coordinator/admin-lists",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "users-cog"
+    )
+  ),
+  array(
+    "title" => "Settings",
+    "url" => "$SERVER_NAME/west/pages/coordinator/settings",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "tools"
+    )
   ),
 
 );

@@ -7,7 +7,7 @@
   <!-- Right navbar links -->
   <div class="ml-auto" style="padding: .5rem 1rem;">
     <span class="mx-2"><?= $user->email ?></span>
-    <span class="mx-1"><a href="<?= "http://$_SERVER[SERVER_NAME]/west/" ?>backend/nodes.php?action=logout"><i class="fa fa-power-off"></i></a></span>
+    <span class="mx-1"><a href="http://<?= $_SERVER['SERVER_NAME'] ?>/west/backend/nodes.php?action=logout"><i class="fa fa-power-off"></i></a></span>
   </div>
 </nav>
 <!-- /.navbar -->

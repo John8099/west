@@ -11,7 +11,7 @@ $user = get_user_by_username($_SESSION['username']);
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thesis Progress Monitoring and Archive Management System</title>
-  <link rel="icon" href="<?= "http://{$_SERVER['SERVER_NAME']}/west" ?>/public/logo-1657357283.png" />
+  <link rel="icon" href="http://<?= $_SERVER['SERVER_NAME'] ?>/west/public/logo-1657357283.png" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">

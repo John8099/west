@@ -12,7 +12,7 @@
 
       $navBarLinks = array_filter(
         $links,
-        fn ($val) => in_array($user->role, $val["config"]),
+        fn ($val) => in_array($user->role, $val["allowedViews"]),
         ARRAY_FILTER_USE_BOTH
       );
       foreach ($navBarLinks as $key => $value) :
