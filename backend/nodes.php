@@ -7,6 +7,12 @@ date_default_timezone_set("Asia/Manila");
 $dateNow = date("Y-m-d h:i:s");
 
 $SERVER_NAME = "http://$_SERVER[SERVER_NAME]";
+$ADMIN_ROLES = array(
+  "instructor",
+  "coordinator",
+  "panel",
+  "adviser",
+);
 
 if (isset($_GET['action'])) {
   try {
@@ -38,14 +44,20 @@ if (isset($_GET['action'])) {
       case "checkAssignedInstructor":
         checkAssignedInstructor();
         break;
-      case "checkAssignedInstructor":
-        checkAssignedInstructor();
-        break;
       case "getCurrentInstructorWithOther":
         getCurrentInstructorWithOther();
         break;
       case "updateInstructor":
         updateInstructor();
+        break;
+      case "addAdmin":
+        addAdmin();
+        break;
+      case "editAdmin":
+        updateUser();
+        break;
+      case "updatePassword":
+        updatePassword();
         break;
       default:
         null;
@@ -55,6 +67,67 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function addAdmin()
+{
+  global $conn, $_POST, $_FILES, $dateNow, $SERVER_NAME;
+
+  $fname = $_POST["fname"];
+  $mname = $_POST["mname"];
+  $lname = $_POST["lname"];
+  $email = $_POST["email"];
+  $avatar = $_FILES["avatar"];
+  $password = password_hash($email, PASSWORD_ARGON2I);
+
+  $role = $_POST["role"];
+
+  $username = generateUsername($fname, $lname);
+
+  if (!isEmailAlreadyUse($email)) {
+    $query = null;
+    if (intval($avatar["error"]) == 0) {
+      $uploadFile = date("mdY-his") . "_" . basename($avatar['name']);
+      $target_dir = "../media/avatar";
+
+      if (!is_dir($target_dir)) {
+        mkdir($target_dir, 0777, true);
+      }
+
+      if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
+        $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+
+        $query = mysqli_query(
+          $conn,
+          "INSERT INTO 
+          users(first_name, middle_name, last_name, avatar, username, email, `password`, `role`, date_added, is_new)
+          VALUES('$fname', '$mname', '$lname', '$img_url', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
+        );
+      } else {
+        $response["message"] = "Error Uploading file.";
+      }
+    } else {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO 
+        users(first_name, middle_name, last_name, username, email, `password`, `role`, date_added, is_new)
+        VALUES('$fname', '$mname', '$lname', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
+      );
+    }
+
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Admin added successfully<br>Would you like to add another?";
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Email already use by other user.";
+  }
+
+  returnResponse($response);
 }
 
 function updateInstructor()
@@ -161,6 +234,7 @@ function checkAssignedInstructor()
 {
   global $_SESSION;
   $currentUser = get_user_by_username($_SESSION['username']);
+  $instructor = getInstructorData($currentUser);
 
   $isAlreadySubmitted = isGroupListSubmitted($currentUser);
 
@@ -170,7 +244,33 @@ function checkAssignedInstructor()
     $response["isAlreadySubmitted"] = false;
   }
 
+  if ($instructor) {
+    $response["hasInstructor"] = true;
+  } else {
+    $response["hasInstructor"] = false;
+  }
+
   returnResponse($response);
+}
+
+function getInstructorData($currentUser)
+{
+  global $conn;
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_number='$currentUser->group_number' and group_leader_id='$currentUser->id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    $data = mysqli_fetch_object($query);
+    if ($data->instructor_id) {
+      return get_user_by_id($data->instructor_id);
+    } else {
+      return null;
+    }
+  } else {
+    return null;
+  }
 }
 
 function isGroupListSubmitted($currentUser)
@@ -226,7 +326,12 @@ function deleteUser()
   if ($query) {
     $response["success"] = true;
     $response["message"] = "User successfully deleted.";
-    updateGroupList();
+    if ($user->role == "student") {
+      updateGroupList();
+    }
+    if ($user->role == "instructor") {
+      removeInstructorToGroupList($user->id);
+    }
     unlink($path);
   } else {
     $response["success"] = false;
@@ -234,6 +339,18 @@ function deleteUser()
   }
 
   returnResponse($response);
+}
+
+function removeInstructorToGroupList($instructorId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE thesis_groups SET instructor_id=NULL WHERE instructor_id='$instructorId'"
+  );
+
+  return $query;
 }
 
 function updateGroupList()
@@ -267,7 +384,7 @@ function addGroupMate()
 
   $role = "student";
 
-  $username = strtolower("$fname-$lname-") . base64_encode(random_bytes(9));
+  $username = generateUsername($fname, $lname);
 
   if (!isEmailAlreadyUse($email) && !isStudentRollExist($roll)) {
     $query = null;
@@ -334,7 +451,7 @@ function updateUser()
   $cpassword = isset($_POST["cpassword"]) ? $_POST["cpassword"] : "";
   $oldpassword = isset($_POST["oldpassword"]) ? $_POST["oldpassword"] : "";
 
-  if (!checkIsEmailExist($email, $userId)) {
+  if (!isEmailAlreadyUseWithId($email, $userId)) {
     if ($password != "" || $cpassword != "" || $oldpassword != "") {
       $verifyPassword = json_decode(validatePassword($userId, $password, $cpassword, $oldpassword));
       if ($verifyPassword->validate) {
@@ -411,21 +528,41 @@ function updateUserDB($post, $img_url = null, $hash)
   $year = isset($post["year"]) ? $post["year"] : null;
   $section = isset($post["section"]) ? $post["section"] : null;
 
-  $username = strtolower("$fname-$lname-") . base64_encode(random_bytes(9));
+  $username = generateUsername($fname, $lname);
+  $currentUser = get_user_by_id($userId);
 
   $query = "";
   if ($role == "student") {
-    $query = "UPDATE users SET roll='$roll', first_name='$fname', middle_name='$mname', last_name='$lname', group_number='$group_number', year_and_section='$year-$section', " . ($img_url == null ? '' : "avatar='$img_url', ") . "username='$username', email='$email' " . ($hash == null ? '' : ", password='$hash'") . " WHERE id='$userId'";
+    $query = "UPDATE users SET
+    " . ($roll == null ? '' : "roll='$roll',") . "
+    first_name='$fname',
+    middle_name='$mname',
+    last_name='$lname',
+    " . ($group_number == null ? '' : "group_number='$group_number',") . "
+    " . ($year == null && $section == null ? '' : "year_and_section='$year-$section',") . "
+    " . ($img_url == null ? '' : "avatar='$img_url', ") . "
+    username='$username',
+    email='$email'
+    " . ($hash == null ? '' : ", password='$hash'") . " WHERE id='$userId'";
   } else {
-    $query = "UPDATE users SET roll='$roll', first_name='$fname', middle_name='$mname', last_name='$lname', avatar='$img_url', " . ($img_url == null ? '' : "avatar='$img_url', ") . " email='$email' " . ($hash == null ? '' : ", password='$hash'") . "  WHERE id='$userId'";
+    $query = "UPDATE users SET
+    " . ($roll == null ? '' : "roll='$roll',") . "
+    first_name='$fname',
+    middle_name='$mname',
+    last_name='$lname',
+    " . ($img_url == null ? '' : "avatar='$img_url', ") . "
+    email='$email'
+    " . ($hash == null ? '' : ", password='$hash'") . "  WHERE id='$userId'";
   };
 
   $insertQuery = mysqli_query($conn, $query);
 
   if ($insertQuery) {
     $response["success"] = true;
-    $_SESSION["username"] = $username;
-    $response["message"] = "User updated successfully.";
+    $response["message"] = $role != "student" ? "Admin updated successfully." : "User updated successfully.";
+    if ($_SESSION["username"] == $currentUser->username) {
+      $_SESSION["username"] = $username;
+    }
   } else {
     $response["success"] = false;
     $response["message"] = "Error updating user.";
@@ -470,7 +607,7 @@ function validatePassword($user_id, $password, $confirm_password, $old_password)
   return json_encode($arr);
 }
 
-function checkIsEmailExist($email, $userId)
+function isEmailAlreadyUseWithId($email, $userId)
 {
   global $conn;
 
@@ -503,6 +640,7 @@ function login()
     if (password_verify($password, $user->password)) {
       $response["success"] = true;
       $response["role"] = $user->role;
+      $response["isNew"] = $user->is_new ? true : false;
       $_SESSION["username"] = $user->username;
     } else {
       $response["success"] = false;
@@ -564,7 +702,7 @@ function student_registration()
   $email = $_POST["email"];
   $password = password_hash($_POST["password"], PASSWORD_ARGON2I);
 
-  $username = strtolower("$fname-$lname-") . base64_encode(random_bytes(9));
+  $username = generateUsername($fname, $lname);
 
   $role = "student";
 
@@ -573,7 +711,7 @@ function student_registration()
       $conn,
       "INSERT INTO 
       users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, isLeader, date_added)
-      VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '1', '$dateNow')"
+      VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '1', '$dateNow')"
     );
 
     if ($query) {
@@ -651,6 +789,35 @@ function logout()
 
   session_destroy();
   header("location: ../");
+}
+
+function updatePassword()
+{
+  global $conn, $_POST;
+
+  $password = password_hash($_POST['password'], PASSWORD_ARGON2I);
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE users SET `password`='$password', is_new=FALSE WHERE id='$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Password updated successfully";
+    $currentUser = get_user_by_id($_POST['id']);
+    $response["role"] = $currentUser->role;
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Something went wrong while updating password. Please try again later";
+  }
+
+  returnResponse($response);
+}
+
+function generateUsername($fname, $lname)
+{
+  return strtolower("$fname-$lname-") . preg_replace('/[^A-Za-z0-9\-]/', '', base64_encode(random_bytes(9)));
 }
 
 function returnResponse($params)

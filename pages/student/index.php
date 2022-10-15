@@ -1,6 +1,8 @@
 <?php
 include("../../backend/nodes.php");
-if (!isset($_SESSION["username"])) header("location: $SERVER_NAME/west/");
+if (!isset($_SESSION["username"])) {
+  header("location: $SERVER_NAME/west/");
+}
 $user = get_user_by_username($_SESSION['username']);
 ?>
 <!DOCTYPE html>
@@ -11,7 +13,7 @@ $user = get_user_by_username($_SESSION['username']);
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thesis Progress Monitoring and Archive Management System</title>
-  <link rel="icon" href="http://<?= $_SERVER['SERVER_NAME'] ?>/west/public/logo-1657357283.png" />
+  <link rel="icon" href="<?= $SERVER_NAME ?>/west/public/logo-1657357283.png" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -36,7 +38,7 @@ $user = get_user_by_username($_SESSION['username']);
       position: absolute;
       height: calc(100%);
       width: calc(100%);
-      background: url("<?= "http://{$_SERVER['SERVER_NAME']}/west" ?>/public/cover-1638840281.jpg");
+      background: url("<?= "$SERVER_NAME/west" ?>/public/cover-1638840281.jpg");
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center center;

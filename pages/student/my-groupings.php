@@ -23,9 +23,9 @@ if (isset($_SESSION["username"])) {
   <link rel="stylesheet" href="../../assets/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="../../assets/dist/css/adminlte.min.css">
+
   <link rel="stylesheet" href="../../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
-  <link rel="stylesheet" href="../../assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
 
   <style>
     #searchNav::after {
@@ -83,6 +83,14 @@ if (isset($_SESSION["username"])) {
 <script src="../../assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 
 <script>
+  $(function() {
+    $("#groupings-table").DataTable({
+      "responsive": true,
+      "lengthChange": false,
+      "autoWidth": false,
+    });
+  });
+
   if (sessionStorage.getItem("searchInput")) {
     $("#searchInput").val(sessionStorage.getItem("searchInput"))
   }
@@ -103,11 +111,18 @@ if (isset($_SESSION["username"])) {
       "../../backend/nodes?action=checkAssignedInstructor",
       (data, status) => {
         const resp = JSON.parse(data)
-        if (resp.isAlreadySubmitted) {
+
+        if (resp.isAlreadySubmitted && resp.hasInstructor) {
           $("#btnSubmitToInstructor").hide()
+          $("#btnChangeInstructor").hide()
           $("#btnEditInstructor").show()
+        } else if (resp.isAlreadySubmitted && !resp.hasInstructor) {
+          $("#btnSubmitToInstructor").hide()
+          $("#btnChangeInstructor").show()
+          $("#btnEditInstructor").hide()
         } else {
           $("#btnSubmitToInstructor").show()
+          $("#btnChangeInstructor").hide()
           $("#btnEditInstructor").hide()
         }
       }).fail(function(e) {
@@ -195,6 +210,42 @@ if (isset($_SESSION["username"])) {
         }).then((res) => {
           if (res.isConfirmed) {
             submitToInstructor($("#inputInstructorId option:selected").val(), "add")
+          }
+        })
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+
+  })
+  $("#btnChangeInstructor").on("click", function() {
+    swal.showLoading();
+
+    $.get(
+      "../../backend/nodes?action=getAllInstructor",
+      (data, status) => {
+        const resp = JSON.parse(data)
+        let options = resp.instructors.map((data) => {
+          return `<option value="${data.id}" >
+                    ${data.first_name} ${data.last_name}
+                  </option>`
+        });
+
+        swal.fire({
+          title: 'Select your instructor',
+          icon: 'question',
+          html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
+                    ${options}
+                  </select>`,
+          showDenyButton: true,
+          confirmButtonText: 'Submit',
+          denyButtonText: 'Cancel',
+        }).then((res) => {
+          if (res.isConfirmed) {
+            submitToInstructor($("#inputInstructorId option:selected").val(), "edit")
           }
         })
       }).fail(function(e) {

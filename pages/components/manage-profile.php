@@ -82,10 +82,10 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label for="img" class="control-label text-muted">Choose Image</label>
-              <input type="file" name="avatar" class="form-control form-control-border" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
+              <input type="file" name="avatar" class="form-control border-0" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
             </div>
             <div class="form-group text-center">
-              <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border">
+              <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border"  style="width: 217px; height: 217px;">
             </div>
           </div>
         </div>

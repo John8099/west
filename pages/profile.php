@@ -69,7 +69,7 @@ if (isset($_SESSION["username"])) {
                   <div class="col-md-12">
                     <div class="row">
                       <div class="col-lg-4 col-sm-12">
-                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border">
+                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border"  style="width: 217px; height: 217px;">
                       </div>
                       <div class="col-lg-8 col-sm-12">
                         <dl>

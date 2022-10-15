@@ -11,8 +11,13 @@
         if (mysqli_num_rows($query) > 0) {
 
           $thesisGroupData = mysqli_fetch_object($query);
-          $currentInstructor = get_user_by_id($thesisGroupData->instructor_id);
-          echo "<h6> Instructor: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+
+          if ($thesisGroupData->instructor_id != null) {
+            $currentInstructor = get_user_by_id($thesisGroupData->instructor_id);
+            echo "<h6> Instructor: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+          } else {
+            echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
+          }
 
           if ($thesisGroupData->panel_id != null) {
             echo "<h6> Panel: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
@@ -28,6 +33,10 @@
     </h3>
 
     <div class="card-tools">
+      <button type="button" id="btnChangeInstructor" class="btn btn-success btn-sm" style="display: none;">
+        <i class="fa fa-check"></i>
+        Submit list to instructor
+      </button>
 
       <button type="button" id="btnSubmitToInstructor" class="btn btn-success btn-sm" style="display: none;">
         <i class="fa fa-check"></i>
@@ -48,7 +57,7 @@
   <div class="card-body">
     <div class="container-fluid">
       <div class="container-fluid">
-        <table class="table table-bordered table-hover table-striped">
+        <table id="groupings-table" class="table table-bordered table-hover table-striped">
           <thead>
             <tr class="bg-gradient-dark text-light">
               <th>#</th>

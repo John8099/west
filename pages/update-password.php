@@ -1,3 +1,10 @@
+<?php
+include("../backend/nodes.php");
+if (!isset($_SESSION["username"])) {
+  header("location: $SERVER_NAME/west/pages/login");
+}
+$user = get_user_by_username($_SESSION['username']);
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -48,27 +55,28 @@
           <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" style="height: 100%;">
             <div class="card card-outline card-primary rounded-0 shadow col-lg-10 col-sm-12">
               <div class="card-header">
-                <h5 class="card-title text-center text-dark"><b>Login</b></h5>
+                <h5 class="card-title text-center text-dark"><b>Update Password</b></h5>
               </div>
               <div class="card-body text-dark">
-                <form id="login-form" method="POST">
+                <form id="update-password" method="POST">
+                  <input type="text" name="id" value="<?= $user->id ?>" hidden readonly>
                   <div class="form-group">
                     <label class="col-form-label">
-                      Email
+                      New Password
                     </label>
-                    <input type="email" name="email" class="form-control form-control-sm form-control-border" placeholder="Your email ..." required>
+                    <input type="password" id="inputPassword" class="form-control form-control-sm form-control-border" placeholder="Your new password ..." required>
 
                   </div>
 
                   <div class="form-group">
                     <label class="col-form-label">
-                      Password
+                      Confirm Password
                     </label>
-                    <input type="password" name="password" class="form-control form-control-sm form-control-border" placeholder="Your password ..." required>
+                    <input type="password" name="password" id="cPassword" class="form-control form-control-sm form-control-border" placeholder="Confirm password ..." required>
                   </div>
 
                   <div class="form-group d-flex justify-content-end">
-                    <button type="submit" class="btn bg-navy">Login</button>
+                    <button type="submit" class="btn bg-navy">Submit</button>
                   </div>
                 </form>
               </div>
@@ -110,18 +118,24 @@
 <script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 
 <script>
-  $("#login-form").on("submit", function(e) {
+  $("#update-password").on("submit", function(e) {
     swal.showLoading();
-    $.post(
-      "../backend/nodes?action=login",
-      $(this).serialize(),
-      (data, status) => {
-        swal.close()
-        const resp = JSON.parse(data)
-        if (resp.success) {
-          if (resp.isNew) {
-            window.location.href = `${window.location.origin}/west/pages/update-password`
-          } else {
+    const inputPassword = $("#inputPassword").val()
+    const cPassword = $("#cPassword").val()
+    if (inputPassword !== cPassword) {
+      swal.fire({
+        title: 'Error!',
+        text: "Password not match",
+        icon: 'error',
+      })
+    } else {
+      $.post(
+        "../backend/nodes?action=updatePassword",
+        $(this).serialize(),
+        (data, status) => {
+          swal.close()
+          const resp = JSON.parse(data)
+          if (resp.success) {
             let location = `${window.location.origin}/west/pages/`
 
             const locations = {
@@ -145,22 +159,21 @@
             }
 
             window.location.href = location
+          } else {
+            swal.fire({
+              title: 'Error!',
+              text: resp.message,
+              icon: 'error',
+            })
           }
-        } else {
-          swal.fire({
-            title: 'Error!',
-            text: resp.message,
-            icon: 'error',
-          })
-        }
-      }).fail(function(e) {
-      swal.fire({
-        title: 'Error!',
-        text: e.statusText,
-        icon: 'error',
-      })
-    });
-
+        }).fail(function(e) {
+        swal.fire({
+          title: 'Error!',
+          text: e.statusText,
+          icon: 'error',
+        })
+      });
+    }
     e.preventDefault();
   })
 </script>
