@@ -59,6 +59,12 @@ if (isset($_GET['action'])) {
       case "updatePassword":
         updatePassword();
         break;
+      case "getAllPanel":
+        getAllPanel();
+        break;
+      case "updateGroupAdmin":
+        updateGroupAdmin();
+        break;
       default:
         null;
         break;
@@ -67,6 +73,31 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function updateGroupAdmin()
+{
+  global $conn, $_POST;
+
+  $group_id = $_POST["group_id"];
+  $admin_id = $_POST["admin_id"];
+
+  $action = $_POST['action'];
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE thesis_groups SET " . ($action == "updateGroupPanel" ? "panel_id" : "instructor_id") . "='$admin_id' WHERE id=$group_id"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Group updated successfully.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
 }
 
 function addAdmin()
@@ -212,6 +243,22 @@ function sendToInstructor()
   returnResponse($response);
 }
 
+function getMemberData($group_number, $leader_id)
+{
+  global $conn;
+  $arr = array();
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM users WHERE group_number='$group_number' and leader_id='$leader_id'"
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($arr, $row);
+  }
+
+  return json_encode($arr);
+}
 function getGroupMateIds($group_number, $leader_id)
 {
   global $conn;
@@ -306,6 +353,24 @@ function getAllInstructor()
 
   while ($row = mysqli_fetch_object($query)) {
     array_push($response["instructors"], $row);
+  }
+
+  returnResponse($response);
+}
+
+function getAllPanel()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='panel'"
+  );
+
+  $response["panels"] = array();
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($response["panels"], $row);
   }
 
   returnResponse($response);
@@ -551,7 +616,8 @@ function updateUserDB($post, $img_url = null, $hash)
     middle_name='$mname',
     last_name='$lname',
     " . ($img_url == null ? '' : "avatar='$img_url', ") . "
-    email='$email'
+    email='$email',
+    username='$username'
     " . ($hash == null ? '' : ", password='$hash'") . "  WHERE id='$userId'";
   };
 

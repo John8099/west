@@ -53,7 +53,7 @@ $links = array(
     )
   ),
   array(
-    "title" => "Users",
+    "title" => "Students",
     "url" => "$SERVER_NAME/west/pages/coordinator/user-lists",
     "allowedViews" => array("coordinator"),
     "config" => array(
