@@ -65,6 +65,9 @@ if (isset($_GET['action'])) {
       case "updateGroupAdmin":
         updateGroupAdmin();
         break;
+      case "updateSystem":
+        updateSystem();
+        break;
       default:
         null;
         break;
@@ -73,6 +76,63 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function updateSystem()
+{
+  global $conn, $_POST, $_FILES, $SERVER_NAME;
+
+  $name = $_POST["name"];
+  $content = nl2br($_POST["content"]);
+  $contact = $_POST["contact"];
+  $system_logo = $_FILES["system_logo"];
+  $cover = $_FILES["cover"];
+
+  $queryStr = "UPDATE system_config SET ";
+
+  $system_logo_url = "";
+  $cover_url = "";
+
+  if (intval($system_logo["error"]) == 0) {
+    $uploadFile = date("mdY-his") . "_" . basename($system_logo['name']);
+    $target_dir = "../public/";
+
+    if (!is_dir($target_dir)) {
+      mkdir($target_dir, 0777, true);
+    }
+
+    if (move_uploaded_file($system_logo['tmp_name'], "$target_dir/$uploadFile")) {
+      $system_logo_url = "$SERVER_NAME/west/public/$uploadFile";
+      $queryStr .= "logo='$system_logo_url', ";
+    }
+  }
+
+  if (intval($cover["error"]) == 0) {
+    $uploadFile = date("mdY-his") . "_" . basename($cover['name']);
+    $target_dir = "../public/";
+
+    if (!is_dir($target_dir)) {
+      mkdir($target_dir, 0777, true);
+    }
+
+    if (move_uploaded_file($cover['tmp_name'], "$target_dir/$uploadFile")) {
+      $cover_url = "$SERVER_NAME/west/public/$uploadFile";
+      $queryStr .= "cover='$cover_url', ";
+    }
+  }
+
+  $queryStr .= "system_name = '$name', home_content='$content', contact='$contact'";
+  $query = mysqli_query($conn, $queryStr);
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "System updated successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
 }
 
 function updateGroupAdmin()
@@ -879,6 +939,19 @@ function updatePassword()
   }
 
   returnResponse($response);
+}
+
+function systemInfo()
+{
+  global $conn;
+
+  return (mysqli_fetch_object(
+    mysqli_query(
+      $conn,
+      "SELECT * FROM system_config"
+    )
+  )
+  );
 }
 
 function generateUsername($fname, $lname)

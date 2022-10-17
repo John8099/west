@@ -30,7 +30,7 @@ $links = array(
   ),
   array(
     "title" => "Dashboard",
-    "url" => "$SERVER_NAME/west/pages/coordinator/index",
+    "url" => "$SERVER_NAME/west/pages/$user->role/index",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "tachometer-alt"
@@ -38,7 +38,7 @@ $links = array(
   ),
   array(
     "title" => "Task Category",
-    "url" => "$SERVER_NAME/west/pages/coordinator/task-category",
+    "url" => "$SERVER_NAME/west/pages/$user->role/task-category",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "th-list"
@@ -46,7 +46,7 @@ $links = array(
   ),
   array(
     "title" => "Scheduled task",
-    "url" => "$SERVER_NAME/west/pages/coordinator/scheduled-task",
+    "url" => "$SERVER_NAME/west/pages/$user->role/scheduled-task",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "calendar-week"
@@ -54,7 +54,7 @@ $links = array(
   ),
   array(
     "title" => "Students",
-    "url" => "$SERVER_NAME/west/pages/coordinator/user-lists",
+    "url" => "$SERVER_NAME/west/pages/$user->role/user-lists",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "users-cog"
@@ -62,7 +62,7 @@ $links = array(
   ),
   array(
     "title" => "Admins",
-    "url" => "$SERVER_NAME/west/pages/coordinator/admin-lists",
+    "url" => "$SERVER_NAME/west/pages/$user->role/admin-lists",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "users-cog"
@@ -70,7 +70,7 @@ $links = array(
   ),
   array(
     "title" => "Settings",
-    "url" => "$SERVER_NAME/west/pages/coordinator/settings",
+    "url" => "$SERVER_NAME/west/pages/settings",
     "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "tools"

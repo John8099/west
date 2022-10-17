@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-md nav-white bg-white" style="position:fixed; top: 3.5rem; width: 100%;z-index: 999;">
   <div class="container">
     <a href="./" class="navbar-brand d-flex align-items-center">
-      <img src="<?= "http://{$_SERVER['SERVER_NAME']}/west" ?>/public/logo-1657357283.png" alt="Site Logo" class="brand-image img-circle elevation-3" style="opacity: .8;height: 33px;">
+      <img src="<?= $systemInfo->logo ?>" alt="Site Logo" class="brand-image img-circle elevation-3" style="opacity: .8;height: 33px;">
       <span class="ml-2" style="color: black">WVSU</span>
     </a>
 

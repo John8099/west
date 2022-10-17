@@ -12,7 +12,7 @@
     <table id="student_list" class="table table-bordered table-hover">
       <thead>
         <tr class="bg-gradient-dark text-light">
-          <th>Group #</th>
+          <th>Group#</th>
           <th>Leader</th>
           <th>Members</th>
           <th>Instructor</th>

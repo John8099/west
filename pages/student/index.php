@@ -3,6 +3,8 @@ include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
   header("location: $SERVER_NAME/west/");
 }
+include_once("../../backend/nodes.php");
+$systemInfo = systemInfo();
 $user = get_user_by_username($_SESSION['username']);
 ?>
 <!DOCTYPE html>
@@ -12,8 +14,8 @@ $user = get_user_by_username($_SESSION['username']);
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Thesis Progress Monitoring and Archive Management System</title>
-  <link rel="icon" href="<?= $SERVER_NAME ?>/west/public/logo-1657357283.png" />
+  <title><?= $systemInfo->system_name ?></title>
+  <link rel="icon" href="<?= $systemInfo->logo ?>" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -38,7 +40,7 @@ $user = get_user_by_username($_SESSION['username']);
       position: absolute;
       height: calc(100%);
       width: calc(100%);
-      background: url("<?= "$SERVER_NAME/west" ?>/public/cover-1638840281.jpg");
+      background: url("<?= $systemInfo->cover ?>");
       background-size: cover;
       background-repeat: no-repeat;
       background-position: center center;
@@ -71,7 +73,7 @@ $user = get_user_by_username($_SESSION['username']);
       <div class="content" style="padding:9rem 0rem 0rem 0rem;">
         <div id="header" class="shadow mb-4">
           <div class="d-flex justify-content-center h-100 w-100 align-items-center flex-column">
-            <h1 class="w-100 text-center site-title">Thesis Progress Monitoring and Archive Management System</h1>
+            <h1 class="w-100 text-center site-title"><?= $systemInfo->system_name ?></h1>
           </div>
         </div>
       </div>
@@ -86,9 +88,7 @@ $user = get_user_by_username($_SESSION['username']);
                   <h3 class="text-center">Welcome</h3>
                   <hr>
                   <div class="welcome-content">
-                    <p style="margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding: 0px;">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec ut aliquam ligula. Cras consequat id orci eget imperdiet. Nulla eu libero purus. Donec dolor ipsum, dictum sit amet convallis quis, blandit ut nibh. Sed gravida molestie augue, et rutrum ipsum gravida at. Sed pulvinar ante ut justo molestie ullamcorper. Etiam lectus mi, maximus a suscipit vitae, sagittis vitae enim. Donec ullamcorper laoreet purus at mattis.</p>
-                    <p style="margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding: 0px;">In eu nulla neque. Integer et posuere lorem. Ut cursus lorem sit amet magna consequat auctor. Morbi justo ipsum, semper rhoncus leo non, facilisis mollis lorem. Aliquam erat volutpat. Sed convallis, metus eu auctor porta, metus felis tincidunt neque, nec molestie sapien ante ac purus. Ut bibendum odio in scelerisque molestie.</p>
-                    <p style="margin-right: 0px; margin-bottom: 15px; margin-left: 0px; padding: 0px;">Etiam convallis vitae nisi scelerisque gravida. Morbi commodo aliquam tellus, ut iaculis velit volutpat eget. Vestibulum bibendum diam nec sapien accumsan, quis convallis tellus sodales. Praesent ex diam, gravida pellentesque dolor id, sagittis rutrum sapien. Mauris pretium enim quis est bibendum auctor. Aliquam bibendum aliquet nisi, nec iaculis tortor commodo et. Nulla facilisi. Proin ultrices, nisi ac lacinia pellentesque, lectus magna sodales ante, vitae porttitor est nisl bibendum neque. Integer at quam sed augue dictum accumsan id et turpis. Donec dignissim erat vitae purus tincidunt, viverra euismod leo luctus. Duis vulputate, nunc a iaculis hendrerit, libero nibh dignissim elit, a pharetra orci ex vehicula arcu.</p>
+                    <?= nl2br($systemInfo->home_content) ?>
                   </div>
                 </div>
               </div>

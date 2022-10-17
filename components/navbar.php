@@ -1,7 +1,7 @@
 <!-- Navbar -->
 <nav class="main-header navbar navbar-expand-md bg-navy  position-fixed top-0" style="width: 100%;">
   <div>
-    <span class="mr-2 text-white"><i class="fa fa-phone mr-1"></i> 09854698789 / 78945632</span>
+    <span class="mr-2 text-white"><i class="fa fa-phone mr-1"></i> <?= $systemInfo->contact ?></span>
   </div>
 
   <!-- Right navbar links -->
