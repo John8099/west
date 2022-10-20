@@ -16,7 +16,7 @@ $systemInfo = systemInfo();
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $systemInfo->system_name ?></title>
-  <link rel="icon" href="<?= $systemInfo->logo ?>" />
+  <link rel="icon" href="<?= $SERVER_NAME . $systemInfo->logo ?>" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -138,6 +138,106 @@ $systemInfo = systemInfo();
     console.log(err)
   }
 
+  $("#btnSendInvite").on("click", function() {
+    swal.showLoading();
+
+    $.get(
+      "../../backend/nodes?action=getAllAdviser",
+      (data, status) => {
+        const resp = JSON.parse(data)
+        let options = resp.adviser.map((data) => {
+          return `<option value="${data.id}" style="background-image: url('http://localhost/west/media/avatar/10052022-113300_avatar.png')">
+          
+                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
+                  </option>`
+        });
+
+        swal.fire({
+          title: 'Select Adviser',
+          icon: 'question',
+          html: ` <select id="inputAdviserId" class="form-control" style="text-transform: capitalize">
+                    ${options.length == 0  ? "<option value='' disabled selected> No available adviser </option>" : options}
+                  </select>`,
+          showDenyButton: true,
+          confirmButtonText: 'Submit',
+          denyButtonText: 'Cancel',
+        }).then((res) => {
+          if (res.isConfirmed) {
+            sendAdviserInvite($("#inputAdviserId option:selected").val())
+          }
+        })
+
+        if (options.length == 0) {
+          swal.getConfirmButton().disabled = true
+        }
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+  })
+
+  $("#btnCancelInvite").on("click", function() {
+    swal.fire({
+      title: 'Are you sure',
+      icon: 'question',
+      text: "You want to cancel this your invitation?",
+      showDenyButton: true,
+      confirmButtonText: 'Yes',
+      denyButtonText: 'No',
+    }).then((res) => {
+      if (res.isConfirmed) {
+        handleCancelInvite()
+      }
+    })
+  })
+
+  function handleCancelInvite() {
+    $.post(
+      `../../backend/nodes?action=cancelAdvisorInvite`,
+      (data, status) => {
+        const resp = JSON.parse(data)
+        swal.fire({
+          title: resp.success ? 'Success!' : 'Error!',
+          text: resp.message,
+          icon: resp.success ? 'success' : 'error',
+        }).then(() => {
+          location.reload();
+        })
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+  }
+
+  function sendAdviserInvite(inputAdviserId) {
+    $.post(
+      `../../backend/nodes?action=sendAdviserInvite`, {
+        adviserId: inputAdviserId
+      },
+      (data, status) => {
+        const resp = JSON.parse(data)
+        swal.fire({
+          title: resp.success ? 'Success!' : 'Error!',
+          text: resp.message,
+          icon: resp.success ? 'success' : 'error',
+        }).then(() => {
+          location.reload();
+        })
+      }).fail(function(e) {
+      swal.fire({
+        title: 'Error!',
+        text: e.statusText,
+        icon: 'error',
+      })
+    });
+  }
+
   $("#btnEditInstructor").on("click", function() {
     swal.showLoading();
     $.get(
@@ -148,7 +248,7 @@ $systemInfo = systemInfo();
         if (resp.success) {
           let options = resp.otherInstructors.map((data) => {
             return `<option value="${data.id}" >
-                    ${data.first_name} ${data.last_name}
+                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
                   </option>`
           });
 
@@ -159,7 +259,7 @@ $systemInfo = systemInfo();
                       Your current instructor is: <strong>${resp.currentInstructor}</strong>
                     </span>
                     <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
-                      ${options}
+                      ${options.length == 0  ? "<option value='' disabled selected> No available instructor </option>" : options}
                     </select>`,
             showDenyButton: true,
             confirmButtonText: 'Submit',
@@ -169,6 +269,10 @@ $systemInfo = systemInfo();
               submitToInstructor($("#inputInstructorId option:selected").val(), "edit")
             }
           })
+          if (options.length == 0) {
+            swal.getConfirmButton().disabled = true
+          }
+
         } else {
           swal.fire({
             title: 'Error!',
@@ -195,7 +299,7 @@ $systemInfo = systemInfo();
         const resp = JSON.parse(data)
         let options = resp.instructors.map((data) => {
           return `<option value="${data.id}" >
-                    ${data.first_name} ${data.last_name}
+                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
                   </option>`
         });
 
@@ -203,7 +307,7 @@ $systemInfo = systemInfo();
           title: 'Select your instructor',
           icon: 'question',
           html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
-                    ${options}
+                    ${options.length == 0  ? "<option value='' disabled selected> No available instructor </option>" : options}
                   </select>`,
           showDenyButton: true,
           confirmButtonText: 'Submit',
@@ -213,6 +317,10 @@ $systemInfo = systemInfo();
             submitToInstructor($("#inputInstructorId option:selected").val(), "add")
           }
         })
+
+        if (options.length == 0) {
+          swal.getConfirmButton().disabled = true
+        }
       }).fail(function(e) {
       swal.fire({
         title: 'Error!',
@@ -222,6 +330,7 @@ $systemInfo = systemInfo();
     });
 
   })
+
   $("#btnChangeInstructor").on("click", function() {
     swal.showLoading();
 
@@ -231,7 +340,7 @@ $systemInfo = systemInfo();
         const resp = JSON.parse(data)
         let options = resp.instructors.map((data) => {
           return `<option value="${data.id}" >
-                    ${data.first_name} ${data.last_name}
+                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
                   </option>`
         });
 
@@ -239,7 +348,7 @@ $systemInfo = systemInfo();
           title: 'Select your instructor',
           icon: 'question',
           html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
-                    ${options}
+                     ${options.length == 0  ? "<option value='' disabled selected> No available instructor </option>" : options}
                   </select>`,
           showDenyButton: true,
           confirmButtonText: 'Submit',
@@ -249,6 +358,10 @@ $systemInfo = systemInfo();
             submitToInstructor($("#inputInstructorId option:selected").val(), "edit")
           }
         })
+
+        if (options.length == 0) {
+          swal.getConfirmButton().disabled = true
+        }
       }).fail(function(e) {
       swal.fire({
         title: 'Error!',

@@ -36,7 +36,7 @@
             <td><?= date("Y-m-d H:i", strtotime($admin->date_added)) ?></td>
             <td><?= date("Y-m-d H:i", strtotime($admin->date_updated)) ?></td>
             <td>
-              <img src="<?= $admin->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+              <img src="<?= $SERVER_NAME . $admin->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
             </td>
             <td><?= $adminName ?></td>
             <td><?= $admin->email ?></td>

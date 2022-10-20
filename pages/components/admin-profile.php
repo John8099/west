@@ -14,7 +14,7 @@ $systemInfo = systemInfo();
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $systemInfo->system_name ?></title>
-  <link rel="icon" href="<?= $systemInfo->logo ?>" />
+  <link rel="icon" href="<?= $SERVER_NAME . $systemInfo->logo ?>" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -109,7 +109,7 @@ $systemInfo = systemInfo();
                             <input type="file" name="avatar" class="form-control border-0" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
                           </div>
                           <div class="form-group text-center">
-                            <img src="<?= $user->avatar ? $user->avatar : "$SERVER_NAME ?>/west/assets/dist/img/no-image-available.png" ?>" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border" style="width: 217px; height: 217px;">
+                            <img src="<?= $user->avatar ? $SERVER_NAME . $user->avatar : "$SERVER_NAME/assets/dist/img/no-image-available.png" ?>" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border" style="width: 217px; height: 217px;">
                           </div>
                         </div>
                       </div>

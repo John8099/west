@@ -17,6 +17,7 @@
           <th>Members</th>
           <th>Instructor</th>
           <th>Panel</th>
+          <th>Adviser</th>
           <th>Action</th>
         </tr>
       </thead>
@@ -43,7 +44,7 @@
             <td>
               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                 <div class="mr-1">
-                  <img src="<?= $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                  <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                 </div>
                 <div>
                   <?= $leaderName ?>
@@ -57,7 +58,7 @@
               ?>
                 <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                   <div class="mr-1">
-                    <img src="<?= $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                   </div>
                   <div>
                     <?= $memberName ?>
@@ -74,7 +75,7 @@
               ?>
                   <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                     <div class="mr-1">
-                      <img src="<?= $instructor->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      <img src="<?= $SERVER_NAME . $instructor->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
                     <div>
                       <h6>
@@ -102,7 +103,7 @@
               ?>
                   <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                     <div class="mr-1">
-                      <img src="<?= $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
                     <div>
                       <h6>
@@ -121,15 +122,40 @@
               }
               ?>
             </td>
+            <td>
+              <?php
+              if ($hasSubmittedGroup && $thesisGroupData != null) {
+                if ($thesisGroupData->adviser_id != null) :
+                  $adviser = get_user_by_id($thesisGroupData->adviser_id);
+                  $adviserName = ucwords("$adviser->first_name " . $adviser->middle_name[0] . ". $adviser->last_name");
+              ?>
+                  <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                    <div class="mr-1">
+                      <img src="<?= $SERVER_NAME . $adviser->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    </div>
+                    <div>
+                      <h6>
+                        <strong>
+                          <?= $adviserName ?>
+                        </strong>
+                      </h6>
+                    </div>
+                  </div>
+              <?php
+                else :
+                  echo "<h6><em>No adviser assigned yet.</em> </h6>";
+                endif;
+              } else {
+                echo "<h6><em>Not yet submitted group to instructor</em> </h6>";
+              }
+              ?>
+            </td>
             <td style="width: 140px;">
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary m-1" style="width: 145px;" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupInstructor')">
-                Update Instructor
-              </button>
-              <button type="button" class="btn btn-primary m-1" style="width: 145px;" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupPanel')">
-                Update Panel
+              <button type="button" class="btn btn-primary m-1" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupPanel')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
+                Assign Panel
               </button>
             </td>
           </tr>

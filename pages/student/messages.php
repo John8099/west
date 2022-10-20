@@ -27,38 +27,6 @@ $user = get_user_by_username($_SESSION['username']);
     #searchNav::after {
       content: none
     }
-
-    #header {
-      height: 70vh;
-      width: calc(100%);
-      position: relative;
-      top: -2rem;
-    }
-
-    #header:before {
-      content: "";
-      position: absolute;
-      height: calc(100%);
-      width: calc(100%);
-      background: url("<?= $SERVER_NAME . $systemInfo->cover ?>");
-      background-size: cover;
-      background-repeat: no-repeat;
-      background-position: center center;
-      filter: brightness(50%);
-    }
-
-    #header>div {
-      position: absolute;
-      height: calc(100%);
-      width: calc(100%);
-      z-index: 2;
-    }
-
-    .site-title {
-      font-size: 5em !important;
-      color: white !important;
-      text-shadow: 4px 5px 3px #414447 !important;
-    }
   </style>
 </head>
 
@@ -70,32 +38,35 @@ $user = get_user_by_username($_SESSION['username']);
     <div class="content-wrapper">
 
       <!-- Main content -->
-      <div class="content" style="padding:9rem 0rem 0rem 0rem;">
-        <div id="header" class="shadow mb-4">
-          <div class="d-flex justify-content-center h-100 w-100 align-items-center flex-column">
-            <h1 class="w-100 text-center site-title"><?= $systemInfo->system_name ?></h1>
+      <div class="container" style="padding-top: 9rem">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Messages</h3>
           </div>
+          <div class="card-body p-0" style="display: block;">
+            <ul class="nav nav-pills flex-column">
+              <li class="nav-item active">
+                <a href="#" class="nav-link">
+                  <i class="fas fa-inbox"></i> Inbox
+                  <span class="badge bg-primary float-right">12</span>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="far fa-envelope"></i> Sent
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="#" class="nav-link">
+                  <i class="far fa-file-alt"></i> Drafts
+                </a>
+              </li>
+            </ul>
+          </div>
+          <!-- /.card-body -->
         </div>
       </div>
       <!-- /.content -->
-
-      <section class="content ">
-        <div class="container">
-          <div class="col-lg-12 py-5">
-            <div class="card card-outline card-navy shadow rounded-0">
-              <div class="card-body rounded-0">
-                <div class="container-fluid">
-                  <h3 class="text-center">Welcome</h3>
-                  <hr>
-                  <div class="welcome-content">
-                    <?= nl2br($systemInfo->home_content) ?>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
     <!-- /.content-wrapper -->
   </div>

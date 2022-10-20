@@ -6,7 +6,7 @@ include("conn.php");
 date_default_timezone_set("Asia/Manila");
 $dateNow = date("Y-m-d h:i:s");
 
-$SERVER_NAME = "http://$_SERVER[SERVER_NAME]";
+$SERVER_NAME = "http://$_SERVER[SERVER_NAME]/west";
 $ADMIN_ROLES = array(
   "instructor",
   "coordinator",
@@ -38,6 +38,9 @@ if (isset($_GET['action'])) {
       case "getAllInstructor":
         getAllInstructor();
         break;
+      case "getAllAdviser":
+        getAllAdviser();
+        break;
       case "sendToInstructor":
         sendToInstructor();
         break;
@@ -68,6 +71,24 @@ if (isset($_GET['action'])) {
       case "updateSystem":
         updateSystem();
         break;
+      case "saveCategory":
+        saveCategory();
+        break;
+      case "deleteCategory":
+        deleteCategory();
+        break;
+      case "saveSchedule":
+        saveSchedule();
+        break;
+      case "deleteSchedule":
+        deleteSchedule();
+        break;
+      case "sendAdviserInvite":
+        sendAdviserInvite();
+        break;
+      case "cancelAdvisorInvite":
+        cancelAdvisorInvite();
+        break;
       default:
         null;
         break;
@@ -78,9 +99,290 @@ if (isset($_GET['action'])) {
   }
 }
 
+function cancelAdvisorInvite()
+{
+  global $conn, $_SESSION;
+  $user = get_user_by_username($_SESSION['username']);
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM invite WHERE leader_id='$user->id'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Invitation successfully cancelled.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function sendAdviserInvite()
+{
+  global $conn, $_POST, $_SESSION;
+  $user = get_user_by_username($_SESSION['username']);
+
+  if (!hasInviteAlready($_POST['adviserId'], $user->id)) {
+    $query = mysqli_query(
+      $conn,
+      "INSERT INTO invite(adviser_id, leader_id, `status`) VALUES('$_POST[adviserId]', '$user->id', 'PENDING')"
+    );
+
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Invitation successfully submitted.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "You already have a pending invite.";
+  }
+
+  returnResponse($response);
+}
+
+function hasInviteAlready($adviserId, $leaderId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM invite WHERE adviser_id='$adviserId' and leader_id='$leaderId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+function deleteSchedule()
+{
+  global $conn, $_POST;
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM schedule_list WHERE id='$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Schedule successfully deleted.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function saveSchedule()
+{
+  global $conn, $_POST, $_SESSION;
+
+  $id = isset($_POST["id"]) ? $_POST["id"] : null;
+  $category_id = $_POST["category_id"];
+  $title = $_POST["title"];
+  $description = $_POST["description"];
+  $schedule_from = $_POST["schedule_from"];
+  $schedule_to = $_POST["schedule_to"] != "" ? $_POST["schedule_to"] : null;
+
+  $user = get_user_by_username($_SESSION['username']);
+
+  if (!checkIsHasSchedule($schedule_from, $id)) {
+    $query = null;
+    if ($id) {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE schedule_list SET " . ($schedule_to != null ? "schedule_to='$schedule_to', is_whole=0, " : "schedule_to='NULL', is_whole=1, ") . " category_id='$category_id', title='$title', description='$description', schedule_from='$schedule_from' WHERE id = '$id'"
+      );
+    } else {
+      $user = get_user_by_username($_SESSION['username']);
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO schedule_list(
+          " . ($schedule_to != null ? "schedule_to, " : "") . "
+          " . ($schedule_to == null ? "is_whole, " : "") . "
+          `user_id`, 
+          category_id, 
+          title, 
+          `description`, 
+          schedule_from
+        ) VALUES(
+          " . ($schedule_to != null ? "'$schedule_to', " : "") . "
+          " . ($schedule_to == null ? "'1'," : "'0',") . "
+          '$user->id', 
+          '$category_id', 
+          '$title', 
+          '$description', 
+          '$schedule_from'
+        )"
+      );
+    }
+
+    if ($query) {
+      $message = $id == null ? "added" : "updated";
+      $response["success"] = true;
+      $response["message"] = "Schedule successfully $message";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Error while saving schedule, Please try again later.";
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Date conflict to the other schedules.";
+  }
+
+  returnResponse($response);
+}
+
+function checkIsHasSchedule($schedule_from, $id = null)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM schedule_list " . ($id != null ? "WHERE id !='$id'" : "")
+  );
+
+  while ($schedule = mysqli_fetch_object($query)) {
+    if ($schedule->is_whole == 1) {
+      $start = strtotime($schedule->schedule_from);
+      $scheduleFrom = strtotime($schedule_from);
+
+      if ($scheduleFrom < $start) {
+        return true;
+        break;
+      }
+    } else {
+      $scheduleFrom = strtotime($schedule_from);
+      $start = strtotime($schedule->schedule_from);
+      $end = strtotime($schedule->schedule_from);
+
+      if (($scheduleFrom >= $start) && ($scheduleFrom <= $end)) {
+        return true;
+        break;
+      }
+    }
+  }
+
+  return false;
+}
+
+function getCategoryById($id)
+{
+  global $conn;
+
+  return mysqli_fetch_object(
+    mysqli_query(
+      $conn,
+      "SELECT * FROM category_list WHERE id = '$id'"
+    )
+  );
+}
+
+function getAllSchedules()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM schedule_list"
+  );
+
+  $array = array();
+
+  while ($schedule = mysqli_fetch_object($query)) {
+    array_push($array, $schedule);
+  }
+
+  if (count($array) > 0) {
+    return $array;
+  }
+  return null;
+}
+
+function deleteCategory()
+{
+  global $conn, $_POST;
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM category_list WHERE id='$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Category successfully deleted.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function saveCategory()
+{
+  global $conn, $_POST;
+
+  $action = $_POST["action"];
+  $name = ucwords($_POST["name"]);
+  $id = isset($_POST["id"]) ? $_POST["id"] : null;
+
+  if (!isCategoryExist(strtolower($name), $id)) {
+    $query = null;
+
+    if ($action == "add") {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO category_list(`name`) VALUES('$name')"
+      );
+    } else if ($action == "edit" && $id != null) {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE category_list SET `name`='$name' WHERE id='$id'"
+      );
+    }
+    if ($query) {
+      $message = $action == "add" ? "added" : "updated";
+      $response["success"] = true;
+      $response["message"] = "Category $message successfully.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Error while saving category, Please try again later.";
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Category already exist.";
+  }
+  returnResponse($response);
+}
+
+function isCategoryExist($name, $id = null)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM category_list WHERE LOWER(`name`) like '$name' " . ($id != null ? " and id!='$id'" : "")
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  }
+  return false;
+}
+
 function updateSystem()
 {
-  global $conn, $_POST, $_FILES, $SERVER_NAME;
+  global $conn, $_POST, $_FILES;
 
   $name = $_POST["name"];
   $content = nl2br($_POST["content"]);
@@ -102,7 +404,7 @@ function updateSystem()
     }
 
     if (move_uploaded_file($system_logo['tmp_name'], "$target_dir/$uploadFile")) {
-      $system_logo_url = "$SERVER_NAME/west/public/$uploadFile";
+      $system_logo_url = "/public/$uploadFile";
       $queryStr .= "logo='$system_logo_url', ";
     }
   }
@@ -116,7 +418,7 @@ function updateSystem()
     }
 
     if (move_uploaded_file($cover['tmp_name'], "$target_dir/$uploadFile")) {
-      $cover_url = "$SERVER_NAME/west/public/$uploadFile";
+      $cover_url = "/public/$uploadFile";
       $queryStr .= "cover='$cover_url', ";
     }
   }
@@ -162,7 +464,7 @@ function updateGroupAdmin()
 
 function addAdmin()
 {
-  global $conn, $_POST, $_FILES, $dateNow, $SERVER_NAME;
+  global $conn, $_POST, $_FILES, $dateNow;
 
   $fname = $_POST["fname"];
   $mname = $_POST["mname"];
@@ -186,7 +488,7 @@ function addAdmin()
       }
 
       if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
-        $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+        $img_url = "/media/avatar/$uploadFile";
 
         $query = mysqli_query(
           $conn,
@@ -269,7 +571,7 @@ function getCurrentInstructorWithOther()
       array_push($response["otherInstructors"], $row);
     }
 
-    $response["currentInstructor"] = ucwords("$currentInstructor->first_name $currentInstructor->last_name");
+    $response["currentInstructor"] = ucwords("$currentInstructor->first_name " . $currentInstructor->middle_name[0] . ". $currentInstructor->last_name");
     $response["success"] = true;
   } else {
     $response["success"] = false;
@@ -400,6 +702,24 @@ function isGroupListSubmitted($currentUser)
   }
 }
 
+function getAllAdviser()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='adviser'"
+  );
+
+  $response["adviser"] = array();
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($response["adviser"], $row);
+  }
+
+  returnResponse($response);
+}
+
 function getAllInstructor()
 {
   global $conn;
@@ -438,10 +758,9 @@ function getAllPanel()
 
 function deleteUser()
 {
-  global $conn, $_POST, $SERVER_NAME;
+  global $conn, $_POST;
 
   $user = get_user_by_id($_POST['id']);
-  $path = str_replace("$SERVER_NAME/west/", "../", $user->avatar);
 
   $query = mysqli_query(
     $conn,
@@ -457,7 +776,7 @@ function deleteUser()
     if ($user->role == "instructor") {
       removeInstructorToGroupList($user->id);
     }
-    unlink($path);
+    unlink("..$user->avatar");
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
@@ -494,7 +813,7 @@ function updateGroupList()
 
 function addGroupMate()
 {
-  global $conn, $_POST, $_FILES, $dateNow, $SERVER_NAME;
+  global $conn, $_POST, $_FILES, $dateNow;
 
   $group_number = $_POST["group_number"];
 
@@ -523,7 +842,7 @@ function addGroupMate()
       }
 
       if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
-        $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+        $img_url = "/media/avatar/$uploadFile";
 
         $query = mysqli_query(
           $conn,
@@ -566,7 +885,7 @@ function addGroupMate()
 
 function updateUser()
 {
-  global $_POST, $_FILES, $SERVER_NAME;
+  global $_POST, $_FILES;
 
   $userId = $_POST["userId"];
   $email = $_POST["email"];
@@ -591,7 +910,7 @@ function updateUser()
           }
 
           if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
-            $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+            $img_url = "/media/avatar/$uploadFile";
 
             updateUserDB($_POST, $img_url, $passwordHash);
             exit();
@@ -616,7 +935,7 @@ function updateUser()
         }
 
         if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
-          $img_url = "$SERVER_NAME/west/media/avatar/$uploadFile";
+          $img_url = "/media/avatar/$uploadFile";
 
           updateUserDB($_POST, $img_url, null);
           exit();

@@ -8,31 +8,77 @@
           $conn,
           "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id' and group_number='$user->group_number'"
         );
+
+        $inviteQuery = mysqli_query(
+          $conn,
+          "SELECT * FROM invite WHERE leader_id='$user->id'"
+        );
+
+        $inviteData = null;
+        $thesisGroupData = null;
+
         if (mysqli_num_rows($query) > 0) {
 
           $thesisGroupData = mysqli_fetch_object($query);
 
           if ($thesisGroupData->instructor_id != null) {
-            $currentInstructor = get_user_by_id($thesisGroupData->instructor_id);
-            echo "<h6> Instructor: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+            $instructor = get_user_by_id($thesisGroupData->instructor_id);
+            echo "<h6> Instructor: <strong>" . ucwords("$instructor->first_name " . $instructor->middle_name[0] . ". $instructor->last_name") . "</strong> </h6>";
           } else {
             echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
           }
 
           if ($thesisGroupData->panel_id != null) {
-            echo "<h6> Panel: <strong>" . ucwords("$currentInstructor->first_name $currentInstructor->last_name") . "</strong> </h6>";
+            $panel = get_user_by_id($thesisGroupData->panel_id);
+            echo "<h6> Panel: <strong>" . ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name") . "</strong> </h6>";
           } else {
             echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+          }
+
+          if ($thesisGroupData->adviser_id != null) {
+            $adviser = get_user_by_id($thesisGroupData->adviser_id);
+            echo "<h6> Adviser: <strong>" . ucwords("$adviser->first_name " . $adviser->middle_name[0] . ". $adviser->last_name") . "</strong> </h6>";
+          } else {
+            if (mysqli_num_rows($inviteQuery) > 0) {
+              $inviteData = mysqli_fetch_object($inviteQuery);
+              $inviteAdviser = get_user_by_id($inviteData->adviser_id);
+
+              if ($inviteData->status == "PENDING") {
+                echo "<h6> Adviser: <strong>" . ucwords("$inviteAdviser->first_name " . $inviteAdviser->middle_name[0] . ". $inviteAdviser->last_name") . "</strong> <em>(PENDING INVITATION)</em> </h6>";
+              } else {
+                echo "<h6> Adviser: <strong>" . ucwords("$inviteAdviser->first_name " . $inviteAdviser->middle_name[0] . ". $inviteAdviser->last_name") . "</strong></h6>";
+              }
+            } else {
+              echo "<h6> Adviser: <em>No adviser assigned yet.</em> </h6>";
+            }
           }
         } else {
           echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
           echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+          echo "<h6> Adviser: <em>No adviser assigned yet.</em> </h6>";
         }
         ?>
       </div>
     </h3>
 
     <div class="card-tools">
+      <?php if ($inviteData == null) : ?>
+        <button type="button" id="btnSendInvite" class="btn btn-primary btn-sm">
+          <i class="fa fa-paper-plane"></i>
+          Send adviser invite
+        </button>
+      <?php elseif ($inviteData != null && $inviteData->status == "PENDING") : ?>
+        <button type="button" id="btnCancelInvite" class="btn btn-danger btn-sm">
+          <i class="fa fa-user-times"></i>
+          Cancel Invite
+        </button>
+      <?php elseif ($inviteData != null && $inviteData->status == "APPROVED" && $thesisGroupData != null && $thesisGroupData->instructor_id != null && $thesisGroupData->panel_id != null) : ?>
+        <button type="button" id="btnSubmitDocuments" onclick="return window.location.href = './submit-documents'" class="btn btn-success btn-sm">
+          <i class="fa fa-check"></i>
+          Submit Documents
+        </button>
+      <?php endif; ?>
+
       <button type="button" id="btnChangeInstructor" class="btn btn-success btn-sm" style="display: none;">
         <i class="fa fa-check"></i>
         Submit list to instructor

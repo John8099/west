@@ -1,5 +1,5 @@
 <?php
-include("../backend/nodes.php");
+include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
   header("location: $SERVER_NAME/west/");
 }
@@ -14,18 +14,18 @@ $systemInfo = systemInfo();
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $systemInfo->system_name ?></title>
-  <link rel="icon" href="<?= $systemInfo->logo ?>" />
+  <link rel="icon" href="<?= $SERVER_NAME . $systemInfo->logo ?>" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="../assets/plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/fontawesome-free/css/all.min.css">
   <!-- overlayScrollbars -->
-  <link rel="stylesheet" href="../assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="../../assets/dist/css/adminlte.min.css">
   <!-- summernote -->
-  <link rel="stylesheet" href="../assets/plugins/summernote/summernote-bs4.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/summernote/summernote-bs4.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -33,8 +33,8 @@ $systemInfo = systemInfo();
   <div class="wrapper">
     <!-- Navbar -->
     <?php
-    include("components/admin-nav.php");
-    include("components/admin-side-bar.php");
+    include("../components/admin-nav.php");
+    include("../components/admin-side-bar.php");
     ?>
 
     <!-- /.navbar -->
@@ -77,7 +77,7 @@ $systemInfo = systemInfo();
                     </div>
 
                     <div class="form-group d-flex justify-content-center">
-                      <img src="<?= $systemInfo->logo ?>" alt="" id="systemLogo" class="img-fluid img-thumbnail" style="border: 0;box-shadow: none;">
+                      <img src="<?= $SERVER_NAME . $systemInfo->logo ?>" alt="" id="systemLogo" class="img-fluid img-thumbnail" style="border: 0;box-shadow: none;">
                     </div>
 
                     <div class="form-group">
@@ -89,7 +89,7 @@ $systemInfo = systemInfo();
                     </div>
 
                     <div class="form-group d-flex justify-content-center">
-                      <img src="<?= $systemInfo->cover ?>" alt="" id="websiteCover" class="img-fluid img-thumbnail">
+                      <img src="<?= $SERVER_NAME . $systemInfo->cover ?>" alt="" id="websiteCover" class="img-fluid img-thumbnail">
                     </div>
 
                   </div>
@@ -116,25 +116,25 @@ $systemInfo = systemInfo();
 
 
   <!-- jQuery -->
-  <script src="../assets/plugins/jquery/jquery.min.js"></script>
+  <script src="../../assets/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
-  <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- overlayScrollbars -->
-  <script src="../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+  <script src="../../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
   <!-- AdminLTE App -->
-  <script src="../assets/dist/js/adminlte.min.js"></script>
+  <script src="../../assets/dist/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
-  <script src="../assets/dist/js/demo.js"></script>
+  <script src="../../assets/dist/js/demo.js"></script>
   <!-- Alert -->
-  <script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+  <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
   <!-- Summernote -->
-  <script src="../assets/plugins/summernote/summernote-bs4.min.js"></script>
+  <script src="../../assets/plugins/summernote/summernote-bs4.min.js"></script>
 
   <script>
     $("#system-frm").on("submit", function(e) {
       swal.showLoading();
       $.ajax({
-        url: "../backend/nodes?action=updateSystem",
+        url: "../../backend/nodes?action=updateSystem",
         type: "POST",
         data: new FormData(this),
         contentType: false,

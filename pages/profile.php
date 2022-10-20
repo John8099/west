@@ -16,7 +16,7 @@ $systemInfo = systemInfo();
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= $systemInfo->system_name ?></title>
-  <link rel="icon" href="<?= $systemInfo->logo ?>" />
+  <link rel="icon" href="<?= $SERVER_NAME . $systemInfo->logo ?>" />
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -54,7 +54,7 @@ $systemInfo = systemInfo();
               include("components/student-achieve.php");
             } else if ($_GET["page"] == "manage_profile") {
               include("components/manage-profile.php");
-            } 
+            }
           } else {
           ?>
             <div class="card card-outline card-primary shadow rounded-0">
@@ -70,7 +70,7 @@ $systemInfo = systemInfo();
                   <div class="col-md-12">
                     <div class="row">
                       <div class="col-lg-4 col-sm-12">
-                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/west/assets/dist/img/no-image-available.png" : $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border"  style="width: 217px; height: 217px;">
+                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/assets/dist/img/no-image-available.png" : $SERVER_NAME . $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border" style="width: 217px; height: 217px;">
                       </div>
                       <div class="col-lg-8 col-sm-12">
                         <dl>
