@@ -1,7 +1,7 @@
 <?php
 include("../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
-  header("location: $SERVER_NAME/west/pages/login");
+  header("location: $SERVER_NAME/pages/login");
 }
 $systemInfo = systemInfo();
 $user = get_user_by_username($_SESSION['username']);

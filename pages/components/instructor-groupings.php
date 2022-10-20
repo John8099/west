@@ -1,4 +1,4 @@
-<div class="card mt-2">
+<div class="card card-outline rounded-0 card-navy mt-2">
   <div class="card-header">
     <div class="row mb-2">
       <div class="col-sm-6">
@@ -84,7 +84,7 @@
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary m-1" onclick="handleApproved('<?= $thesisGroupId ?>')" <?= $groups->status == "1" ? "disabled" : "" ?>>
+              <button type="button" class="btn btn-primary" onclick="handleApproved('<?= $thesisGroupId ?>')" <?= $groups->status == "1" ? "disabled" : "" ?>>
                 Approved
               </button>
             </td>

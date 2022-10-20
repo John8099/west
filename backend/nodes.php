@@ -44,14 +44,8 @@ if (isset($_GET['action'])) {
       case "sendToInstructor":
         sendToInstructor();
         break;
-      case "checkAssignedInstructor":
-        checkAssignedInstructor();
-        break;
       case "getCurrentInstructorWithOther":
         getCurrentInstructorWithOther();
-        break;
-      case "updateInstructor":
-        updateInstructor();
         break;
       case "addAdmin":
         addAdmin();
@@ -89,6 +83,12 @@ if (isset($_GET['action'])) {
       case "cancelAdvisorInvite":
         cancelAdvisorInvite();
         break;
+      case "instructorApprovedGroupList":
+        instructorApprovedGroupList();
+        break;
+      case "handleAdviserInvite":
+        handleAdviserInvite();
+        break;
       default:
         null;
         break;
@@ -97,6 +97,59 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function handleAdviserInvite()
+{
+  global $conn, $_POST, $_SESSION;
+
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  $inviteId = $_POST['invite_id'];
+  $leaderId = $_POST['leader_id'];
+  $action = $_POST['action'];
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE invite SET `status`='" . ($action == "approve" ? "APPROVED" : "DECLINED") . "' WHERE id='$inviteId'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Invitation successfully " . $action . "d.";
+    if ($action == "approve") {
+      mysqli_query(
+        $conn,
+        "UPDATE thesis_groups SET adviser_id='$currentUser->id' WHERE	group_leader_id='$leaderId'"
+      );
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function instructorApprovedGroupList()
+{
+  global $conn, $_POST;
+  $group_id = $_POST["group_id"];
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE thesis_groups SET status = '1' WHERE id ='$group_id'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Group list successfully approved.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
 }
 
 function cancelAdvisorInvite()
@@ -124,8 +177,9 @@ function sendAdviserInvite()
 {
   global $conn, $_POST, $_SESSION;
   $user = get_user_by_username($_SESSION['username']);
+  $adviserInviteData = adviserInviteData($_POST['adviserId'], $user->id);
 
-  if (!hasInviteAlready($_POST['adviserId'], $user->id)) {
+  if ($adviserInviteData == null) {
     $query = mysqli_query(
       $conn,
       "INSERT INTO invite(adviser_id, leader_id, `status`) VALUES('$_POST[adviserId]', '$user->id', 'PENDING')"
@@ -139,14 +193,22 @@ function sendAdviserInvite()
       $response["message"] = mysqli_error($conn);
     }
   } else {
-    $response["success"] = false;
-    $response["message"] = "You already have a pending invite.";
+    if ($adviserInviteData->status == "PENDING") {
+      $response["success"] = false;
+      $response["message"] = "You already have a pending invite.";
+    } else if ($adviserInviteData->status == "DECLINED") {
+      $response["success"] = false;
+      $response["message"] = "Your already declined by this adviser.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "An error occurred while inviting this adviser.";
+    }
   }
 
   returnResponse($response);
 }
 
-function hasInviteAlready($adviserId, $leaderId)
+function adviserInviteData($adviserId, $leaderId)
 {
   global $conn;
 
@@ -156,9 +218,9 @@ function hasInviteAlready($adviserId, $leaderId)
   );
 
   if (mysqli_num_rows($query) > 0) {
-    return true;
+    return mysqli_fetch_object($query);
   } else {
-    return false;
+    return null;
   }
 }
 
@@ -523,21 +585,31 @@ function addAdmin()
   returnResponse($response);
 }
 
-function updateInstructor()
+function sendToInstructor()
 {
-  global $conn, $_SESSION, $_POST;
+  global $conn, $_POST, $_SESSION;
 
-  $instructorId = $_POST["instructorId"];
   $currentUser = get_user_by_username($_SESSION["username"]);
 
-  $query = mysqli_query(
-    $conn,
-    "UPDATE thesis_groups SET instructor_id='$instructorId' WHERE group_leader_id='$currentUser->id' and group_number='$currentUser->group_number'"
-  );
+  $isGroupListSubmitted = isGroupListSubmitted($currentUser);
+  $instructorId = $_POST['instructorId'];
+
+  if ($isGroupListSubmitted) {
+    $query = mysqli_query(
+      $conn,
+      "UPDATE thesis_groups SET instructor_id='$instructorId' WHERE group_leader_id='$currentUser->id' and group_number='$currentUser->group_number'"
+    );
+  } else {
+    $group_mate_id = getGroupMateIds($currentUser->group_number, $currentUser->id);
+    $query = mysqli_query(
+      $conn,
+      "INSERT INTO thesis_groups(group_number, group_leader_id, group_member_ids, instructor_id) VALUES('$currentUser->group_number', '$currentUser->id', '$group_mate_id', '$instructorId')"
+    );
+  }
 
   if ($query) {
     $response["success"] = true;
-    $response["message"] = "Instructor updated successfully.";
+    $response["message"] = "Group list submitted to instructor";
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
@@ -581,30 +653,6 @@ function getCurrentInstructorWithOther()
   returnResponse($response);
 }
 
-function sendToInstructor()
-{
-  global $conn, $_POST, $_SESSION;
-
-  $currentUser = get_user_by_username($_SESSION["username"]);
-
-  $group_mate_id = getGroupMateIds($currentUser->group_number, $currentUser->id);
-  $instructorId = $_POST['instructorId'];
-
-  $query = mysqli_query(
-    $conn,
-    "INSERT INTO thesis_groups(group_number, group_leader_id, group_member_ids, instructor_id) VALUES('$currentUser->group_number', '$currentUser->id', '$group_mate_id', '$instructorId')"
-  );
-
-  if ($query) {
-    $response["success"] = true;
-    $response["message"] = "Group list submitted to instructor";
-  } else {
-    $response["success"] = false;
-    $response["message"] = mysqli_error($conn);
-  }
-  returnResponse($response);
-}
-
 function getMemberData($group_number, $leader_id)
 {
   global $conn;
@@ -637,29 +685,6 @@ function getGroupMateIds($group_number, $leader_id)
   }
 
   return json_encode($arr);
-}
-
-function checkAssignedInstructor()
-{
-  global $_SESSION;
-  $currentUser = get_user_by_username($_SESSION['username']);
-  $instructor = getInstructorData($currentUser);
-
-  $isAlreadySubmitted = isGroupListSubmitted($currentUser);
-
-  if ($isAlreadySubmitted) {
-    $response["isAlreadySubmitted"] = true;
-  } else {
-    $response["isAlreadySubmitted"] = false;
-  }
-
-  if ($instructor) {
-    $response["hasInstructor"] = true;
-  } else {
-    $response["hasInstructor"] = false;
-  }
-
-  returnResponse($response);
 }
 
 function getInstructorData($currentUser)
@@ -704,11 +729,12 @@ function isGroupListSubmitted($currentUser)
 
 function getAllAdviser()
 {
-  global $conn;
+  global $conn, $_GET;
+  $declineAdviserId = isset($_GET["declineAdviserId"]) ? $_GET["declineAdviserId"] : null;
 
   $query = mysqli_query(
     $conn,
-    "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='adviser'"
+    "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='adviser' " . ($declineAdviserId != null ? " and id != '$declineAdviserId'" : "") . ""
   );
 
   $response["adviser"] = array();

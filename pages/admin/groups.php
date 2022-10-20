@@ -1,7 +1,7 @@
 <?php
 include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
-  header("location: $SERVER_NAME/west/");
+  header("location: $SERVER_NAME/");
 }
 $user = get_user_by_username($_SESSION['username']);
 $systemInfo = systemInfo();
@@ -98,13 +98,15 @@ $systemInfo = systemInfo();
         denyButtonText: 'No',
       }).then((res) => {
         if (res.isConfirmed) {
-          $.get(
-            `../../backend/nodes?action=instructorApprovedGroupList`,
+          $.post(
+            `../../backend/nodes?action=instructorApprovedGroupList`,{
+              group_id: groupId
+            },
             (data, status) => {
               const resp = JSON.parse(data)
               swal.fire({
                 title: resp.success ? "Success" : "Error!",
-                text: e.statusText,
+                text: resp.message,
                 icon: resp.success ? "success" : "error",
               }).then(() => {
                 if (resp.success) {

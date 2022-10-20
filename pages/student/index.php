@@ -1,7 +1,7 @@
 <?php
 include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
-  header("location: $SERVER_NAME/west/");
+  header("location: $SERVER_NAME/");
 }
 include_once("../../backend/nodes.php");
 $systemInfo = systemInfo();

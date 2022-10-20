@@ -1,7 +1,7 @@
 <?php
 include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
-  header("location: $SERVER_NAME/west/");
+  header("location: $SERVER_NAME/");
 }
 $user = get_user_by_username($_SESSION['username']);
 $systemInfo = systemInfo();
@@ -117,8 +117,8 @@ $systemInfo = systemInfo();
                       <div class="row">
                         <div class="col-lg-12">
                           <div class="form-group text-center">
-                            <button type="submit" class="btn btn-default bg-navy"> Update</button>
-                            <button type="button" onclick="return window.history.back()" class="btn btn-danger"> Cancel</button>
+                            <button type="submit" class="btn btn-default bg-navy m-1"> Update</button>
+                            <button type="button" onclick="return window.history.back()" class="btn btn-danger m-1"> Cancel</button>
                           </div>
                         </div>
                       </div>

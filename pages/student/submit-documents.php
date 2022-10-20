@@ -99,8 +99,8 @@ $systemInfo = systemInfo();
                       </div>
 
                       <div class="form-group d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary mr-1"> Update</button>
-                        <button type="button" class="btn btn-danger ml-1" onclick="return window.history.back()"> Cancel</button>
+                        <button type="submit" class="btn btn-primary m-1"> Update</button>
+                        <button type="button" class="btn btn-danger m-1" onclick="return window.history.back()"> Cancel</button>
                       </div>
 
                     </form>

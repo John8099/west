@@ -41,15 +41,13 @@
             <td><?= $adminName ?></td>
             <td><?= $admin->email ?></td>
             <td><?= ucwords($admin->role) ?></td>
-            <td>
-              <center>
-                <button type="button" class="btn btn-warning m-2" onclick="handleOnclickEditAdmin('<?= $admin->username ?>')">
-                  Edit
-                </button>
-                <button type="button" class="btn btn-danger m-2" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')">
-                  Delete
-                </button>
-              </center>
+            <td class="text-center">
+              <button type="button" class="btn btn-warning m-1" onclick="handleOnclickEditAdmin('<?= $admin->username ?>')">
+                Edit
+              </button>
+              <button type="button" class="btn btn-danger m-1" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')">
+                Delete
+              </button>
             </td>
           </tr>
         <?php endwhile; ?>

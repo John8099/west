@@ -107,47 +107,16 @@ $systemInfo = systemInfo();
     }
   });
 
-  try {
-    $.get(
-      "../../backend/nodes?action=checkAssignedInstructor",
-      (data, status) => {
-        const resp = JSON.parse(data)
-
-        if (resp.isAlreadySubmitted && resp.hasInstructor) {
-          $("#btnSubmitToInstructor").hide()
-          $("#btnChangeInstructor").hide()
-          $("#btnEditInstructor").show()
-        } else if (resp.isAlreadySubmitted && !resp.hasInstructor) {
-          $("#btnSubmitToInstructor").hide()
-          $("#btnChangeInstructor").show()
-          $("#btnEditInstructor").hide()
-        } else {
-          $("#btnSubmitToInstructor").show()
-          $("#btnChangeInstructor").hide()
-          $("#btnEditInstructor").hide()
-        }
-      }).fail(function(e) {
-      swal.fire({
-        title: 'Error!',
-        text: e.statusText,
-        icon: 'error',
-      })
-    });
-
-  } catch (err) {
-    console.log(err)
-  }
-
   $("#btnSendInvite").on("click", function() {
     swal.showLoading();
+    const declineAdviserId = $($(this)[0].lastElementChild).val();
 
     $.get(
-      "../../backend/nodes?action=getAllAdviser",
+      `../../backend/nodes?action=getAllAdviser${declineAdviserId ? "&&declineAdviserId="+declineAdviserId: ""}`,
       (data, status) => {
         const resp = JSON.parse(data)
         let options = resp.adviser.map((data) => {
-          return `<option value="${data.id}" style="background-image: url('http://localhost/west/media/avatar/10052022-113300_avatar.png')">
-          
+          return `<option value="${data.id}">
                     ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
                   </option>`
         });
@@ -314,7 +283,7 @@ $systemInfo = systemInfo();
           denyButtonText: 'Cancel',
         }).then((res) => {
           if (res.isConfirmed) {
-            submitToInstructor($("#inputInstructorId option:selected").val(), "add")
+            submitToInstructor($("#inputInstructorId option:selected").val())
           }
         })
 
@@ -328,53 +297,11 @@ $systemInfo = systemInfo();
         icon: 'error',
       })
     });
-
   })
 
-  $("#btnChangeInstructor").on("click", function() {
-    swal.showLoading();
-
-    $.get(
-      "../../backend/nodes?action=getAllInstructor",
-      (data, status) => {
-        const resp = JSON.parse(data)
-        let options = resp.instructors.map((data) => {
-          return `<option value="${data.id}" >
-                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
-                  </option>`
-        });
-
-        swal.fire({
-          title: 'Select your instructor',
-          icon: 'question',
-          html: ` <select id="inputInstructorId" class="form-control" style="text-transform: capitalize">
-                     ${options.length == 0  ? "<option value='' disabled selected> No available instructor </option>" : options}
-                  </select>`,
-          showDenyButton: true,
-          confirmButtonText: 'Submit',
-          denyButtonText: 'Cancel',
-        }).then((res) => {
-          if (res.isConfirmed) {
-            submitToInstructor($("#inputInstructorId option:selected").val(), "edit")
-          }
-        })
-
-        if (options.length == 0) {
-          swal.getConfirmButton().disabled = true
-        }
-      }).fail(function(e) {
-      swal.fire({
-        title: 'Error!',
-        text: e.statusText,
-        icon: 'error',
-      })
-    });
-
-  })
-
-  function submitToInstructor(selectedId, action) {
+  function submitToInstructor(selectedId) {
     $.post(
-      `../../backend/nodes?action=${action == "add" ? "sendToInstructor" : "updateInstructor"}`, {
+      `../../backend/nodes?action=sendToInstructor`, {
         instructorId: selectedId
       },
       (data, status) => {

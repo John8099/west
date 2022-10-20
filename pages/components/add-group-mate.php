@@ -71,8 +71,8 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="form-group text-center">
-              <button type="submit" class="btn btn-default bg-navy"> Add</button>
-              <button type="button" onclick="return window.history.back()" class="btn btn-danger"> Cancel</button>
+              <button type="submit" class="btn btn-default bg-navy m-1"> Add</button>
+              <button type="button" onclick="return window.history.back()" class="btn btn-danger m-1"> Cancel</button>
             </div>
           </div>
         </div>

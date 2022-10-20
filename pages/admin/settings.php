@@ -1,7 +1,7 @@
 <?php
 include("../../backend/nodes.php");
 if (!isset($_SESSION["username"])) {
-  header("location: $SERVER_NAME/west/");
+  header("location: $SERVER_NAME/");
 }
 $user = get_user_by_username($_SESSION['username']);
 $systemInfo = systemInfo();
@@ -96,8 +96,8 @@ $systemInfo = systemInfo();
                   <div class="card-footer">
                     <div class="col-md-12">
                       <div class="row justify-content-end">
-                        <button type="submit" class="btn btn-sm btn-primary m-2">Update</button>
-                        <button type="button" class="btn btn-sm btn-danger m-2" onclick="return window.history.back()">Cancel</button>
+                        <button type="submit" class="btn btn-sm btn-primary m-1">Update</button>
+                        <button type="button" class="btn btn-sm btn-danger m-1" onclick="return window.history.back()">Cancel</button>
                       </div>
                     </div>
                   </div>

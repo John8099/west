@@ -1,4 +1,4 @@
-<div class="card mt-2">
+<div class="card card-outline rounded-0 card-navy mt-2">
   <div class="card-header">
     <div class="row mb-2">
       <div class="col-sm-6">
@@ -34,15 +34,13 @@
             <td><?= date("Y-m-d H:i:s", strtotime($category->date_created)) ?></td>
             <td><?= date("Y-m-d H:i:s", strtotime($category->date_updated)) ?></td>
             <td><?= $category->name ?></td>
-            <td>
-              <center>
-                <button type="button" class="btn btn-warning m-2" onclick="handleOpenModal('<?= $category->id ?>')">
-                  Edit
-                </button>
-                <button type="button" class="btn btn-danger m-2" onclick="handleOnclickDeleteCategory('<?= $category->id ?>')">
-                  Delete
-                </button>
-              </center>
+            <td class="text-center">
+              <button type="button" class="btn btn-warning btn-sm m-1" onclick="handleOpenModal('<?= $category->id ?>')">
+                Edit
+              </button>
+              <button type="button" class="btn btn-danger btn-sm m-1" onclick="handleOnclickDeleteCategory('<?= $category->id ?>')">
+                Delete
+              </button>
             </td>
           </tr>
           <div class="modal fade" id="editCategory<?= $category->id ?>">
@@ -52,7 +50,6 @@
                   <h5 class="modal-title">
                     <i class="fa fa-edit"></i> Update Category Details
                   </h5>
-
                 </div>
                 <form method="POST" id="category-form<?= $category->id ?>">
                   <div class="modal-body">
@@ -65,8 +62,8 @@
                     </div>
                   </div>
                   <div class="modal-footer justify-content-end">
-                    <button type="button" class="btn btn-primary" onclick="handleSave($(this))">Save</button>
-                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary m-1" onclick="handleSave($(this))">Save</button>
+                    <button type="button" class="btn btn-danger m-1" data-dismiss="modal">Cancel</button>
                   </div>
                 </form>
               </div>
@@ -95,8 +92,8 @@
           </div>
         </div>
         <div class="modal-footer justify-content-end">
-          <button type="button" class="btn btn-primary" onclick="handleSave($(this))">Save</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary m-1" onclick="handleSave($(this))">Save</button>
+          <button type="button" class="btn btn-danger m-1" data-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>

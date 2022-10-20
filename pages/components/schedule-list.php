@@ -61,8 +61,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Save</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary m-1">Save</button>
+          <button type="button" class="btn btn-danger" data-dismiss="modal m-1">Cancel</button>
         </div>
       </form>
     </div>
@@ -118,10 +118,10 @@ while ($schedule = mysqli_fetch_object($query)) :
         </div>
         <div class="modal-footer">
           <?php if ($taskBy->username == $_SESSION['username']) : ?>
-            <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
-            <button type="button" class="btn btn-danger" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
+            <button type="button" class="btn btn-primary m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
+            <button type="button" class="btn btn-danger m-1" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
           <?php endif; ?>
-          <button type="button" class="btn btn-dark" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-dark m-1" data-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
@@ -175,10 +175,10 @@ while ($schedule = mysqli_fetch_object($query)) :
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="handleSaveEditForm($(this))">
+            <button type="button" class="btn btn-primary m-1" onclick="handleSaveEditForm($(this))">
               Save
             </button>
-            <button type="button" class="btn btn-danger" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openPreview')">Cancel</button>
+            <button type="button" class="btn btn-danger m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openPreview')">Cancel</button>
           </div>
         </form>
       </div>

@@ -1,4 +1,4 @@
-<div class="card mt-2">
+<div class="card card-outline rounded-0 card-navy mt-2">
   <div class="card-header">
     <div class="row mb-2">
       <div class="col-sm-6">
@@ -154,7 +154,7 @@
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary m-1" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupPanel')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
+              <button type="button" class="btn btn-primary" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupPanel')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
                 Assign Panel
               </button>
             </td>
