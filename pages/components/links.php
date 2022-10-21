@@ -71,6 +71,14 @@ $links = array(
     )
   ),
   array(
+    "title" => "Thesis type",
+    "url" => "$SERVER_NAME/pages/admin/type",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "th-list"
+    )
+  ),
+  array(
     "title" => "Students",
     "url" => "$SERVER_NAME/pages/admin/user-lists",
     "allowedViews" => array("coordinator"),

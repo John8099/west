@@ -89,6 +89,12 @@ if (isset($_GET['action'])) {
       case "handleAdviserInvite":
         handleAdviserInvite();
         break;
+      case "saveType":
+        saveType();
+        break;
+      case "deleteType":
+        deleteType();
+        break;
       default:
         null;
         break;
@@ -97,6 +103,79 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function saveType()
+{
+  global $conn, $_POST;
+
+  $action = $_POST["action"];
+  $name = ucwords($_POST["name"]);
+  $id = isset($_POST["id"]) ? $_POST["id"] : null;
+
+  if (!isTypeExist(strtolower($name), $id)) {
+    $query = null;
+
+    if ($action == "add") {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO types(`name`) VALUES('$name')"
+      );
+    } else if ($action == "edit" && $id != null) {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE types SET `name`='$name' WHERE id='$id'"
+      );
+    }
+    if ($query) {
+      $message = $action == "add" ? "added" : "updated";
+      $response["success"] = true;
+      $response["message"] = "Type $message successfully.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = "Error while saving type, Please try again later.";
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Type already exist.";
+  }
+
+  returnResponse($response);
+}
+
+function deleteType()
+{
+  global $conn, $_POST;
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM types WHERE id='$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Type successfully deleted.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function isTypeExist($name, $id = null)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM types WHERE LOWER(`name`) like '$name' " . ($id != null ? " and id != '$id'" : "")
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  }
+  return false;
 }
 
 function handleAdviserInvite()
