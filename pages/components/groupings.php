@@ -16,6 +16,7 @@
 
         $inviteData = null;
         $thesisGroupData = null;
+        $hasSubmittedDocuments = hasSubmittedDocuments($user);
 
         if (mysqli_num_rows($inviteQuery) > 0) {
           $inviteData = mysqli_fetch_object($inviteQuery);
@@ -69,14 +70,14 @@
     <div class="card-tools">
       <?php if ($inviteData == null) : ?>
 
-        <button type="button" id="btnSendInvite" class="btn btn-primary btn-sm">
+        <button type="button" id="btnSendInvite" class="btn btn-primary btn-gradient-primary btn-sm">
           <i class="fa fa-paper-plane"></i>
           Send adviser invite
         </button>
 
       <?php elseif ($inviteData != null && $inviteData->status == "DECLINED") : ?>
 
-        <button type="button" id="btnSendInvite" class="btn btn-warning btn-sm">
+        <button type="button" id="btnSendInvite" class="btn btn-warning btn-gradient-warning btn-sm">
           <i class="fa fa-user-times"></i>
           Change Adviser
           <input type="text" value="<?= $inviteData->adviser_id ?>" hidden readonly>
@@ -84,12 +85,12 @@
 
       <?php elseif ($inviteData != null && $inviteData->status == "PENDING") : ?>
 
-        <button type="button" id="btnCancelInvite" class="btn btn-danger btn-sm">
+        <button type="button" id="btnCancelInvite" class="btn btn-danger btn-gradient-danger btn-sm">
           <i class="fa fa-user-times"></i>
           Cancel Invite
         </button>
 
-      <?php elseif ($inviteData != null && $inviteData->status == "APPROVED" && $thesisGroupData != null && $thesisGroupData->adviser_id != null && $thesisGroupData->instructor_id != null) : ?>
+      <?php elseif ($inviteData != null && $inviteData->status == "APPROVED" && $thesisGroupData != null && $thesisGroupData->adviser_id != null && $thesisGroupData->instructor_id != null && !$hasSubmittedDocuments) : ?>
 
         <button type="button" id="btnSubmitDocuments" onclick="return window.location.href = './submit-documents'" class="btn btn-success btn-sm">
           <i class="fa fa-check"></i>
@@ -107,7 +108,7 @@
 
       <?php elseif ($thesisGroupData != null && $thesisGroupData->instructor_id != null && $thesisGroupData->status == '0') : ?>
 
-        <button type="button" id="btnEditInstructor" class="btn btn-warning btn-sm">
+        <button type="button" id="btnEditInstructor" class="btn btn-warning btn-gradient-warning btn-sm">
           <i class="fa fa-edit"></i>
           Edit instructor
         </button>

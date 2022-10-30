@@ -5,7 +5,7 @@
         <h4>Admin List</h4>
       </div>
       <div class="col-sm-6 d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" style="height: 38px;" onclick="handleAddAdmin()">Add Admin</button>
+        <button type="button" class="btn btn-primary btn-gradient-primary" style="height: 38px;" onclick="handleAddAdmin()">Add Admin</button>
       </div>
     </div>
   </div>
@@ -42,10 +42,10 @@
             <td><?= $admin->email ?></td>
             <td><?= ucwords($admin->role) ?></td>
             <td class="text-center">
-              <button type="button" class="btn btn-warning m-1" onclick="handleOnclickEditAdmin('<?= $admin->username ?>')">
+              <button type="button" class="btn btn-warning btn-gradient-warning m-1" onclick="handleOnclickEditAdmin('<?= $admin->username ?>')">
                 Edit
               </button>
-              <button type="button" class="btn btn-danger m-1" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')">
+              <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')">
                 Delete
               </button>
             </td>

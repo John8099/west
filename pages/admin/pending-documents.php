@@ -48,7 +48,7 @@ $systemInfo = systemInfo();
         <div class="container-fluid">
           <div class="row">
             <div class="col-12">
-              <?php include("../components/category-list.php"); ?>
+              <?php include("../components/pending-document.php"); ?>
             </div>
           </div>
         </div>
@@ -64,13 +64,14 @@ $systemInfo = systemInfo();
   <!-- jQuery -->
   <script src="../../assets/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
-  <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- overlayScrollbars -->
   <script src="../../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
   <!-- AdminLTE App -->
   <script src="../../assets/dist/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="../../assets/dist/js/demo.js"></script>
+  <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+
   <!-- Alert -->
   <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 
@@ -80,71 +81,11 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 
   <script>
-    $(function() {
-      $("#category_list").DataTable({
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-      });
-    });
-
-    function handleOpenModal(modalId = null) {
-      if (modalId) {
-        $(`#editCategory${modalId}`).modal({
-          show: true,
-          backdrop: 'static',
-          keyboard: false,
-          focus: true
-        })
-      } else {
-        $(`#addCategory`).modal({
-          show: true,
-          backdrop: 'static',
-          keyboard: false,
-          focus: true
-        })
-      }
-    }
-
-    function handleSave(el) {
-      const formValue = $(el[0].form).serialize()
-
-      swal.showLoading();
-      $.post(
-        "../../backend/nodes?action=saveCategory",
-        formValue,
-        (data, status) => {
-          const resp = JSON.parse(data)
-          if (resp.success) {
-            swal.fire({
-              title: 'Success!',
-              text: resp.message,
-              icon: 'success',
-            }).then(() => {
-              window.location.reload()
-            })
-          } else {
-            swal.fire({
-              title: 'Error!',
-              text: resp.message,
-              icon: 'error',
-            })
-          }
-        }).fail(function(e) {
-        swal.fire({
-          title: 'Error!',
-          text: e.statusText,
-          icon: 'error',
-        })
-      });
-
-    }
-
-    function handleOnclickDeleteCategory(categoryId) {
+    function handleApproved(documentId) {
       swal.fire({
         title: 'Are you sure',
         icon: 'question',
-        html: `you want to delete this category?`,
+        html: `you want to approved this document?`,
         showDenyButton: true,
         confirmButtonText: 'Yes',
         denyButtonText: 'No',
@@ -152,8 +93,8 @@ $systemInfo = systemInfo();
         if (res.isConfirmed) {
           swal.showLoading();
           $.post(
-            "../../backend/nodes?action=deleteCategory", {
-              id: categoryId
+            "../../backend/nodes?action=approvedDocument", {
+              id: documentId
             },
             (data, status) => {
               const resp = JSON.parse(data)
@@ -179,6 +120,25 @@ $systemInfo = systemInfo();
           });
         }
       })
+    }
+
+    $(function() {
+      $("#pending_documents").DataTable({
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+      });
+    });
+
+    function handleOpenModal(modalId = null) {
+      if (modalId) {
+        $(`#preview${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
+      }
     }
   </script>
 </body>

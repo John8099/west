@@ -84,7 +84,7 @@
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary" onclick="handleApproved('<?= $thesisGroupId ?>')" <?= $groups->status == "1" ? "disabled" : "" ?>>
+              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="handleApproved('<?= $thesisGroupId ?>')" <?= $groups->status == "1" ? "disabled" : "" ?>>
                 Approved
               </button>
             </td>

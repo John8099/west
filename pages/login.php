@@ -120,7 +120,6 @@ $systemInfo = systemInfo();
       "../backend/nodes?action=login",
       $(this).serialize(),
       (data, status) => {
-        swal.close()
         const resp = JSON.parse(data)
         if (resp.success) {
           let location = `${window.location.origin}/west/pages/`

@@ -37,6 +37,16 @@ $systemInfo = systemInfo();
       height: 30vh;
       width: calc(100%);
     }
+
+    #outerContainer #mainContainer div.toolbar {
+      display: none !important;
+      /* hide PDF viewer toolbar */
+    }
+
+    #outerContainer #mainContainer #viewerContainer {
+      top: 0 !important;
+      /* move doc up into empty bar space */
+    }
   </style>
 </head>
 
@@ -53,14 +63,62 @@ $systemInfo = systemInfo();
             <div class="content">
               <div class="card card-outline card-primary shadow rounded-0">
                 <div class="card-header rounded-0">
-                  <h5 class="card-title"><?= isset($id) ? "Update Archive-{$archive_code} Details" : "Submit Documents" ?></h5>
+                  <h5 class="card-title">
+                    Submit Documents
+                  </h5>
                 </div>
                 <div class="card-body rounded-0">
                   <div class="container-fluid">
-                    <form action="" id="archive-form">
+                    <form method="POST" id="archive-form" enctype="multipart/form-data">
+                      <div class="form-group">
+                        <label class="control-label text-navy">Project Leader</label>
+                        <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
+                          <div class="mr-1">
+                            <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                          </div>
+                          <div>
+                            <?= ucwords("$user->first_name " . $user->middle_name[0] . ". $user->last_name") ?>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="control-label text-navy">Project Members</label>
+                        <?php
+                        $memberData = json_decode(getMemberData($user->group_number, $user->id));
+                        foreach ($memberData as $member) :
+                          $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+                        ?>
+                          <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
+                            <div class="mr-1">
+                              <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            </div>
+                            <div>
+                              <?= $memberName ?>
+                            </div>
+                          </div>
+                        <?php endforeach; ?>
+                      </div>
+
                       <div class="form-group">
                         <label class="control-label text-navy">Document Title</label>
                         <input type="text" name="title" placeholder="Project Title" class="form-control form-control-border" required>
+                      </div>
+
+                      <div class="form-group">
+                        <label class="control-label text-navy">Field Type</label>
+                        <select name="type" class="form-control form-control-border" required>
+                          <option value="" selected disabled>-- Select field type --</option>
+                          <?php
+                          $query = mysqli_query(
+                            $conn,
+                            "SELECT * FROM types"
+                          );
+                          while ($type = mysqli_fetch_object($query)) :
+                          ?>
+                            <option value="<?= $type->id ?>"><?= $type->name ?></option>
+                          <?php endwhile; ?>
+                        </select>
                       </div>
 
                       <div class="form-group">
@@ -68,8 +126,9 @@ $systemInfo = systemInfo();
                         <select name="year" class="form-control form-control-border" required>
                           <?php
                           for ($i = 0; $i < 51; $i++) :
+                            $year = date("Y", strtotime(date("Y") . " -{$i} years"));
                           ?>
-                            <option <?= isset($year) && $year == date("Y", strtotime(date("Y") . " -{$i} years")) ? "selected" : "" ?>><?= date("Y", strtotime(date("Y") . " -{$i} years")) ?></option>
+                            <option value="<?= $year ?>"><?= $year ?></option>
                           <?php endfor; ?>
                         </select>
                       </div>
@@ -80,13 +139,11 @@ $systemInfo = systemInfo();
                       </div>
 
                       <div class="form-group">
-                        <label class="control-label text-navy">Project Members</label>
-
-                      </div>
-
-                      <div class="form-group">
-                        <label class="control-label text-muted">Project Image/Banner Image</label>
-                        <input type="file" name="banner" class="form-control form-control-border" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
+                        <label class="control-label">Project Image/Banner Image</label>
+                        <div class="custom-file">
+                          <input type="file" class="custom-file-input rounded-circle" name="banner" onchange="displayImg(this,$(this))" accept="image/*" required>
+                          <label class="custom-file-label">Choose file</label>
+                        </div>
                       </div>
 
                       <div class="form-group text-center">
@@ -94,15 +151,23 @@ $systemInfo = systemInfo();
                       </div>
 
                       <div class="form-group">
-                        <label class="control-label text-muted">Project Document (PDF File Only)</label>
-                        <input type="file" name="pdfFile" class="form-control form-control-border" accept="application/pdf">
+                        <label class="control-label">Project Document (PDF File Only)</label>
+                        <div class="custom-file">
+                          <input type="file" name="pdfFile" class="custom-file-input rounded-circle" name="banner" onchange="displayPDF(this,$(this))" accept="application/pdf" required>
+                          <label class="custom-file-label">Choose file</label>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <div class="embed-responsive embed-responsive-4by3" id="divIframe" style="display: none;">
+                          <iframe class="embed-responsive-item" id="pdfPreview" allowfullscreen></iframe>
+                        </div>
                       </div>
 
                       <div class="form-group d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary m-1"> Update</button>
-                        <button type="button" class="btn btn-danger m-1" onclick="return window.history.back()"> Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-gradient-primary m-1" id="btnSave" disabled> Save</button>
+                        <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="return window.history.back()"> Cancel</button>
                       </div>
-
                     </form>
                   </div>
                 </div>
@@ -150,6 +215,90 @@ $systemInfo = systemInfo();
       ['view', ['undo', 'redo', 'help']]
     ]
   })
+
+  $("#archive-form").on("submit", function(e) {
+    $.ajax({
+      url: "../../backend/nodes?action=saveDocument",
+      type: "POST",
+      data: new FormData(this),
+      contentType: false,
+      cache: false,
+      processData: false,
+      success: function(data) {
+        const resp = JSON.parse(data);
+        if (resp.success) {
+          swal.fire({
+            title: 'Success!',
+            text: resp.message,
+            icon: 'success',
+          }).then(() => window.location.href = "document-status")
+        } else {
+          swal.fire({
+            title: 'Error!',
+            text: resp.message,
+            icon: 'error',
+          })
+        };
+      },
+      error: function(data) {
+        swal.fire({
+          title: 'Oops...',
+          text: 'Something went wrong.',
+          icon: 'error',
+        })
+      }
+    });
+    e.preventDefault();
+  })
+
+  function displayImg(input, _this) {
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        $(`#cimg`).attr('src', e.target.result);
+        _this.siblings('.custom-file-label').html(input.files[0].name)
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $('#cimg').attr('src', "../../assets/dist/img/no-image-available.png")
+    }
+  }
+
+  function displayPDF(input, _this) {
+    if (input.files && input.files[0]) {
+      if (input.files[0].name.split('.').pop().toLowerCase() === "pdf") {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          $(`#pdfPreview`).attr('src', `${e.target.result}#embedded=true&toolbar=0&navpanes=0`);
+          _this.siblings('.custom-file-label').html(input.files[0].name)
+          $("#btnSave").prop("disabled", false)
+          $("#divIframe").show()
+        }
+      } else {
+        swal.mixin({
+          toast: true,
+          position: 'top',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+          }
+        }).fire({
+          icon: 'error',
+          title: 'Upload pdf only'
+        }).then(() => {
+          $("#btnSave").prop("disabled", true)
+        })
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    } else {
+      $("#divIframe").hide()
+    }
+  }
 </script>
 
 </html>

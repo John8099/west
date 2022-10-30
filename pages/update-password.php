@@ -134,7 +134,6 @@ $user = get_user_by_username($_SESSION['username']);
         "../backend/nodes?action=updatePassword",
         $(this).serialize(),
         (data, status) => {
-          swal.close()
           const resp = JSON.parse(data)
           if (resp.success) {
             window.location.href = `${window.location.origin}/west/pages/admin/index`

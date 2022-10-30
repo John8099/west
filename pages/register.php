@@ -160,7 +160,6 @@ $systemInfo = systemInfo();
       "../backend/nodes?action=student_registration",
       $(this).serialize(),
       (data, status) => {
-        swal.close()
         const resp = JSON.parse(data)
         if (resp.success) {
           swal.fire({

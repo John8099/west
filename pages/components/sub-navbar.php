@@ -26,9 +26,12 @@
           $thesisGroupData = mysqli_fetch_object($query);
         }
 
-        if ($value["title"] == "Document Status" && $thesisGroupData != null && ($thesisGroupData->instructor_id == null ||  $thesisGroupData->adviser_id == null)) {
+        $hasSubmittedDocuments = hasSubmittedDocuments($user);
+        if ($value["title"] == "Document Status" && !$hasSubmittedDocuments) {
           continue;
-        } elseif ($value["title"] == "Messages" && $thesisGroupData != null && $thesisGroupData->instructor_id == null) {
+        }
+        
+        if ($value["title"] == "Messages" && $thesisGroupData != null && $thesisGroupData->instructor_id == null) {
           continue;
         }
       ?>

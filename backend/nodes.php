@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include("conn.php");
 date_default_timezone_set("Asia/Manila");
-$dateNow = date("Y-m-d h:i:s");
+$dateNow = date("Y-m-d H:i:s");
 
 $SERVER_NAME = "http://$_SERVER[SERVER_NAME]/west";
 $ADMIN_ROLES = array(
@@ -13,6 +13,33 @@ $ADMIN_ROLES = array(
   "panel",
   "adviser",
 );
+
+$feedbacksDefault = json_encode(
+  array(
+    "adviser" => array(
+      "feedback" => array(),
+      "isApproved" => "false",
+    ),
+    "instructor" => array(
+      "feedback" => array(),
+      "isApproved" => "false",
+    ),
+    "panel" => array(
+      "feedback" => array(),
+      "isApproved" => "false",
+    ),
+  )
+);
+
+/*
+Feedback format
+
+array(
+  "message" => "",
+  "isResolved" => false,
+  "date" => "",
+)
+*/
 
 if (isset($_GET['action'])) {
   try {
@@ -95,6 +122,12 @@ if (isset($_GET['action'])) {
       case "deleteType":
         deleteType();
         break;
+      case "saveDocument":
+        saveDocument();
+        break;
+      case "approvedDocument":
+        approvedDocument();
+        break;
       default:
         null;
         break;
@@ -103,6 +136,153 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function approvedDocument()
+{
+  global $conn, $_POST;
+  $document = getDocumentById($_POST['id']);
+  $feedback = json_decode($document->feedback, true);
+}
+
+function getDocumentsDataWithUsers($userId, $idOf)
+{
+  global $conn;
+
+  $queryStr = "SELECT 
+  tg.group_leader_id,
+  tg.group_number,
+  tg.instructor_id,
+  tg.panel_id,
+  tg.adviser_id,
+  d.* FROM thesis_groups tg 
+  INNER JOIN documents d 
+  ON tg.group_leader_id = d.leader_id";
+
+  if ($idOf == "adviser") {
+    $queryStr .= " WHERE tg.adviser_id='$userId'";
+  } else if ($idOf == "instructor") {
+    $queryStr .= " WHERE tg.instructor_id='$userId'";
+  } else if ($idOf == "panel") {
+    $queryStr .= " WHERE tg.panel_id='$userId'";
+  }
+
+  $data = array();
+
+  $query = mysqli_query($conn, $queryStr);
+  if (mysqli_num_rows($query)) {
+    while ($row = mysqli_fetch_object($query)) {
+      array_push($data, $row);
+    }
+  }
+
+  return $data;
+}
+
+function saveDocument()
+{
+  global $conn, $_POST, $_FILES, $feedbacksDefault, $_SESSION;
+
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  $title = $_POST["title"];
+  $type = $_POST["type"];
+  $year = $_POST["year"];
+  $description = mysqli_escape_string($conn, nl2br($_POST["description"]));
+  $banner = $_FILES["banner"];
+  $pdf = $_FILES["pdfFile"];
+
+  $feedback = mysqli_escape_string($conn, $feedbacksDefault);
+
+  if (intval($banner["error"]) == 0 && intval($pdf["error"]) == 0) {
+
+    $bannerFile = date("mdY-his") . "_" . basename($banner['name']);
+    $bannerDir = "../media/documents/banner/";
+    $bannerUrl = "/media/documents/banner/$bannerFile";
+
+    $pdfFile = date("mdY-his") . "_" . basename($pdf['name']);
+    $pdfDir = "../media/documents/files/";
+    $pdfUrl = "/media/documents/files/$pdfFile";
+
+    if (!is_dir($bannerDir)) {
+      mkdir($bannerDir, 0777, true);
+    }
+
+    if (!is_dir($pdfDir)) {
+      mkdir($pdfDir, 0777, true);
+    }
+
+    if (move_uploaded_file($banner['tmp_name'], "$bannerDir/$bannerFile") && move_uploaded_file($pdf['tmp_name'], "$pdfDir/$pdfFile")) {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO documents(leader_id, title, `type_id`, `year`, `description`, img_banner, project_document, feedbacks, project_status, publish_status) VALUES('$currentUser->id', '$title', '$type', '$year', '$description', '$bannerUrl', '$pdfUrl', '$feedback', 'to check by adviser', 'PENDING')"
+      );
+
+      if ($query) {
+        $response["success"] = true;
+        $response["message"] = "Document successfully submitted.";
+      } else {
+        $response["success"] = false;
+        $response["message"] = "An error occurred when uploading documents. Please try again later.";
+      }
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "An error occurred when uploading documents. Please try again later.";
+  }
+
+  returnResponse($response);
+}
+
+function getSubmittedDocuments($currentUser)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE leader_id ='$currentUser->id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object(
+      $query
+    );
+  }
+
+  return null;
+}
+
+function getDocumentById($id)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE id ='$id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object(
+      $query
+    );
+  }
+
+  return null;
+}
+
+function hasSubmittedDocuments($currentUser)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE leader_id ='$currentUser->id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  }
+  return false;
 }
 
 function saveType()
@@ -261,7 +441,7 @@ function sendAdviserInvite()
   if ($adviserInviteData == null) {
     $query = mysqli_query(
       $conn,
-      "INSERT INTO invite(adviser_id, leader_id, `status`) VALUES('$_POST[adviserId]', '$user->id', 'PENDING')"
+      "INSERT INTO invite(adviser_id, leader_id, `status`, proposed_title) VALUES('$_POST[adviserId]', '$user->id', 'PENDING', '$_POST[title]')"
     );
 
     if ($query) {
@@ -336,8 +516,27 @@ function saveSchedule()
 
   $user = get_user_by_username($_SESSION['username']);
 
+  
   if (!checkIsHasSchedule($schedule_from, $id)) {
     $query = null;
+    $q1 = "UPDATE schedule_list SET " . ($schedule_to != null ? "schedule_to='$schedule_to', is_whole=0, " : "schedule_to='NULL', is_whole=1, ") . " category_id='$category_id', title='$title', description='$description', schedule_from='$schedule_from' WHERE id = '$id'";
+    $q1 = "INSERT INTO schedule_list(
+      " . ($schedule_to != null ? "schedule_to, " : "") . "
+      " . ($schedule_to == null ? "is_whole, " : "") . "
+      `user_id`, 
+      category_id, 
+      title, 
+      `description`, 
+      schedule_from
+    ) VALUES(
+      " . ($schedule_to != null ? "'$schedule_to', " : "") . "
+      " . ($schedule_to == null ? "'1'," : "'0',") . "
+      '$user->id', 
+      '$category_id', 
+      '$title', 
+      '$description', 
+      '$schedule_from'
+    )";
     if ($id) {
       $query = mysqli_query(
         $conn,

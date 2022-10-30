@@ -115,28 +115,59 @@ $systemInfo = systemInfo();
       `../../backend/nodes?action=getAllAdviser${declineAdviserId ? "&&declineAdviserId="+declineAdviserId: ""}`,
       (data, status) => {
         const resp = JSON.parse(data)
-        let options = resp.adviser.map((data) => {
+        let options = "<option value='' disabled selected> -- select adviser -- </option>"
+        options += resp.adviser.map((data) => {
           return `<option value="${data.id}">
                     ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
                   </option>`
         });
+        const html = `
+        <div class="form text-left">
+          ${!declineAdviserId ? 
+            `<div class="form-group">
+              <label class="control-label text-navy">Proposed title</label>
+              <input type="text" id="title" class="form-control" placeholder="Enter proposed title...">
+            </div>` 
+            : ""}
+          <div class="form-group">
+            <label class="control-label text-navy">Select adviser</label>
+            <select id="inputAdviserId" class="form-control" style="text-transform: capitalize">
+              ${resp.adviser.length == 0  ? "<option value='' disabled selected> No available adviser </option>" : options}
+            </select>
+          </div>
+        </div>
+        `;
 
         swal.fire({
-          title: 'Select Adviser',
+          // title: 'Select Adviser',
           icon: 'question',
-          html: ` <select id="inputAdviserId" class="form-control" style="text-transform: capitalize">
-                    ${options.length == 0  ? "<option value='' disabled selected> No available adviser </option>" : options}
-                  </select>`,
+          html: html,
           showDenyButton: true,
           confirmButtonText: 'Submit',
           denyButtonText: 'Cancel',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          preConfirm: () => {
+            let error = 0;
+            if (!$("#title").val()) {
+              $("#title").addClass("is-invalid");
+              error++
+            }
+            if (!$("#inputAdviserId option:selected").val()) {
+              $("#inputAdviserId").addClass("is-invalid");
+              error++
+            }
+
+            return error == 0 ? true : false;
+          },
         }).then((res) => {
           if (res.isConfirmed) {
-            sendAdviserInvite($("#inputAdviserId option:selected").val())
+            if ($("#inputAdviserId option:selected").val() && $("#title").val()) {
+              sendAdviserInvite($("#inputAdviserId option:selected").val(), $("#title").val())
+            }
           }
         })
-
-        if (options.length == 0) {
+        if (resp.adviser.length == 0) {
           swal.getConfirmButton().disabled = true
         }
       }).fail(function(e) {
@@ -184,10 +215,11 @@ $systemInfo = systemInfo();
     });
   }
 
-  function sendAdviserInvite(inputAdviserId) {
+  function sendAdviserInvite(inputAdviserId, inputTitle) {
     $.post(
       `../../backend/nodes?action=sendAdviserInvite`, {
-        adviserId: inputAdviserId
+        adviserId: inputAdviserId,
+        title: inputTitle,
       },
       (data, status) => {
         const resp = JSON.parse(data)
@@ -338,7 +370,6 @@ $systemInfo = systemInfo();
             id: memberId
           },
           (data, status) => {
-            swal.close()
             const resp = JSON.parse(data)
             if (resp.success) {
               swal.fire({
@@ -376,7 +407,6 @@ $systemInfo = systemInfo();
       cache: false,
       processData: false,
       success: function(data) {
-        swal.close();
         const resp = JSON.parse(data);
         if (resp.success) {
           swal.fire({
@@ -401,7 +431,7 @@ $systemInfo = systemInfo();
             text: resp.message,
             icon: 'error',
           })
-        }
+        };
       },
       error: function(data) {
         swal.fire({
@@ -425,7 +455,6 @@ $systemInfo = systemInfo();
       cache: false,
       processData: false,
       success: function(data) {
-        swal.close();
         const resp = JSON.parse(data);
         if (resp.success) {
           swal.fire({
@@ -442,7 +471,7 @@ $systemInfo = systemInfo();
             text: resp.message,
             icon: 'error',
           })
-        }
+        };
       },
       error: function(data) {
         swal.fire({

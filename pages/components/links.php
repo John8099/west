@@ -103,6 +103,14 @@ $links = array(
     )
   ),
   array(
+    "title" => "Pending Documents",
+    "url" => "$SERVER_NAME/pages/admin/pending-documents",
+    "allowedViews" => array("coordinator", "instructor", "panel", "adviser"),
+    "config" => array(
+      "icon" => "file-upload"
+    )
+  ),
+  array(
     "title" => "Admins",
     "url" => "$SERVER_NAME/pages/admin/admin-lists",
     "allowedViews" => array("coordinator"),

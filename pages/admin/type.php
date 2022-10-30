@@ -88,15 +88,22 @@ $systemInfo = systemInfo();
       });
     });
 
-    let myModal = null
-
     function handleOpenModal(modalId = null) {
       if (modalId) {
-        myModal = new bootstrap.Modal(document.getElementById(`editType${modalId}`))
+        $(`#editType${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       } else {
-        myModal = new bootstrap.Modal(document.getElementById("addType"))
+        $(`#addType${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       }
-      myModal.show()
     }
 
     function handleSave(el) {
@@ -107,7 +114,6 @@ $systemInfo = systemInfo();
         "../../backend/nodes?action=saveType",
         formValue,
         (data, status) => {
-          swal.close()
           const resp = JSON.parse(data)
           if (resp.success) {
             swal.fire({
@@ -115,9 +121,6 @@ $systemInfo = systemInfo();
               text: resp.message,
               icon: 'success',
             }).then(() => {
-              if (myModal) {
-                myModal.hide()
-              }
               window.location.reload()
             })
           } else {
@@ -153,7 +156,6 @@ $systemInfo = systemInfo();
               id: typeId
             },
             (data, status) => {
-              swal.close()
               const resp = JSON.parse(data)
               if (resp.success) {
                 swal.fire({

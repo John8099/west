@@ -65,7 +65,7 @@
           <div class="col-lg-12">
             <div class="form-group text-center">
               <button type="submit" class="btn btn-default bg-navy m-1"> Update</button>
-              <button type="button" onclick="return window.history.back()" class="btn btn-danger m-1"> Cancel</button>
+              <button type="button" onclick="return window.history.back()" class="btn btn-danger btn-gradient-danger m-1"> Cancel</button>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@
     <div class="card-header">
       <h3 class="card-title">List of Rooms</h3>
       <div class="card-tools">
-        <a data-toggle="modal" data-target="#addSchedule" class="btn btn-primary">
+        <a data-toggle="modal" data-target="#addSchedule" class="btn btn-primary btn-gradient-primary">
           <span class="fas fa-plus"></span> Create New
         </a>
       </div>
@@ -18,7 +18,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="addSchedule">
+<div class="modal fade" id="addSchedule" data-backdrop="static">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
@@ -61,8 +61,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary m-1">Save</button>
-          <button type="button" class="btn btn-danger" data-dismiss="modal m-1">Cancel</button>
+          <button type="submit" class="btn btn-primary btn-gradient-primary m-1">Save</button>
+          <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>
@@ -118,8 +118,8 @@ while ($schedule = mysqli_fetch_object($query)) :
         </div>
         <div class="modal-footer">
           <?php if ($taskBy->username == $_SESSION['username']) : ?>
-            <button type="button" class="btn btn-primary m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
-            <button type="button" class="btn btn-danger m-1" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
+            <button type="button" class="btn btn-primary btn-gradient-primary m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
+            <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
           <?php endif; ?>
           <button type="button" class="btn btn-dark m-1" data-dismiss="modal">Close</button>
         </div>
@@ -175,10 +175,10 @@ while ($schedule = mysqli_fetch_object($query)) :
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary m-1" onclick="handleSaveEditForm($(this))">
+            <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleSaveEditForm($(this))">
               Save
             </button>
-            <button type="button" class="btn btn-danger m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openPreview')">Cancel</button>
+            <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openPreview')">Cancel</button>
           </div>
         </form>
       </div>

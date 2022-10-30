@@ -5,7 +5,7 @@
         <h4>Category List</h4>
       </div>
       <div class="col-sm-6 d-flex justify-content-end">
-        <button type="button" class="btn btn-primary" style="height: 38px;" onclick="handleOpenModal()">Add Category</button>
+        <button type="button" class="btn btn-primary btn-gradient-primary" style="height: 38px;" onclick="handleOpenModal()">Add Category</button>
       </div>
     </div>
   </div>
@@ -35,10 +35,10 @@
             <td><?= date("Y-m-d H:i:s", strtotime($category->date_updated)) ?></td>
             <td><?= $category->name ?></td>
             <td class="text-center">
-              <button type="button" class="btn btn-warning btn-sm m-1" onclick="handleOpenModal('<?= $category->id ?>')">
+              <button type="button" class="btn btn-warning btn-gradient-warning btn-sm m-1" onclick="handleOpenModal('<?= $category->id ?>')">
                 Edit
               </button>
-              <button type="button" class="btn btn-danger btn-sm m-1" onclick="handleOnclickDeleteCategory('<?= $category->id ?>')">
+              <button type="button" class="btn btn-danger btn-gradient-danger btn-sm m-1" onclick="handleOnclickDeleteCategory('<?= $category->id ?>')">
                 Delete
               </button>
             </td>
@@ -62,8 +62,8 @@
                     </div>
                   </div>
                   <div class="modal-footer justify-content-end">
-                    <button type="button" class="btn btn-primary m-1" onclick="handleSave($(this))">Save</button>
-                    <button type="button" class="btn btn-danger m-1" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleSave($(this))">Save</button>
+                    <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal">Cancel</button>
                   </div>
                 </form>
               </div>
@@ -92,8 +92,8 @@
           </div>
         </div>
         <div class="modal-footer justify-content-end">
-          <button type="button" class="btn btn-primary m-1" onclick="handleSave($(this))">Save</button>
-          <button type="button" class="btn btn-danger m-1" data-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleSave($(this))">Save</button>
+          <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal">Cancel</button>
         </div>
       </form>
     </div>

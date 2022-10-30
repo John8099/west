@@ -61,7 +61,7 @@ $systemInfo = systemInfo();
               <div class="card-header rounded-0">
                 <h5 class="card-title">Your Information:</h5>
                 <div class="card-tools">
-                  <a href="<?= "$self?page=my_archive" ?>" class="btn btn-primary"><i class="fa fa-archive"></i> My Archives</a>
+                  <a href="<?= "$self?page=my_archive" ?>" class="btn btn-primary btn-gradient-primary"><i class="fa fa-archive"></i> My Archives</a>
                   <a href="<?= "$self?page=manage_profile" ?>" class="btn btn-default bg-navy "><i class="fa fa-edit"></i> Update Account</a>
                 </div>
               </div>
@@ -142,7 +142,6 @@ $systemInfo = systemInfo();
       cache: false,
       processData: false,
       success: function(data) {
-        swal.close();
         const resp = JSON.parse(data);
         if (resp.success) {
           swal.fire({
@@ -156,7 +155,7 @@ $systemInfo = systemInfo();
             text: resp.message,
             icon: 'error',
           })
-        }
+        };
       },
       error: function(data) {
         swal.fire({
@@ -166,7 +165,6 @@ $systemInfo = systemInfo();
         })
       }
     });
-
     e.preventDefault();
   })
 

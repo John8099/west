@@ -133,10 +133,10 @@ $systemInfo = systemInfo();
                             </span>
                           </td>
                           <td class="text-center">
-                            <button type="button" class="btn btn-primary m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>','approve')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
+                            <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>','approve')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
                               Approved
                             </button>
-                            <button type="button" class="btn btn-danger m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>', 'decline')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
+                            <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>', 'decline')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
                               Decline
                             </button>
                           </td>

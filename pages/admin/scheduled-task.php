@@ -131,20 +131,38 @@ $systemInfo = systemInfo();
     })
 
     function handleOpenModal(modalId, action) {
-      let myModal = null;
       if (action === "preview") {
-        myModal = new bootstrap.Modal(document.getElementById(`preview${modalId}`))
+        $(`#preview${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       } else {
-        myModal = new bootstrap.Modal(document.getElementById(`editScheduleModal${modalId}`))
+        $(`#editScheduleModal${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       }
-      myModal.show()
     }
 
     function handleOnClickEdit(modalId, action) {
       if (action == "openEdit") {
-        $(`#editScheduleModal${modalId}`).modal('show')
+        $(`#editScheduleModal${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       } else {
-        $(`#preview${modalId}`).modal('show')
+        $(`#preview${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
       }
     }
 
@@ -163,7 +181,6 @@ $systemInfo = systemInfo();
         "../../backend/nodes?action=saveSchedule",
         formValues,
         (data, status) => {
-          swal.close()
           const resp = JSON.parse(data)
           if (resp.success) {
             swal.fire({
@@ -203,7 +220,6 @@ $systemInfo = systemInfo();
               id: scheduleId
             },
             (data, status) => {
-              swal.close()
               const resp = JSON.parse(data)
               if (resp.success) {
                 swal.fire({

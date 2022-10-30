@@ -127,7 +127,6 @@ $systemInfo = systemInfo();
               id: adminId
             },
             (data, status) => {
-              swal.close()
               const resp = JSON.parse(data)
               if (resp.success) {
                 swal.fire({
@@ -178,7 +177,6 @@ $systemInfo = systemInfo();
         cache: false,
         processData: false,
         success: function(data) {
-          swal.close();
           const resp = JSON.parse(data);
           if (resp.success) {
             swal.fire({
@@ -203,7 +201,7 @@ $systemInfo = systemInfo();
               text: resp.message,
               icon: 'error',
             })
-          }
+          };
         },
         error: function(data) {
           swal.fire({
@@ -226,7 +224,6 @@ $systemInfo = systemInfo();
         cache: false,
         processData: false,
         success: function(data) {
-          swal.close();
           const resp = JSON.parse(data);
           if (resp.success) {
             swal.fire({
@@ -243,7 +240,7 @@ $systemInfo = systemInfo();
               text: resp.message,
               icon: 'error',
             })
-          }
+          };
         },
         error: function(data) {
           swal.fire({

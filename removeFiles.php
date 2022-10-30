@@ -28,9 +28,18 @@ function listOfFilesUploadedInDb()
   $listOfFiles = [];
 
   $user_q = mysqli_query($conn, "SELECT * FROM users");
-  while ($a = mysqli_fetch_object($user_q)) {
-    $exploded = explode("/", $a->avatar);
+  while ($user = mysqli_fetch_object($user_q)) {
+    $exploded = explode("/", $user->avatar);
     array_push($listOfFiles, $exploded[count($exploded) - 1]);
+  }
+
+  $documents_q = mysqli_query($conn, "SELECT * FROM documents");
+  while ($document = mysqli_fetch_object($documents_q)) {
+    $exploded_banner = explode("/", $document->img_banner);
+    $exploded_pdf =  explode("/", $document->project_document);
+
+    array_push($listOfFiles, $exploded_banner[count($exploded_banner) - 1]);
+    array_push($listOfFiles, $exploded_pdf[count($exploded_pdf) - 1]);
   }
 
   // $reports_q = mysqli_query($conn, "SELECT * FROM reports");
