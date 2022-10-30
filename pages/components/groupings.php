@@ -116,7 +116,7 @@
       <?php endif;
 
       if ($thesisGroupData == null || ($thesisGroupData != null && $thesisGroupData->status == '0')) : ?>
-        <a href="<?= $SERVER_NAME ?>/west/pages/student/my-groupings?page=add-group-mate" class="btn btn-sm btn-primary">
+        <a href="<?= $SERVER_NAME ?>/pages/student/my-groupings?page=add-group-mate" class="btn btn-sm btn-primary">
           <i class="fas fa-plus"></i>
           Add New group mate
         </a>
