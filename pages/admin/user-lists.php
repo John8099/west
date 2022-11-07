@@ -28,6 +28,7 @@ $systemInfo = systemInfo();
   <!-- DataTables -->
   <link rel="stylesheet" href="../../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <link rel="stylesheet" href="../../assets/plugins/select2/css/select2.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -50,17 +51,7 @@ $systemInfo = systemInfo();
             <div class="col-12">
 
               <?php
-              if (isset($_GET["p"])) {
-                if ($_GET["p"] == "add") {
-                  include("../components/add-admin.php");
-                } else if ($_GET["p"] == "edit") {
-                  include("../components/edit-admin.php");
-                } else {
-                  include("../components/admin-list-table.php");
-                }
-              } else {
-                include("../components/user-list-table.php");
-              }
+              include("../components/user-list-table.php");
               ?>
 
             </div>
@@ -92,67 +83,34 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
   <script src="../../assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
   <script src="../../assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <script src="../../assets/plugins/select2/js/select2.full.min.js"></script>
 
   <script>
-    $(function() {
-      $("#student_list").DataTable({
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-      });
+    $('.select2').select2()
+
+    $("#student_list").DataTable({
+      "responsive": true,
+      "lengthChange": false,
+      "autoWidth": false,
     });
 
-    function handleOnclickUpdateInstructorAndPanel(groupId, action) {
+    function assignPanelClick(groupId, action) {
       if (groupId) {
         swal.fire({
           title: 'Are you sure',
           icon: 'question',
-          html: `you want to update ${action == "updateGroupPanel" ? "panel" : "instructor"} of this group?`,
+          html: `you want to update panel of this group?`,
           showDenyButton: true,
           confirmButtonText: 'Yes',
           denyButtonText: 'No',
         }).then((res) => {
           if (res.isConfirmed) {
-            $.get(
-              `../../backend/nodes?action=${action === "updateGroupPanel" ? "getAllPanel" : "getAllInstructor"}`,
-              (data, status) => {
-                const resp = JSON.parse(data)
-                let options = null;
-                if (action === "updateGroupPanel") {
-                  options = resp.panels.map((data) => {
-                    return `<option value="${data.id}" >
-                    ${data.first_name} ${data.last_name}
-                  </option>`
-                  });
-                } else {
-                  options = resp.instructors.map((data) => {
-                    return `<option value="${data.id}" >
-                    ${data.first_name} ${data.last_name}
-                  </option>`
-                  });
-                }
-
-                swal.fire({
-                  title: `Select ${action === "updateGroupPanel" ? "Panel" : "Instructor"}`,
-                  icon: 'question',
-                  html: `<select id="id" class="form-control" style="text-transform: capitalize">
-                    ${options}
-                  </select>`,
-                  showDenyButton: true,
-                  confirmButtonText: 'Submit',
-                  denyButtonText: 'Cancel',
-                }).then((res) => {
-                  if (res.isConfirmed) {
-                    updateGroupAdmin(groupId, $("#id option:selected").val(), action)
-                  }
-                })
-              }).fail(function(e) {
-              swal.fire({
-                title: 'Error!',
-                text: e.statusText,
-                icon: 'error',
-              })
-            });
+            $(`#assignPanel${groupId}`).modal({
+              show: true,
+              backdrop: 'static',
+              keyboard: false,
+              focus: true
+            })
           }
         })
       } else {
@@ -164,13 +122,11 @@ $systemInfo = systemInfo();
       }
     }
 
-    function updateGroupAdmin(groupId, adminId, action) {
+    function handleAssignPanel(groupId, el) {
+      swal.showLoading()
       $.post(
-        `../../backend/nodes?action=updateGroupAdmin`, {
-          group_id: groupId,
-          admin_id: adminId,
-          action: action
-        },
+        `../../backend/nodes?action=updateGroupPanel`,
+        $(el[0].form).serialize(),
         (data, status) => {
           const resp = JSON.parse(data)
           swal.fire({

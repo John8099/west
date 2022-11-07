@@ -12,33 +12,30 @@
     <table id="pending_documents" class="table table-bordered table-hover">
       <thead>
         <tr class="bg-gradient-dark text-light">
-          <th>Date created</th>
+          <th>Last updated</th>
           <th>Group#</th>
-          <th>Group Members</th>
-          <th>Members</th>
+          <th>Group list</th>
           <th>My feedback</th>
           <th>Instructor</th>
-          <th>Panel</th>
           <th>Action</th>
         </tr>
       </thead>
       <tbody>
         <?php
-        $documentData = getDocumentsDataWithUsers($user->id, "adviser");
+        $documentData = getDocumentsDataWithUsers($user->id, $user->role);
         foreach ($documentData as $data) :
           $leader = get_user_by_id($data->group_leader_id);
           $leaderName = ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name");
           $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
 
-          $feedback = json_decode($data->feedbacks);
-          $adviserFeedbackData = $feedback->adviser;
-          $instructorFeedbackData = $feedback->instructor;
-          $panelFeedbackData = $feedback->panel;
+          $adviserFeedbackData = json_decode($data->adviser_feedback);
+          $instructorFeedbackData = json_decode($data->instructor_feedback);
         ?>
           <tr>
-            <td><?= date("Y-m-d H:i:s", strtotime($data->date_created)) ?></td>
+            <td><?= date("M d, Y h:i:s A", strtotime($data->date_updated)) ?></td>
             <td><?= $leader->group_number ?></td>
             <td>
+              <h5>Leader:</h5>
               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                 <div class="mr-1">
                   <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
@@ -47,8 +44,7 @@
                   <?= $leaderName ?>
                 </div>
               </div>
-            </td>
-            <td>
+              <h5>Members:</h5>
               <?php
               foreach ($memberData as $member) :
                 $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
@@ -65,7 +61,7 @@
             </td>
             <td>
               <?php
-              if (count($adviserFeedbackData->feedback) == 0) :
+              if ($adviserFeedbackData == null) :
               ?>
                 <p class='text-center'>
                   <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -88,6 +84,15 @@
                       <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
                     <?php else : ?>
                       <span>&#8226;<strong><?= $adFed->date ?></strong></span>
+                      <?php
+                      if ($user->role == "adviser") :
+                      ?>
+                        <a href="#" onclick="handleMarkResolved('<?= $adFed->token ?>', '<?= $data->id ?>', '<?= $user->role ?>')">
+                          <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Mark as resolved</span>
+                        </a>
+                      <?php
+                      endif;
+                      ?>
                       <p>
                         <?= nl2br($adFed->message) ?>
                       </p>
@@ -97,7 +102,7 @@
                 <?php
                 endforeach;
               endif;
-              if ($adviserFeedbackData->isApproved == "true") :
+              if ($adviserFeedbackData != null && $adviserFeedbackData->isApproved == "true") :
                 ?>
                 <p class='text-center'>
                   <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -108,7 +113,7 @@
             </td>
             <td>
               <?php
-              if (count($instructorFeedbackData->feedback) == 0) :
+              if ($instructorFeedbackData == null) :
               ?>
                 <p class='text-center'>
                   <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -131,6 +136,15 @@
                       <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
                     <?php else : ?>
                       <span>&#8226;<strong><?= $insFed->date ?></strong></span>
+                      <?php
+                      if ($user->role == "instructor") :
+                      ?>
+                        <a href="#" onclick="handleMarkResolved('<?= $insFed->token ?>', '<?= $data->id ?>', '<?= $user->role ?>')">
+                          <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Mark as resolved</span>
+                        </a>
+                      <?php
+                      endif;
+                      ?>
                       <p>
                         <?= nl2br($insFed->message) ?>
                       </p>
@@ -140,50 +154,7 @@
                 <?php
                 endforeach;
               endif;
-              if ($instructorFeedbackData->isApproved == "true") :
-                ?>
-                <p class='text-center'>
-                  <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
-                    <em>Approved</em>
-                  </span>
-                </p>
-              <?php endif; ?>
-            </td>
-            <td>
-              <?php
-              if (count($panelFeedbackData->feedback) == 0) :
-              ?>
-                <p class='text-center'>
-                  <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
-                    <em>No feedback yet</em>
-                  </span>
-                </p>
-                <?php
-              else :
-                foreach ($panelFeedbackData->feedback as $panFed) :
-                ?>
-                  <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                    <?php
-                    if ($panFed->isResolved == "true") : ?>
-                      <span>&#8226; <strong><?= $panFed->date ?></strong></span>
-                      <p>
-                        <s>
-                          <?= nl2br($panFed->message) ?>
-                        </s>
-                      </p>
-                      <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
-                    <?php else : ?>
-                      <span>&#8226;<strong><?= $panFed->date ?></strong></span>
-                      <p>
-                        <?= nl2br($panFed->message) ?>
-                      </p>
-                      <span class="badge badge-warning rounded-pill px-2" style="float:right;font-size: 14px">To update</span>
-                    <?php endif; ?>
-                  </blockquote>
-                <?php
-                endforeach;
-              endif;
-              if ($panelFeedbackData->isApproved == "true") :
+              if ($instructorFeedbackData != null && $instructorFeedbackData->isApproved == "true") :
                 ?>
                 <p class='text-center'>
                   <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -211,7 +182,7 @@
                 </div>
                 <div class="modal-body">
                   <center>
-                    <img src="http://localhost/wvsu4/otas/uploads/banners/archive-3.png?v=1639212829" alt="Banner Image" id="banner-img" class="img-fluid border bg-gradient-dark">
+                    <img src="<?= $SERVER_NAME . $data->img_banner ?>" alt="Banner Image" id="banner-img" class="img-fluid border bg-gradient-dark">
                   </center>
                   <fieldset>
                     <legend class="text-navy"> Field type:</legend>
@@ -272,16 +243,55 @@
                   </fieldset>
                 </div>
                 <div class="modal-footer">
+                  <?php
+                  $disabled = "";
+
+                  if ($user->role == "adviser") {
+                    if ($adviserFeedbackData != null && $adviserFeedbackData->isApproved == "true") {
+                      $disabled = "disabled";
+                    }
+                  } else {
+                    if ($instructorFeedbackData != null && $instructorFeedbackData->isApproved == "true") {
+                      $disabled = "disabled";
+                    }
+                  }
+
+                  ?>
                   <button type="button" class="btn btn-secondary btn-gradient-secondary" onclick="return window.open('./preview-document?d=<?= urlencode($data->project_document) ?>')">
                     Open document in new tab
                   </button>
-                  <button type="button" class="btn btn-primary btn-gradient-primary" <?= $feedback->adviser->isApproved == "true" ? "disabled" : "" ?>>
+                  <button type="button" data-toggle="modal" data-target="#modalFeedback" class="btn btn-primary btn-gradient-primary" <?= $disabled ?>>
                     File feedback
                   </button>
-                  <button type="button" class="btn btn-success btn-gradient-success" <?= $feedback->adviser->isApproved == "true" ? "disabled" : "" ?> onclick="handleApproved('<?= $data->id ?>')">
+
+                  <button type="button" class="btn btn-success btn-gradient-success" <?= $disabled ?> onclick="handleApproved('<?= $data->id ?>', '<?= $user->role ?>')">
                     Approve
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal fade" id="modalFeedback">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">File feedback</h5>
+                </div>
+                <form method="POST" id="feedback-form">
+                  <div class="modal-body">
+                    <input type="text" name="document_id" value="<?= $data->id ?>" hidden readonly>
+                    <input type="text" name="role" value="<?= $user->role ?>" hidden readonly>
+
+                    <div class="form-group">
+                      <textarea type="text" class="form-control form-control-sm summernote" name="feedback"></textarea>
+                    </div>
+                  </div>
+                  <div class="modal-footer justify-content-end">
+                    <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleFileFeedback($(this))">File</button>
+                    <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal">Cancel</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

@@ -16,18 +16,8 @@ $ADMIN_ROLES = array(
 
 $feedbacksDefault = json_encode(
   array(
-    "adviser" => array(
-      "feedback" => array(),
-      "isApproved" => "false",
-    ),
-    "instructor" => array(
-      "feedback" => array(),
-      "isApproved" => "false",
-    ),
-    "panel" => array(
-      "feedback" => array(),
-      "isApproved" => "false",
-    ),
+    "feedback" => array(),
+    "isApproved" => "false",
   )
 );
 
@@ -83,11 +73,8 @@ if (isset($_GET['action'])) {
       case "updatePassword":
         updatePassword();
         break;
-      case "getAllPanel":
-        getAllPanel();
-        break;
-      case "updateGroupAdmin":
-        updateGroupAdmin();
+      case "updateGroupPanel":
+        updateGroupPanel();
         break;
       case "updateSystem":
         updateSystem();
@@ -128,6 +115,12 @@ if (isset($_GET['action'])) {
       case "approvedDocument":
         approvedDocument();
         break;
+      case "fileFeedback":
+        fileFeedback();
+        break;
+      case "markFeedbackResolved":
+        markFeedbackResolved();
+        break;
       default:
         null;
         break;
@@ -138,11 +131,176 @@ if (isset($_GET['action'])) {
   }
 }
 
+function markFeedbackResolved()
+{
+  global $conn, $_POST;
+
+  $id = $_POST["id"];
+  $token = $_POST["token"];
+  $role = $_POST["role"];
+  $column = ($role . "_feedback");
+
+  $document = getDocumentById($id);
+  $feedbackData = json_decode($document->$column, true);
+
+  $newFeedBack = array(
+    "feedback" => array(),
+    "isApproved" => $feedbackData["isApproved"],
+  );
+
+  foreach ($feedbackData["feedback"] as $feedback) {
+    if ($feedback["token"] == $token) {
+      $feedback["isResolved"] = "true";
+      array_push($newFeedBack["feedback"], $feedback);
+    } else {
+      array_push($newFeedBack["feedback"], $feedback);
+    }
+  }
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE documents SET $column='" . json_encode($newFeedBack) . "' WHERE id='$id'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Mark resolved successfully.";
+    markApprovedIsResolvedAll($id, $role);
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function markApprovedIsResolvedAll($document_id, $role)
+{
+  global $conn;
+
+  $document = getDocumentById($document_id);
+  $column = ($role . "_feedback");
+  $feedbackData = json_decode($document->$column, true);
+
+  $newFeedBack = array(
+    "feedback" => array(),
+    "isApproved" => $feedbackData["isApproved"],
+  );
+
+  $countIsResolved = 0;
+
+  foreach ($feedbackData["feedback"] as $feedback) {
+    if ($feedback["isResolved"] == "true") {
+      $countIsResolved++;
+    }
+    array_push($newFeedBack["feedback"], $feedback);
+  }
+
+  if (count($feedbackData["feedback"]) == $countIsResolved) {
+    $newFeedBack["isApproved"] = "true";
+    mysqli_query(
+      $conn,
+      "UPDATE documents SET $column='" . json_encode($newFeedBack) . "' WHERE id='$document_id'"
+    );
+  }
+}
+
+function fileFeedback()
+{
+  global $conn, $_POST, $dateNow;
+
+  $document_id = $_POST["document_id"];
+  $role = $_POST["role"];
+  $feedbackArr = array(
+    "message" => nl2br($_POST["feedback"]),
+    "token" => uniqid(),
+    "isResolved" => "false",
+    "date" => $dateNow,
+  );
+
+  $column = ($role . "_feedback");
+
+  $document = getDocumentById($document_id);
+  $feedback = $document->$column == null ? array(
+    "feedback" => array(),
+    "isApproved" => "false",
+  ) : json_decode($document->$column, true);
+
+  array_push($feedback["feedback"], $feedbackArr);
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE documents SET $column='" . json_encode($feedback) . "' WHERE id='$document_id'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Filed feedback successfully.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
 function approvedDocument()
 {
   global $conn, $_POST;
-  $document = getDocumentById($_POST['id']);
-  $feedback = json_decode($document->feedback, true);
+
+  $documentId = $_POST['id'];
+  $role = $_POST["role"];
+  $column = ($role . "_feedback");
+
+  $feedback = json_encode(array(
+    "feedback" => array(),
+    "isApproved" => "true",
+  ));
+
+  if (!isDocumentApproved($documentId, $role)) {
+    $query = mysqli_query(
+      $conn,
+      "UPDATE documents SET $column='$feedback' WHERE id='$documentId'"
+    );
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Document successfully approved.";
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Document already approved";
+  }
+
+  returnResponse($response);
+}
+
+function isDocumentApproved($documentId, $role)
+{
+  global $conn;
+
+  $column = ($role . "_feedback");
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE id='$documentId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    $data = mysqli_fetch_object($query);
+
+    if ($data->$column != null) {
+      $feedback = json_decode($data->$column);
+
+      if ($feedback->isApproved == "true") {
+        return true;
+      }
+      return false;
+    }
+    return false;
+  }
+  return false;
 }
 
 function getDocumentsDataWithUsers($userId, $idOf)
@@ -153,7 +311,6 @@ function getDocumentsDataWithUsers($userId, $idOf)
   tg.group_leader_id,
   tg.group_number,
   tg.instructor_id,
-  tg.panel_id,
   tg.adviser_id,
   d.* FROM thesis_groups tg 
   INNER JOIN documents d 
@@ -163,8 +320,6 @@ function getDocumentsDataWithUsers($userId, $idOf)
     $queryStr .= " WHERE tg.adviser_id='$userId'";
   } else if ($idOf == "instructor") {
     $queryStr .= " WHERE tg.instructor_id='$userId'";
-  } else if ($idOf == "panel") {
-    $queryStr .= " WHERE tg.panel_id='$userId'";
   }
 
   $data = array();
@@ -181,7 +336,7 @@ function getDocumentsDataWithUsers($userId, $idOf)
 
 function saveDocument()
 {
-  global $conn, $_POST, $_FILES, $feedbacksDefault, $_SESSION;
+  global $conn, $_POST, $_FILES, $_SESSION;
 
   $currentUser = get_user_by_username($_SESSION['username']);
 
@@ -192,7 +347,7 @@ function saveDocument()
   $banner = $_FILES["banner"];
   $pdf = $_FILES["pdfFile"];
 
-  $feedback = mysqli_escape_string($conn, $feedbacksDefault);
+  // $feedback = mysqli_escape_string($conn, $feedbacksDefault);
 
   if (intval($banner["error"]) == 0 && intval($pdf["error"]) == 0) {
 
@@ -215,7 +370,7 @@ function saveDocument()
     if (move_uploaded_file($banner['tmp_name'], "$bannerDir/$bannerFile") && move_uploaded_file($pdf['tmp_name'], "$pdfDir/$pdfFile")) {
       $query = mysqli_query(
         $conn,
-        "INSERT INTO documents(leader_id, title, `type_id`, `year`, `description`, img_banner, project_document, feedbacks, project_status, publish_status) VALUES('$currentUser->id', '$title', '$type', '$year', '$description', '$bannerUrl', '$pdfUrl', '$feedback', 'to check by adviser', 'PENDING')"
+        "INSERT INTO documents(leader_id, title, `type_id`, `year`, `description`, img_banner, project_document, publish_status) VALUES('$currentUser->id', '$title', '$type', '$year', '$description', '$bannerUrl', '$pdfUrl', 'PENDING')"
       );
 
       if ($query) {
@@ -516,27 +671,8 @@ function saveSchedule()
 
   $user = get_user_by_username($_SESSION['username']);
 
-  
   if (!checkIsHasSchedule($schedule_from, $id)) {
     $query = null;
-    $q1 = "UPDATE schedule_list SET " . ($schedule_to != null ? "schedule_to='$schedule_to', is_whole=0, " : "schedule_to='NULL', is_whole=1, ") . " category_id='$category_id', title='$title', description='$description', schedule_from='$schedule_from' WHERE id = '$id'";
-    $q1 = "INSERT INTO schedule_list(
-      " . ($schedule_to != null ? "schedule_to, " : "") . "
-      " . ($schedule_to == null ? "is_whole, " : "") . "
-      `user_id`, 
-      category_id, 
-      title, 
-      `description`, 
-      schedule_from
-    ) VALUES(
-      " . ($schedule_to != null ? "'$schedule_to', " : "") . "
-      " . ($schedule_to == null ? "'1'," : "'0',") . "
-      '$user->id', 
-      '$category_id', 
-      '$title', 
-      '$description', 
-      '$schedule_from'
-    )";
     if ($id) {
       $query = mysqli_query(
         $conn,
@@ -548,7 +684,7 @@ function saveSchedule()
         $conn,
         "INSERT INTO schedule_list(
           " . ($schedule_to != null ? "schedule_to, " : "") . "
-          " . ($schedule_to == null ? "is_whole, " : "") . "
+          is_whole,
           `user_id`, 
           category_id, 
           title, 
@@ -593,17 +729,17 @@ function checkIsHasSchedule($schedule_from, $id = null)
 
   while ($schedule = mysqli_fetch_object($query)) {
     if ($schedule->is_whole == 1) {
-      $start = strtotime($schedule->schedule_from);
-      $scheduleFrom = strtotime($schedule_from);
+      $start = date("m-d-Y", strtotime($schedule->schedule_from));
+      $scheduleFrom = date("m-d-Y", strtotime($schedule_from));
 
-      if ($scheduleFrom < $start) {
+      if ($start == $scheduleFrom) {
         return true;
         break;
       }
     } else {
       $scheduleFrom = strtotime($schedule_from);
       $start = strtotime($schedule->schedule_from);
-      $end = strtotime($schedule->schedule_from);
+      $end = strtotime($schedule->schedule_to);
 
       if (($scheduleFrom >= $start) && ($scheduleFrom <= $end)) {
         return true;
@@ -777,23 +913,21 @@ function updateSystem()
   returnResponse($response);
 }
 
-function updateGroupAdmin()
+function updateGroupPanel()
 {
   global $conn, $_POST;
 
-  $group_id = $_POST["group_id"];
-  $admin_id = $_POST["admin_id"];
-
-  $action = $_POST['action'];
+  $group_id = $_POST["groupId"];
+  $panel_ids = json_encode($_POST["panel_ids"]);
 
   $query = mysqli_query(
     $conn,
-    "UPDATE thesis_groups SET " . ($action == "updateGroupPanel" ? "panel_id" : "instructor_id") . "='$admin_id' WHERE id=$group_id"
+    "UPDATE thesis_groups SET panel_ids='$panel_ids' WHERE id=$group_id"
   );
 
   if ($query) {
     $response["success"] = true;
-    $response["message"] = "Group updated successfully.";
+    $response["message"] = "Assigned panels successfully.";
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
@@ -1051,13 +1185,13 @@ function getAllPanel()
     "SELECT id, first_name, last_name, middle_name FROM users WHERE `role`='panel'"
   );
 
-  $response["panels"] = array();
+  $panels = array();
 
   while ($row = mysqli_fetch_object($query)) {
-    array_push($response["panels"], $row);
+    array_push($panels, $row);
   }
 
-  returnResponse($response);
+  return $panels;
 }
 
 function deleteUser()

@@ -13,8 +13,7 @@
       <thead>
         <tr class="bg-gradient-dark text-light">
           <th>Group#</th>
-          <th>Leader</th>
-          <th>Members</th>
+          <th>Group list</th>
           <th>Instructor</th>
           <th>Panel</th>
           <th>Adviser</th>
@@ -42,6 +41,7 @@
           <tr>
             <td><?= $leader->group_number ?></td>
             <td>
+              <h5>Leader:</h5>
               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                 <div class="mr-1">
                   <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
@@ -50,8 +50,7 @@
                   <?= $leaderName ?>
                 </div>
               </div>
-            </td>
-            <td>
+              <h5>Members:</h5>
               <?php
               foreach ($memberData as $member) :
                 $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
@@ -97,23 +96,25 @@
             <td>
               <?php
               if ($hasSubmittedGroup && $thesisGroupData != null) {
-                if ($thesisGroupData->panel_id != null) :
-                  $panel = get_user_by_id($thesisGroupData->panel_id);
-                  $panelName = ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name");
+                if ($thesisGroupData->panel_ids != null) :
+                  foreach (json_decode($thesisGroupData->panel_ids) as $panel_id) :
+                    $panel = get_user_by_id($panel_id);
+                    $panelName = ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name");
               ?>
-                  <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
-                    <div class="mr-1">
-                      <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                      <div class="mr-1">
+                        <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      </div>
+                      <div>
+                        <h6>
+                          <strong>
+                            <?= $panelName ?>
+                          </strong>
+                        </h6>
+                      </div>
                     </div>
-                    <div>
-                      <h6>
-                        <strong>
-                          <?= $panelName ?>
-                        </strong>
-                      </h6>
-                    </div>
-                  </div>
               <?php
+                  endforeach;
                 else :
                   echo "<h6><em>No panel assigned yet.</em> </h6>";
                 endif;
@@ -154,11 +155,41 @@
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="handleOnclickUpdateInstructorAndPanel('<?= $thesisGroupId ?>', 'updateGroupPanel')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
-                Assign Panel
+              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="assignPanelClick('<?= $thesisGroupId ?>')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
+                <?= $thesisGroupData->panel_ids != null ? "Update panels" : "Assign Panel" ?>
               </button>
             </td>
           </tr>
+          <div class="modal fade" id="assignPanel<?= $thesisGroupId ?>">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Assign Panel</h5>
+                </div>
+                <form method="POST" id="form-assignPanel<?= $thesisGroupId ?>">
+                  <div class="modal-body">
+                    <input type="text" name="groupId" value="<?= $thesisGroupId ?>" hidden readonly>
+
+                    <div class="form-group">
+                      <label class="control-label">Panel</label>
+                      <select class="select2" name="panel_ids[]" multiple="multiple" data-placeholder="Select panel" style="width: 100%;">
+                        <?php
+                        $panels = getAllPanel();
+                        foreach ($panels as $panel) :
+                        ?>
+                          <option value="<?= $panel->id ?>" <?= $thesisGroupData->panel_ids != null && in_array($panel->id, json_decode($thesisGroupData->panel_ids)) ? "selected" : "" ?>><?= ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name") ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="modal-footer justify-content-end">
+                    <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleAssignPanel('<?= $thesisGroupId ?>', $(this))">Save</button>
+                    <button type="button" class="btn btn-danger btn-gradient-danger m-1" data-dismiss="modal">Cancel</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
         <?php endwhile; ?>
       </tbody>
 

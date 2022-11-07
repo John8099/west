@@ -71,25 +71,21 @@ $user = get_user_by_username($_SESSION['username']);
                 <tr class="bg-gradient-dark text-light">
                   <th>Adviser</th>
                   <th>Instructor</th>
-                  <th>Panel</th>
                 </tr>
               </thead>
               <colgroup>
-                <col class="col-md-4">
-                <col class="col-md-4">
-                <col class="col-md-4">
+                <col class="col-md-6">
+                <col class="col-md-6">
               </colgroup>
               <tbody>
                 <?php
-                $feedback = json_decode($document->feedbacks);
-                $adviserFeedbackData = $feedback->adviser;
-                $instructorFeedbackData = $feedback->instructor;
-                $panelFeedbackData = $feedback->panel;
+                $adviserFeedbackData = json_decode($document->adviser_feedback);
+                $instructorFeedbackData = json_decode($document->instructor_feedback);
                 ?>
                 <tr>
                   <td>
                     <?php
-                    if (count($adviserFeedbackData->feedback) == 0) :
+                    if ($adviserFeedbackData == null) :
                     ?>
                       <p class='text-center'>
                         <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -121,7 +117,7 @@ $user = get_user_by_username($_SESSION['username']);
                       <?php
                       endforeach;
                     endif;
-                    if ($adviserFeedbackData->isApproved == "true") :
+                    if ($adviserFeedbackData != null && $adviserFeedbackData->isApproved == "true") :
                       ?>
                       <p class='text-center'>
                         <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -132,7 +128,7 @@ $user = get_user_by_username($_SESSION['username']);
                   </td>
                   <td>
                     <?php
-                    if (count($instructorFeedbackData->feedback) == 0) :
+                    if ($instructorFeedbackData == null) :
                     ?>
                       <p class='text-center'>
                         <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -164,50 +160,7 @@ $user = get_user_by_username($_SESSION['username']);
                       <?php
                       endforeach;
                     endif;
-                    if ($instructorFeedbackData->isApproved == "true") :
-                      ?>
-                      <p class='text-center'>
-                        <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
-                          <em>Approved</em>
-                        </span>
-                      </p>
-                    <?php endif; ?>
-                  </td>
-                  <td>
-                    <?php
-                    if (count($panelFeedbackData->feedback) == 0) :
-                    ?>
-                      <p class='text-center'>
-                        <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
-                          <em>Pending</em>
-                        </span>
-                      </p>
-                      <?php
-                    else :
-                      foreach ($panelFeedbackData->feedback as $panFed) :
-                      ?>
-                        <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                          <?php
-                          if ($panFed->isResolved == "true") : ?>
-                            <span>&#8226; <strong><?= $panFed->date ?></strong></span>
-                            <p>
-                              <s>
-                                <?= nl2br($panFed->message) ?>
-                              </s>
-                            </p>
-                            <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
-                          <?php else : ?>
-                            <span>&#8226;<strong><?= $panFed->date ?></strong></span>
-                            <p>
-                              <?= nl2br($panFed->message) ?>
-                            </p>
-                            <span class="badge badge-warning rounded-pill px-2" style="float:right;font-size: 14px">To update</span>
-                          <?php endif; ?>
-                        </blockquote>
-                      <?php
-                      endforeach;
-                    endif;
-                    if ($panelFeedbackData->isApproved == "true") :
+                    if ($instructorFeedbackData != null && $instructorFeedbackData->isApproved == "true") :
                       ?>
                       <p class='text-center'>
                         <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -222,76 +175,6 @@ $user = get_user_by_username($_SESSION['username']);
           </div>
         </div>
 
-        <div class="card card-outline card-primary shadow rounded-0">
-          <div class="card-header">
-            <h3 class="card-title">
-              <h2>
-                <strong>
-                  <?= ucwords($document->title) ?>
-                </strong>
-              </h2>
-            </h3>
-          </div>
-          <div class="card-body rounded-0">
-            <div class="container-fluid">
-              <center>
-                <img src="http://localhost/wvsu4/otas/uploads/banners/archive-3.png?v=1639212829" alt="Banner Image" id="banner-img" class="img-fluid border bg-gradient-dark">
-              </center>
-              <fieldset>
-                <legend class="text-navy"> Year:</legend>
-                <div class="pl-4">
-                  <?= $document->year ?>
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend class="text-navy">Description:</legend>
-                <div class="pl-4">
-                  <?= nl2br($document->description) ?>
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend class="text-navy">Project Leader:</legend>
-                <div class="pl-4">
-                  <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
-                    <div class="mr-1">
-                      <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
-                    </div>
-                    <div>
-                      <?= ucwords("$user->first_name " . $user->middle_name[0] . ". $user->last_name") ?>
-                    </div>
-                  </div>
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend class="text-navy">Project Members:</legend>
-                <div class="pl-4">
-                  <?php
-                  $memberData = json_decode(getMemberData($user->group_number, $user->id));
-                  foreach ($memberData as $member) :
-                    $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
-                  ?>
-                    <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
-                      <div class="mr-1">
-                        <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
-                      </div>
-                      <div>
-                        <?= $memberName ?>
-                      </div>
-                    </div>
-                  <?php endforeach; ?>
-                </div>
-              </fieldset>
-              <fieldset>
-                <legend class="text-navy"> Document:</legend>
-                <div class="pl-4">
-                  <div class="embed-responsive embed-responsive-4by3">
-                    <iframe src="<?= $SERVER_NAME . $document->project_document ?>#embedded=true&toolbar=0&navpanes=0" class="embed-responsive-item" id="pdfPreview" allowfullscreen></iframe>
-                  </div>
-                </div>
-              </fieldset>
-            </div>
-          </div>
-        </div>
       </div>
       <!-- /.content -->
     </div>

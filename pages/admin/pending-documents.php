@@ -28,6 +28,8 @@ $systemInfo = systemInfo();
   <!-- DataTables -->
   <link rel="stylesheet" href="../../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="../../assets/plugins/summernote/summernote-bs4.min.css">
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -79,9 +81,102 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
   <script src="../../assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
   <script src="../../assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+  <!-- Summernote -->
+  <script src="../../assets/plugins/summernote/summernote-bs4.min.js"></script>
 
   <script>
-    function handleApproved(documentId) {
+    $(document).ready(function() {
+      $('.summernote').summernote({
+        height: 200,
+        toolbar: [
+          ['style', ['style']],
+          ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+          ['fontname', ['fontname']],
+          ['fontsize', ['fontsize']],
+          ['color', ['color']],
+          ['para', ['ol', 'ul', 'paragraph', 'height']],
+          ['table', ['table']],
+          ['insert', ['link', 'picture']],
+          ['view', ['undo', 'redo', 'fullscreen', 'codeview', 'help']]
+        ]
+      })
+    })
+
+    function handleMarkResolved(token, documentId, role) {
+      swal.fire({
+        title: 'Are you sure',
+        icon: 'question',
+        html: `you want to mark this as resolved?`,
+        showDenyButton: true,
+        confirmButtonText: 'Yes',
+        denyButtonText: 'No',
+      }).then((res) => {
+        if (res.isConfirmed) {
+          swal.showLoading();
+          $.post(
+            "../../backend/nodes?action=markFeedbackResolved", {
+              id: documentId,
+              token: token,
+              role: role,
+            },
+            (data, status) => {
+              const resp = JSON.parse(data)
+              if (resp.success) {
+                swal.fire({
+                  title: 'Success!',
+                  text: resp.message,
+                  icon: 'success',
+                }).then(() => window.location.reload())
+              } else {
+                swal.fire({
+                  title: 'Error!',
+                  text: resp.message,
+                  icon: 'error',
+                })
+              }
+            }).fail(function(e) {
+            swal.fire({
+              title: 'Error!',
+              text: e.statusText,
+              icon: 'error',
+            })
+          });
+        }
+      })
+    }
+
+    function handleFileFeedback(el) {
+      swal.showLoading()
+      $.post(
+        "../../backend/nodes?action=fileFeedback",
+        $(el[0].form).serialize(),
+        (data, status) => {
+          const resp = JSON.parse(data)
+          if (resp.success) {
+            swal.fire({
+              title: 'Success!',
+              text: resp.message,
+              icon: 'success',
+            }).then(() => {
+              window.location.reload()
+            })
+          } else {
+            swal.fire({
+              title: 'Error!',
+              text: resp.message,
+              icon: 'error',
+            })
+          }
+        }).fail(function(e) {
+        swal.fire({
+          title: 'Error!',
+          text: e.statusText,
+          icon: 'error',
+        })
+      });
+    }
+
+    function handleApproved(documentId, userRole) {
       swal.fire({
         title: 'Are you sure',
         icon: 'question',
@@ -94,7 +189,8 @@ $systemInfo = systemInfo();
           swal.showLoading();
           $.post(
             "../../backend/nodes?action=approvedDocument", {
-              id: documentId
+              id: documentId,
+              role: userRole,
             },
             (data, status) => {
               const resp = JSON.parse(data)
@@ -127,6 +223,24 @@ $systemInfo = systemInfo();
         "responsive": true,
         "lengthChange": false,
         "autoWidth": false,
+        "columns": [{
+            "width": "10%"
+          }, {
+            "width": "1%"
+          },
+          {
+            "width": "20%"
+          },
+          {
+            "width": "30%"
+          },
+          {
+            "width": "30%"
+          },
+          {
+            "width": "1%"
+          }
+        ]
       });
     });
 

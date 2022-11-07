@@ -48,9 +48,52 @@
             echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
           }
 
-          if ($thesisGroupData->panel_id != null) {
-            $panel = get_user_by_id($thesisGroupData->panel_id);
-            echo "<h6> Panel: <strong>" . ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name") . "</strong> </h6>";
+          if ($thesisGroupData->panel_ids != null) {
+        ?>
+            <h6>Panel:
+              <a data-toggle="modal" data-target="#assignedPanels" class="btn btn-link">
+                View assigned panels
+              </a>
+            </h6>
+
+            <div class="modal fade" id="assignedPanels">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title">Assigned Panels</h5>
+                  </div>
+                  <div class="modal-body">
+                    <div class="form-group">
+                      <label class="control-label">Panels</label>
+                      <?php
+                      foreach (json_decode($thesisGroupData->panel_ids) as $panel_id) :
+                        $panel = get_user_by_id($panel_id);
+                        $panelName = ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name");
+                      ?>
+                        <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                          <div class="mr-1">
+                            <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                          </div>
+                          <div>
+                            <h6>
+                              <strong>
+                                <?= $panelName ?>
+                              </strong>
+                            </h6>
+                          </div>
+                        </div>
+                      <?php
+                      endforeach;
+                      ?>
+                    </div>
+                  </div>
+                  <div class="modal-footer justify-content-end">
+                    <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" data-dismiss="modal">Close</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <?php
           } else {
             echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
           }
@@ -60,7 +103,7 @@
         }
 
         if ($thesisGroupData != null && $thesisGroupData->status == "0") :
-        ?>
+          ?>
           <h6> Group List status: <em>(<?= strtoupper("PENDING") ?>)</em> </h6>
         <?php endif; ?>
 

@@ -105,7 +105,7 @@ $links = array(
   array(
     "title" => "Pending Documents",
     "url" => "$SERVER_NAME/pages/admin/pending-documents",
-    "allowedViews" => array("coordinator", "instructor", "panel", "adviser"),
+    "allowedViews" => array("instructor", "adviser"),
     "config" => array(
       "icon" => "file-upload"
     )
