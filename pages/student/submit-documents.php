@@ -251,6 +251,21 @@ $systemInfo = systemInfo();
     e.preventDefault();
   })
 
+  if (sessionStorage.getItem("searchInput")) {
+    $("#searchInput").val(sessionStorage.getItem("searchInput"))
+  }
+
+  $("#searchInput").on("input", function(e) {
+    sessionStorage.setItem("searchInput", e.target.value)
+  })
+
+  $(document).on('keypress', function(keyEvent) {
+    if (keyEvent.which == 13 && $("#searchInput").val() !== "") {
+      sessionStorage.setItem("searchInput", $("#searchInput").val())
+      window.location.replace(`${window.location.origin}/west/pages/archives?s=${$("#searchInput").val()}`)
+    }
+  });
+
   function displayImg(input, _this) {
     if (input.files && input.files[0]) {
       var reader = new FileReader();

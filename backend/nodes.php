@@ -26,6 +26,7 @@ Feedback format
 
 array(
   "message" => "",
+  "token" => "",
   "isResolved" => false,
   "date" => "",
 )
@@ -121,6 +122,9 @@ if (isset($_GET['action'])) {
       case "markFeedbackResolved":
         markFeedbackResolved();
         break;
+      case "saveOldDocuments":
+        saveOldDocuments();
+        break;
       default:
         null;
         break;
@@ -129,6 +133,69 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function getPageCount($searchVal = "", $limit)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE " . ($searchVal == "" ? "" : "title LIKE '%$searchVal%' and ") . " publish_status='PUBLISHED'"
+  );
+
+  return ceil(mysqli_num_rows($query) / $limit);
+}
+
+function saveOldDocuments()
+{
+  global $conn, $_POST, $_FILES;
+
+  $title = $_POST["title"];
+  $type = $_POST["type"];
+  $year = $_POST["year"];
+  $description = mysqli_escape_string($conn, nl2br($_POST["description"]));
+  $banner = $_FILES["banner"];
+  $pdf = $_FILES["pdfFile"];
+
+  if (intval($banner["error"]) == 0 && intval($pdf["error"]) == 0) {
+
+    $bannerFile = date("mdY-his") . "_" . basename($banner['name']);
+    $bannerDir = "../media/documents/banner/";
+    $bannerUrl = "/media/documents/banner/$bannerFile";
+
+    $pdfFile = date("mdY-his") . "_" . basename($pdf['name']);
+    $pdfDir = "../media/documents/files/";
+    $pdfUrl = "/media/documents/files/$pdfFile";
+
+    if (!is_dir($bannerDir)) {
+      mkdir($bannerDir, 0777, true);
+    }
+
+    if (!is_dir($pdfDir)) {
+      mkdir($pdfDir, 0777, true);
+    }
+
+    if (move_uploaded_file($banner['tmp_name'], "$bannerDir/$bannerFile") && move_uploaded_file($pdf['tmp_name'], "$pdfDir/$pdfFile")) {
+      $query = mysqli_query(
+        $conn,
+        "INSERT INTO documents(title, `type_id`, `year`, `description`, img_banner, project_document, publish_status) VALUES('$title', '$type', '$year', '$description', '$bannerUrl', '$pdfUrl', 'PUBLISHED')"
+      );
+
+      if ($query) {
+        $response["success"] = true;
+        $response["message"] = "Document successfully save.";
+      } else {
+        $response["success"] = false;
+        $response["message"] = mysqli_error($conn);
+      }
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "An error occurred when uploading documents. Please try again later.";
+  }
+
+  returnResponse($response);
 }
 
 function markFeedbackResolved()
@@ -1065,14 +1132,14 @@ function getCurrentInstructorWithOther()
   returnResponse($response);
 }
 
-function getMemberData($group_number, $leader_id)
+function getMemberData($group_number = null, $leader_id)
 {
   global $conn;
   $arr = array();
 
   $query = mysqli_query(
     $conn,
-    "SELECT * FROM users WHERE group_number='$group_number' and leader_id='$leader_id'"
+    "SELECT * FROM users WHERE " . ($group_number == null ? "" : "group_number='$group_number' and ") . "leader_id='$leader_id'"
   );
 
   while ($row = mysqli_fetch_object($query)) {

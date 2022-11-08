@@ -126,6 +126,21 @@ $systemInfo = systemInfo();
     calendar.render();
   })
 
+  if (sessionStorage.getItem("searchInput")) {
+    $("#searchInput").val(sessionStorage.getItem("searchInput"))
+  }
+
+  $("#searchInput").on("input", function(e) {
+    sessionStorage.setItem("searchInput", e.target.value)
+  })
+
+  $(document).on('keypress', function(keyEvent) {
+    if (keyEvent.which == 13 && $("#searchInput").val() !== "") {
+      sessionStorage.setItem("searchInput", $("#searchInput").val())
+      window.location.replace(`${window.location.origin}/west/pages/archives?s=${$("#searchInput").val()}`)
+    }
+  });
+
   function handleOpenModal(modalId, action) {
     if (action === "preview") {
       $(`#preview${modalId}`).modal({

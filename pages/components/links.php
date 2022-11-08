@@ -71,6 +71,22 @@ $links = array(
     )
   ),
   array(
+    "title" => "Upload documents",
+    "url" => "$SERVER_NAME/pages/admin/upload-documents",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "upload"
+    )
+  ),
+  array(
+    "title" => "Published documents",
+    "url" => "$SERVER_NAME/pages/admin/published-documents",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "folder"
+    )
+  ),
+  array(
     "title" => "Thesis type",
     "url" => "$SERVER_NAME/pages/admin/type",
     "allowedViews" => array("coordinator"),
