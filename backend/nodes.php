@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include("conn.php");
 date_default_timezone_set("Asia/Manila");
 $dateNow = date("Y-m-d H:i:s");
-
+$separator = "!I_I!";
 $SERVER_NAME = "http://$_SERVER[SERVER_NAME]/west";
 $ADMIN_ROLES = array(
   "instructor",
@@ -125,6 +125,12 @@ if (isset($_GET['action'])) {
       case "saveOldDocuments":
         saveOldDocuments();
         break;
+      case "getChat":
+        print_r(getChat());
+        break;
+      case "insertMessage":
+        print_r(insertMessage());
+        break;
       default:
         null;
         break;
@@ -133,6 +139,203 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function getLatestMessageData($currentUserId, $otherId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM chat c 
+    WHERE (c.outgoing_id = $currentUserId AND c.incoming_id = $otherId)
+    OR (c.outgoing_id = $otherId AND c.incoming_id = $currentUserId) ORDER BY chat_id DESC LIMIT 1"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object($query);
+  }
+
+  return null;
+}
+
+function time_elapsed_string($datetime, $full = false)
+{
+  $now = new DateTime;
+  $ago = new DateTime($datetime);
+  $diff = $now->diff($ago);
+
+  $diff->w = floor($diff->d / 7);
+  $diff->d -= $diff->w * 7;
+
+  $string = array(
+    'y' => 'year',
+    'm' => 'month',
+    'w' => 'week',
+    'd' => 'day',
+    'h' => 'hour',
+    'i' => 'minute',
+    's' => 'second',
+  );
+  foreach ($string as $k => &$v) {
+    if ($diff->$k) {
+      $v = $diff->$k . ' ' . $v . ($diff->$k > 1 ? 's' : '');
+    } else {
+      unset($string[$k]);
+    }
+  }
+
+  if (!$full) $string = array_slice($string, 0, 1);
+  return $string ? implode(', ', $string) . ' ago' : 'just now';
+}
+
+function insertMessage()
+{
+  global $conn, $_POST, $_FILES, $_SESSION, $separator;
+  date_default_timezone_set("Asia/Manila");
+  error_reporting(0);
+  $resp = array("success" => false, "message" => "");
+
+  $sender = get_user_by_username($_SESSION['username']);
+  $message = mysqli_escape_string($conn, $_POST["message"]);
+
+  $isFileUploaded = true;
+
+  if ($_FILES["files"]["error"][0] == 0) {
+    $file_ary = reArrayFiles($_FILES['files']);
+    foreach ($file_ary as $file) {
+
+      $uploadFileName = mysqli_escape_string($conn, date("mdY-his") . $separator . basename($file['name']));
+      $messageType = strpos(strval($file["type"]), "image") !== false ? "image" : "file";
+      $uploadFile = uploadFile($file["tmp_name"], "../media/chat/$uploadFileName");
+
+      if ($uploadFile) {
+        mysqli_query(
+          $conn,
+          "INSERT INTO chat(incoming_id, outgoing_id, `message`, message_type) VALUES('$_POST[incoming_id]', '$sender->id', '$uploadFileName', '$messageType')"
+        );
+      } else {
+        $isFileUploaded = false;
+        $resp["message"] = "File could not upload.\nPlease rename file and resend it.";
+      }
+    }
+    if ($_POST["message"] != "") {
+      mysqli_query(
+        $conn,
+        "INSERT INTO chat(incoming_id, outgoing_id, `message`, message_type) VALUES('$_POST[incoming_id]', '$sender->id', '$message', 'text')"
+      );
+    }
+  } else {
+    mysqli_query(
+      $conn,
+      "INSERT INTO chat(incoming_id, outgoing_id, `message`, message_type) VALUES('$_POST[incoming_id]', '$sender->id', '$message', 'text')"
+    );
+  }
+
+  if (mysqli_error($conn) == "" && $isFileUploaded) {
+    $resp["success"] = true;
+  }
+
+  return json_encode($resp);
+}
+
+function uploadFile($tmp_file, $fileName)
+{
+  if (!is_dir("../media/chat/")) {
+    mkdir("../media/chat/", 0777, true);
+  }
+
+  return move_uploaded_file($tmp_file, $fileName);
+}
+
+function reArrayFiles($file_post)
+{
+  $file_ary = array();
+  $file_count = count($file_post['name']);
+  $file_keys = array_keys($file_post);
+
+  for ($i = 0; $i < $file_count; $i++) {
+    foreach ($file_keys as $key) {
+      $file_ary[$i][$key] = $file_post[$key][$i];
+    }
+  }
+
+  return $file_ary;
+}
+
+function getChat()
+{
+  global $conn, $_GET, $_SESSION, $SERVER_NAME;
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  $html = "";
+  $empty = "
+  <h5 style='text-align:center'>No message to show.<br> <small>Start chatting now.</small></h5>
+  ";
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM chat c LEFT JOIN users u ON u.id = c.outgoing_id
+    WHERE (c.outgoing_id = $currentUser->id AND c.incoming_id = {$_GET['incoming']})
+    OR (c.outgoing_id = {$_GET['incoming']} AND c.incoming_id = $currentUser->id) ORDER BY chat_id"
+  );
+
+  while ($chat = mysqli_fetch_object($query)) {
+    $profile = $SERVER_NAME . $chat->avatar;
+
+    $time = date_format(
+      date_create($chat->date_created),
+      "M d, Y h:i A"
+    );
+    if ($chat->outgoing_id === $currentUser->id) {
+      $html .= '<div class="chat outgoing chatItem ">
+                  <div class="details">
+                      <p>
+                        ' . formatChatMessage($chat->message, $chat->message_type) . '
+                        <span class="time">
+                          <br>
+                          <small>' . $time . '</small>
+                        </span>
+                      </p>
+                      
+                  </div>
+                  </div>';
+    } else {
+      $html .= '<div class="chat incoming chatItem">
+                  <img src="' . $profile . '" alt="" class="avatar">
+                  <div class="details">
+                      <p>
+                        ' . formatChatMessage($chat->message, $chat->message_type) . '
+                      <span class="time">
+                        <br>
+                        <small>' . $time . '</small>
+                      </span>
+                      </p>
+                  </div>
+                  </div>';
+    }
+  }
+
+  return $html == "" ? $empty : $html;
+}
+
+function formatChatMessage($message, $messageType)
+{
+  global $separator, $SERVER_NAME;
+
+  $respMessage = "";
+
+  if ($messageType == "file") {
+    $fileName = explode($separator, $message)[1];
+    $respMessage = "<a class='text-primary text-underline' href='$SERVER_NAME/media/chat/$message' download='" . $fileName . "'>" . $fileName . "</a>";
+  } else if ($messageType == "image") {
+    // $fileName = explode($separator, $message)[1];
+    $respMessage = "<img src='$SERVER_NAME/media/chat/$message' class='img-fluid banner-img bg-gradient-dark border' style='border-radius: 0' onclick='handlePreview(\"$SERVER_NAME/media/chat/$message\")'>";
+  } else {
+    $respMessage = $message;
+  }
+
+  return $respMessage;
 }
 
 function getPageCount($searchVal = "", $limit)

@@ -87,6 +87,10 @@
               <button type="button" class="btn btn-primary btn-gradient-primary" onclick="handleApproved('<?= $thesisGroupId ?>')" <?= $groups->status == "1" ? "disabled" : "" ?>>
                 Approved
               </button>
+              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="return window.location.href = './message?i=<?= $leader->id ?>'">
+                <i class="fa fa-paper-plane"></i>
+                Chat
+              </button>
             </td>
           </tr>
         <?php endwhile; ?>

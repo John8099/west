@@ -39,31 +39,85 @@ $user = get_user_by_username($_SESSION['username']);
 
       <!-- Main content -->
       <div class="container" style="padding-top: 9rem">
-        <div class="card">
-          <div class="card-header">
-            <h3 class="card-title">Messages</h3>
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Messages</h3>
+              </div>
+              <?php
+              $query = mysqli_query(
+                $conn,
+                "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id'"
+              );
+              $adviserName = "";
+              $instructorName = "";
+
+              $adviser = null;
+              $instructor = null;
+
+              if (mysqli_num_rows($query) > 0) {
+                $thesisGroupData = mysqli_fetch_object($query);
+                $adviser = $thesisGroupData->adviser_id == null ? null : get_user_by_id($thesisGroupData->adviser_id);
+                $instructor = $thesisGroupData->instructor_id == null ? null : get_user_by_id($thesisGroupData->instructor_id);
+
+                if ($adviser != null) {
+                  $adviserName = ucwords("$adviser->first_name " . $adviser->middle_name[0] . ". $adviser->last_name");
+                  $adviserId = $adviser->id;
+                }
+
+                if ($instructor != null) {
+                  $instructorName = ucwords("$instructor->first_name " . $instructor->middle_name[0] . ". $instructor->last_name");
+                  $instructorId = $instructor->id;
+                }
+                
+              }
+              ?>
+              <div class="card-body p-0" style="display: block;">
+                <ul class="nav nav-pills flex-column">
+                  <?php if ($instructorName != "" && $instructor != null) : ?>
+                    <li class="nav-item active">
+                      <a href="./message?i=<?= $instructor->id  ?>" class="nav-link">
+                        Instructor:
+                        <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                          <div class="mr-3">
+                            <img src="<?= $SERVER_NAME . $instructor->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                          </div>
+                          <div>
+                            <h6>
+                              <strong>
+                                <?= $instructorName ?>
+                              </strong>
+                            </h6>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  <?php endif;
+                  if ($adviserName != "" && $adviser != null) : ?>
+                    <li class="nav-item">
+                      <a href="./message?i=<?= $adviser->id  ?>" class="nav-link">
+                        Adviser:
+                        <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                          <div class="mr-3">
+                            <img src="<?= $SERVER_NAME . $adviser->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                          </div>
+                          <div>
+                            <h6>
+                              <strong>
+                                <?= $adviserName ?>
+                              </strong>
+                            </h6>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  <?php endif; ?>
+                </ul>
+              </div>
+              <!-- /.card-body -->
+            </div>
           </div>
-          <div class="card-body p-0" style="display: block;">
-            <ul class="nav nav-pills flex-column">
-              <li class="nav-item active">
-                <a href="#" class="nav-link">
-                  <i class="fas fa-inbox"></i> Inbox
-                  <span class="badge bg-primary float-right">12</span>
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="far fa-envelope"></i> Sent
-                </a>
-              </li>
-              <li class="nav-item">
-                <a href="#" class="nav-link">
-                  <i class="far fa-file-alt"></i> Drafts
-                </a>
-              </li>
-            </ul>
-          </div>
-          <!-- /.card-body -->
         </div>
       </div>
       <!-- /.content -->

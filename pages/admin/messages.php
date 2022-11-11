@@ -44,8 +44,91 @@ $systemInfo = systemInfo();
 
       <!-- Main content -->
       <section class="content">
-        <div class="container-fluid">
+        <div class="container">
+          <div class="row justify-content-center">
+            <div class="col-md-8">
+              <div class="card mt-2">
+                <div class="card-header">
+                  <h3 class="card-title">Messages</h3>
+                </div>
+                <?php
 
+                $chatQ = $conn->query("SELECT * FROM chat WHERE (outgoing_id = $user->id OR incoming_id = $user->id) ORDER BY chat_id DESC");
+
+                $chatIds = array();
+
+                $fetchAllChat = $chatQ->fetch_all(MYSQLI_ASSOC);
+                foreach ($fetchAllChat as $chatData) {
+                  if (!in_array($chatData["incoming_id"], $chatIds) && !in_array($chatData["outgoing_id"], $chatIds)) {
+                    if ($chatData["incoming_id"] != $user->id && $chatData["outgoing_id"] == $user->id) {
+                      array_push($chatIds, $chatData["incoming_id"]);
+                    } else if ($chatData["outgoing_id"] != $user->id && $chatData["incoming_id"] == $user->id) {
+                      array_push($chatIds, $chatData["outgoing_id"]);
+                    }
+                  }
+                }
+
+                ?>
+                <div class="card-body p-0" style="display: block;">
+                  <ul class="nav nav-pills flex-column">
+                    <?php
+                    foreach ($chatIds as $chatId) :
+                      $leader = get_user_by_id($chatId);;
+                      $getLatestMessageData = getLatestMessageData($user->id, $chatId);
+
+                      $latestMessage = "";
+
+                      if ($getLatestMessageData) {
+                        if ($getLatestMessageData->outgoing_id == $user->id) {
+                          $latestMessage .= "You: ";
+                          if ($getLatestMessageData->message_type == "image" || $getLatestMessageData->message_type == "file") {
+                            $latestMessage .= "send a file.";
+                          } else {
+                            $latestMessage .= strlen($getLatestMessageData->message) > 50 ? substr($getLatestMessageData->message, 0, 50) . "..." : $getLatestMessageData->message;
+                          }
+                        } else {
+                          if ($getLatestMessageData->message_type == "image" || $getLatestMessageData->message_type == "file") {
+                            $latestMessage .= "send a file.";
+                          } else {
+                            $latestMessage .= strlen($getLatestMessageData->message) > 50 ? substr($getLatestMessageData->message, 0, 50) . "..." : $getLatestMessageData->message;
+                          }
+                        }
+                      }
+
+                    ?>
+                      <li class="nav-item ">
+                        <a href="./message?i=<?= $leader->id ?>" class="nav-link">
+                          <small class='text-primary' style="float: right;">
+                            <?= time_elapsed_string($getLatestMessageData->date_created) ?>
+                          </small>
+                          <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                            <div class="mr-3">
+                              <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            </div>
+                            <div>
+                              <h6>
+                                <strong>
+                                  <?= ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name") ?>
+                                </strong>
+                              </h6>
+                              <small>
+                                <?= $latestMessage ?>
+                              </small>
+                            </div>
+                          </div>
+                        </a>
+                      </li>
+                    <?php endforeach;
+                    if (count($chatIds) == 0) :
+                    ?>
+                      <h4 style='text-align:center'>No Messages to show.</h4>
+                    <?php endif; ?>
+                  </ul>
+                </div>
+                <!-- /.card-body -->
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       <!-- /.content -->
@@ -66,5 +149,11 @@ $systemInfo = systemInfo();
   <!-- AdminLTE for demo purposes -->
   <script src="../../assets/dist/js/demo.js"></script>
 </body>
+
+<script>
+  $.get(`../../backend/nodes.php?action=getConvo`, function(data) {
+    $("#divConvoData").html(data)
+  });
+</script>
 
 </html>

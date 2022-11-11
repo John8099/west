@@ -42,6 +42,13 @@ function listOfFilesUploadedInDb()
     array_push($listOfFiles, $exploded_pdf[count($exploded_pdf) - 1]);
   }
 
+  $chat_q = mysqli_query($conn, "SELECT * FROM chat");
+  while ($chat = mysqli_fetch_object($chat_q)) {
+    if ($chat->message_type == "image" || $chat->message_type == "file") {
+      array_push($listOfFiles, $chat->message);
+    }
+  }
+
   // $reports_q = mysqli_query($conn, "SELECT * FROM reports");
   // while ($b = mysqli_fetch_object($reports_q)) {
   //   $exploded = explode("/", $b->report_file_name);

@@ -49,7 +49,7 @@ $links = array(
   array(
     "title" => "Messages",
     "url" => "$SERVER_NAME/pages/admin/messages",
-    "allowedViews" => array("coordinator", "instructor", "panel", "adviser"),
+    "allowedViews" => array("instructor", "adviser"),
     "config" => array(
       "icon" => "paper-plane"
     )
@@ -57,7 +57,7 @@ $links = array(
   array(
     "title" => "Task Category",
     "url" => "$SERVER_NAME/pages/admin/task-category",
-    "allowedViews" => array("coordinator", "panel", "adviser"),
+    "allowedViews" => array("coordinator", "panel", "adviser", "instructor"),
     "config" => array(
       "icon" => "th-list"
     )
