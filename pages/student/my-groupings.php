@@ -118,7 +118,7 @@ $systemInfo = systemInfo();
         let options = "<option value='' disabled selected> -- select adviser -- </option>"
         options += resp.adviser.map((data) => {
           return `<option value="${data.id}">
-                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
+                    ${data.first_name} ${data.middle_name ? data.middle_name.charAt(0)+"." : ""} ${data.last_name}
                   </option>`
         });
         const html = `
@@ -249,7 +249,7 @@ $systemInfo = systemInfo();
         if (resp.success) {
           let options = resp.otherInstructors.map((data) => {
             return `<option value="${data.id}" >
-                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
+                    ${data.first_name} ${data.middle_name ? data.middle_name.charAt(0)+"." : ""} ${data.last_name}
                   </option>`
           });
 
@@ -300,7 +300,7 @@ $systemInfo = systemInfo();
         const resp = JSON.parse(data)
         let options = resp.instructors.map((data) => {
           return `<option value="${data.id}" >
-                    ${data.first_name} ${data.middle_name.charAt(0)}. ${data.last_name}
+                    ${data.first_name} ${data.middle_name ? data.middle_name.charAt(0)+"." : ""} ${data.last_name}
                   </option>`
         });
 

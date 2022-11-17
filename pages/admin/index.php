@@ -97,6 +97,12 @@ $systemInfo = systemInfo();
             </div>
             <!-- /.col -->
           </div>
+
+          <div class="row">
+            <div class="col-sm-12">
+              <canvas id="bubbleChart" style="min-height: 400px; height: 400px; max-height: 400px; max-width: 100%;"></canvas>
+            </div>
+          </div>
         </div>
       </section>
       <!-- /.content -->
@@ -116,6 +122,41 @@ $systemInfo = systemInfo();
   <script src="../../assets/dist/js/adminlte.min.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="../../assets/dist/js/demo.js"></script>
+  <script src="../../assets/plugins/chart.js/Chart.min.js"></script>
 </body>
+
+<script>
+  var bubbleChart = $('#bubbleChart').get(0).getContext('2d')
+  const data = {
+    datasets: [{
+      label: 'First Dataset',
+      data: [{
+        x: "4-A",
+        y: 10,
+        r: (10 / 12) * 100 
+      }, {
+        x: "2012",
+        y: 20,
+        r: 10
+      }],
+      backgroundColor: "#007bff7d",
+    }]
+  };
+
+  const config = {
+    type: 'bubble',
+    data: data,
+    options: {
+      maintainAspectRatio: false,
+      responsive: true,
+      scaleOverride: true,
+      scaleSteps: 10,
+      scaleStepWidth: 2020,
+      scaleStartValue: 2012,
+      pointStyle : "dash"
+    }
+  };
+  new Chart(bubbleChart, config)
+</script>
 
 </html>

@@ -172,6 +172,76 @@ $user = get_user_by_username($_SESSION['username']);
                 </tr>
               </tbody>
             </table>
+
+            <table id="panelRating" class="table table-bordered table-hover table-striped mt-5">
+              <thead>
+                <caption class="pl-3" style="color: black; text-align: left; caption-side: top; border: 1px solid #dee2e6">
+                  Panel Ratings
+                </caption>
+                <tr class="bg-gradient-dark text-light">
+                  <?php
+                  $panelsQ = mysqli_query(
+                    $conn,
+                    "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id'"
+                  );
+                  $panelIds = json_decode(mysqli_fetch_object($panelsQ)->panel_ids);
+                  $width = ceil(100 / count($panelIds));
+                  foreach ($panelIds as $panelId) :
+                    $panel = get_user_by_id($panelId);
+                    $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
+                  ?>
+                    <th style="width: <?= "$width%" ?>">
+                      <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                        <div class="mr-1">
+                          <img src="<?= $panel->avatar != null ? $SERVER_NAME . $panel->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                        </div>
+                        <div>
+                          <?= $panelName ?>
+                        </div>
+                      </div>
+                    </th>
+                  <?php
+                  endforeach;
+                  ?>
+                </tr>
+
+              </thead>
+              <tbody>
+                <?php
+                foreach ($panelIds as $panelId) :
+                  $panel = get_user_by_id($panelId);
+                  $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
+                  $feedbackData = getPanelRating($panelId, $document->id);
+                  // print_r($feedbackData);
+                ?>
+                  <td style="width: <?= "$tdWidth%" ?>">
+                    <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
+                      <?php if ($feedbackData->action == "Approved") : ?>
+                        <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
+                          Approved
+                        </span>
+                      <?php else : ?>
+                        <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
+                          Disapproved
+                        </span>
+                      <?php endif; ?>
+                      <span>
+                        &#8226;
+                        <strong>
+                          <?= panelNameType($feedbackData->rating_type) ?>
+                        </strong>
+                      </span>
+                      <p  class="mt-3">
+                        <a href="">
+                           Comments/Suggestions & Rating
+                        </a>
+                      </p>
+                    </blockquote>
+                  <?php
+                endforeach;
+                  ?>
+              </tbody>
+            </table>
           </div>
         </div>
 

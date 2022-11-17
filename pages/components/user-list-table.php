@@ -27,7 +27,7 @@
           "SELECT * FROM users WHERE `role` = 'student' and isLeader = '1' ORDER BY id DESC"
         );
         while ($leader = mysqli_fetch_object($query)) :
-          $leaderName = ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name");
+          $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
           $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
 
           $thesisGroupQuery = mysqli_query(
@@ -44,37 +44,39 @@
               <h5>Leader:</h5>
               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                 <div class="mr-1">
-                  <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                  <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                 </div>
                 <div>
                   <?= $leaderName ?>
                 </div>
               </div>
-              <h5>Members:</h5>
               <?php
-              foreach ($memberData as $member) :
-                $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+              if (count($memberData) > 0) :
+                echo "<h5>Members:</h5>";
+                foreach ($memberData as $member) :
+                  $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
               ?>
-                <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
-                  <div class="mr-1">
-                    <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                  <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                    <div class="mr-1">
+                      <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    </div>
+                    <div>
+                      <?= $memberName ?>
+                    </div>
                   </div>
-                  <div>
-                    <?= $memberName ?>
-                  </div>
-                </div>
-              <?php endforeach; ?>
+              <?php endforeach;
+              endif; ?>
             </td>
             <td>
               <?php
               if ($hasSubmittedGroup && $thesisGroupData != null) {
                 if ($thesisGroupData->instructor_id != null) :
                   $instructor = get_user_by_id($thesisGroupData->instructor_id);
-                  $instructorName = ucwords("$instructor->first_name " . $instructor->middle_name[0] . ". $instructor->last_name");
+                  $instructorName = ucwords("$instructor->first_name " . ($instructor->middle_name != null ? $instructor->middle_name[0] . "." : "") . " $instructor->last_name");
               ?>
                   <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                     <div class="mr-1">
-                      <img src="<?= $SERVER_NAME . $instructor->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      <img src="<?= $instructor->avatar != null ? $SERVER_NAME . $instructor->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
                     <div>
                       <h6>
@@ -86,7 +88,7 @@
                   </div>
               <?php
                 else :
-                  echo "<h6><em>No instructor assigned yet.</em> </h6>";
+                  echo "<h6><em>No assigned instructor.</em> </h6>";
                 endif;
               } else {
                 echo "<h6><em>Not yet submitted group to instructor</em> </h6>";
@@ -99,11 +101,11 @@
                 if ($thesisGroupData->panel_ids != null) :
                   foreach (json_decode($thesisGroupData->panel_ids) as $panel_id) :
                     $panel = get_user_by_id($panel_id);
-                    $panelName = ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name");
+                    $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
               ?>
                     <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                       <div class="mr-1">
-                        <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                        <img src="<?= $panel->avatar != null ? $SERVER_NAME . $panel->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                       </div>
                       <div>
                         <h6>
@@ -116,7 +118,7 @@
               <?php
                   endforeach;
                 else :
-                  echo "<h6><em>No panel assigned yet.</em> </h6>";
+                  echo "<h6><em>No assigned panel.</em> </h6>";
                 endif;
               } else {
                 echo "<h6><em>Not yet submitted group to instructor</em> </h6>";
@@ -128,11 +130,11 @@
               if ($hasSubmittedGroup && $thesisGroupData != null) {
                 if ($thesisGroupData->adviser_id != null) :
                   $adviser = get_user_by_id($thesisGroupData->adviser_id);
-                  $adviserName = ucwords("$adviser->first_name " . $adviser->middle_name[0] . ". $adviser->last_name");
+                  $adviserName = ucwords("$adviser->first_name " . ($adviser->middle_name != null ? $adviser->middle_name[0] . "." : "") . " $adviser->last_name");
               ?>
                   <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                     <div class="mr-1">
-                      <img src="<?= $SERVER_NAME . $adviser->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      <img src="<?= $adviser->avatar != null ? $SERVER_NAME . $adviser->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
                     <div>
                       <h6>
@@ -177,7 +179,7 @@
                         $panels = getAllPanel();
                         foreach ($panels as $panel) :
                         ?>
-                          <option value="<?= $panel->id ?>" <?= $thesisGroupData->panel_ids != null && in_array($panel->id, json_decode($thesisGroupData->panel_ids)) ? "selected" : "" ?>><?= ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name") ?></option>
+                          <option value="<?= $panel->id ?>" <?= $thesisGroupData->panel_ids != null && in_array($panel->id, json_decode($thesisGroupData->panel_ids)) ? "selected" : "" ?>><?= ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name") ?></option>
                         <?php endforeach; ?>
                       </select>
                     </div>

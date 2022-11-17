@@ -22,7 +22,7 @@
           $inviteData = mysqli_fetch_object($inviteQuery);
           $inviteAdviser = get_user_by_id($inviteData->adviser_id);
 
-          $adviserDisplay = "<h6> Adviser: <strong>" . ucwords("$inviteAdviser->first_name " . $inviteAdviser->middle_name[0] . ". $inviteAdviser->last_name") . "</strong> <em>%status%</em> </h6>";
+          $adviserDisplay = "<h6> Adviser: <strong>" . ucwords("$inviteAdviser->first_name " . ($inviteAdviser->middle_name != null ? $inviteAdviser->middle_name[0] . "." : "") . " $inviteAdviser->last_name") . "</strong> <em>%status%</em> </h6>";
 
           if ($inviteData->status == "PENDING") {
             $adviserDisplay = str_replace("%status%", "(PENDING INVITATION)", $adviserDisplay);
@@ -34,7 +34,7 @@
 
           echo $adviserDisplay;
         } else {
-          echo "<h6> Adviser: <em>No adviser assigned yet.</em> </h6>";
+          echo "<h6> Adviser: <em>No assigned adviser.</em> </h6>";
         }
 
         if (mysqli_num_rows($query) > 0) {
@@ -43,9 +43,9 @@
 
           if ($thesisGroupData->instructor_id != null) {
             $instructor = get_user_by_id($thesisGroupData->instructor_id);
-            echo "<h6> Instructor: <strong>" . ucwords("$instructor->first_name " . $instructor->middle_name[0] . ". $instructor->last_name") . "</strong> </h6>";
+            echo "<h6> Instructor: <strong>" . ucwords("$instructor->first_name " . ($instructor->middle_name != null ? $instructor->middle_name[0] . "." : "") . " $instructor->last_name") . "</strong> </h6>";
           } else {
-            echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
+            echo "<h6> Instructor: <em>No assigned instructor.</em> </h6>";
           }
 
           if ($thesisGroupData->panel_ids != null) {
@@ -68,11 +68,11 @@
                       <?php
                       foreach (json_decode($thesisGroupData->panel_ids) as $panel_id) :
                         $panel = get_user_by_id($panel_id);
-                        $panelName = ucwords("$panel->first_name " . $panel->middle_name[0] . ". $panel->last_name");
+                        $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
                       ?>
                         <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                           <div class="mr-1">
-                            <img src="<?= $SERVER_NAME . $panel->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            <img src="<?= $panel->avatar != null ? $SERVER_NAME . $panel->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                           </div>
                           <div>
                             <h6>
@@ -95,11 +95,11 @@
             </div>
           <?php
           } else {
-            echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+            echo "<h6> Panel: <em>No assigned panel.</em> </h6>";
           }
         } else {
-          echo "<h6> Instructor: <em>No instructor assigned yet.</em> </h6>";
-          echo "<h6> Panel: <em>No panel assigned yet.</em> </h6>";
+          echo "<h6> Instructor: <em>No assigned instructor.</em> </h6>";
+          echo "<h6> Panel: <em>No assigned panel.</em> </h6>";
         }
 
         if ($thesisGroupData != null && $thesisGroupData->status == "0") :
@@ -133,13 +133,14 @@
           Cancel Invite
         </button>
 
-      <?php elseif ($inviteData != null && $inviteData->status == "APPROVED" && $thesisGroupData != null && $thesisGroupData->adviser_id != null && $thesisGroupData->instructor_id != null && !$hasSubmittedDocuments) : ?>
+      <?php endif; ?>
+
+      <?php if ($thesisGroupData != null && $thesisGroupData->status == "1" && $thesisGroupData->instructor_id != null  && !$hasSubmittedDocuments) : ?>
 
         <button type="button" id="btnSubmitDocuments" onclick="return window.location.href = './submit-documents'" class="btn btn-success btn-sm">
           <i class="fa fa-check"></i>
           Submit Documents
         </button>
-
       <?php endif;
 
       if ($thesisGroupData == null || ($thesisGroupData != null && $thesisGroupData->instructor_id == null)) : ?>

@@ -71,6 +71,14 @@ $links = array(
     )
   ),
   array(
+    "title" => "Assigned groups",
+    "url" => "$SERVER_NAME/pages/admin/assigned-groups",
+    "allowedViews" => array("panel"),
+    "config" => array(
+      "icon" => "users-cog"
+    )
+  ),
+  array(
     "title" => "Upload documents",
     "url" => "$SERVER_NAME/pages/admin/upload-documents",
     "allowedViews" => array("coordinator"),

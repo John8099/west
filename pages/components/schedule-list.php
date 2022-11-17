@@ -94,7 +94,7 @@ while ($schedule = mysqli_fetch_object($query)) :
           <div class="container-fluid">
             <dl>
               <dt class="text-muted">User</dt>
-              <dd class="pl-4"><?= ucwords("$taskBy->first_name " . $taskBy->middle_name[0] . ". $taskBy->last_name") ?></dd>
+              <dd class="pl-4"><?= ucwords("$taskBy->first_name " . ($taskBy->middle_name != null ? $taskBy->middle_name[0] . "." : "") . " $taskBy->last_name") ?></dd>
               <dt class="text-muted">Category</dt>
               <dd class="pl-4"><?= $category->name ?></dd>
               <dt class="text-muted">Schedule Start</dt>

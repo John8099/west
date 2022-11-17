@@ -18,10 +18,10 @@
       <div class="btn-group nav-link" style="display: flex;align-items: center;">
         <button type="button" class="btn btn-default dropdown-toggle" style="background-color: transparent;border-color: transparent;" data-toggle="dropdown" aria-expanded="false">
           <span>
-            <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 27px; height: 27px;" alt="User Image">
+            <img src="<?= $user->avatar != null ? $SERVER_NAME . $user->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 27px; height: 27px;" alt="User Image">
           </span>
           <span class="ml-3">
-            <?= ucwords("$user->first_name " . $user->middle_name[0] . ". $user->last_name") ?>
+            <?= ucwords("$user->first_name " . ($user->middle_name != null ? $user->middle_name[0] . "." : "") . " $user->last_name") ?>
           </span>
           <span class="sr-only">Toggle Dropdown</span>
         </button>

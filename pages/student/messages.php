@@ -62,12 +62,12 @@ $user = get_user_by_username($_SESSION['username']);
                 $instructor = $thesisGroupData->instructor_id == null ? null : get_user_by_id($thesisGroupData->instructor_id);
 
                 if ($adviser != null) {
-                  $adviserName = ucwords("$adviser->first_name " . $adviser->middle_name[0] . ". $adviser->last_name");
+                  $adviserName = ucwords("$adviser->first_name " . ($adviser->middle_name != null ? $adviser->middle_name[0] . "." : "") . " $adviser->last_name");
                   $adviserId = $adviser->id;
                 }
 
                 if ($instructor != null) {
-                  $instructorName = ucwords("$instructor->first_name " . $instructor->middle_name[0] . ". $instructor->last_name");
+                  $instructorName = ucwords("$instructor->first_name " . ($instructor->middle_name != null ? $instructor->middle_name[0] . "." : "") . " $instructor->last_name");
                   $instructorId = $instructor->id;
                 }
                 
@@ -81,7 +81,7 @@ $user = get_user_by_username($_SESSION['username']);
                         Instructor:
                         <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                           <div class="mr-3">
-                            <img src="<?= $SERVER_NAME . $instructor->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            <img src="<?= $instructor->avatar != null ? $SERVER_NAME . $instructor->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                           </div>
                           <div>
                             <h6>
@@ -100,7 +100,7 @@ $user = get_user_by_username($_SESSION['username']);
                         Adviser:
                         <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                           <div class="mr-3">
-                            <img src="<?= $SERVER_NAME . $adviser->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            <img src="<?= $adviser->avatar != null ? $SERVER_NAME . $adviser->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                           </div>
                           <div>
                             <h6>

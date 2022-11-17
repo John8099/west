@@ -16,7 +16,7 @@
           <th>Group#</th>
           <th>Group list</th>
           <th>My feedback</th>
-          <th>Instructor</th>
+          <th><?= $user->role == "adviser" ? "Instructor" : "Adviser" ?></th>
           <th>Action</th>
         </tr>
       </thead>
@@ -25,11 +25,14 @@
         $documentData = getDocumentsDataWithUsers($user->id, $user->role);
         foreach ($documentData as $data) :
           $leader = get_user_by_id($data->group_leader_id);
-          $leaderName = ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name");
+          $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
           $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
 
           $adviserFeedbackData = json_decode($data->adviser_feedback);
           $instructorFeedbackData = json_decode($data->instructor_feedback);
+
+          $myFeedback =  $user->role == "adviser" ? $adviserFeedbackData : $instructorFeedbackData;
+          $otherFeedback = $user->role == "adviser" ? $instructorFeedbackData : $adviserFeedbackData;
         ?>
           <tr>
             <td><?= date("M d, Y h:i:s A", strtotime($data->date_updated)) ?></td>
@@ -38,7 +41,7 @@
               <h5>Leader:</h5>
               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                 <div class="mr-1">
-                  <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                  <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                 </div>
                 <div>
                   <?= $leaderName ?>
@@ -47,11 +50,11 @@
               <h5>Members:</h5>
               <?php
               foreach ($memberData as $member) :
-                $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+                $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
               ?>
                 <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                   <div class="mr-1">
-                    <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                   </div>
                   <div>
                     <?= $memberName ?>
@@ -61,7 +64,7 @@
             </td>
             <td>
               <?php
-              if ($adviserFeedbackData == null) :
+              if ($myFeedback == null) :
               ?>
                 <p class='text-center'>
                   <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -70,31 +73,25 @@
                 </p>
                 <?php
               else :
-                foreach ($adviserFeedbackData->feedback as $adFed) :
+                foreach ($myFeedback->feedback as $myFeed) :
                 ?>
                   <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
                     <?php
-                    if ($adFed->isResolved == "true") : ?>
-                      <span>&#8226; <strong><?= $adFed->date ?></strong></span>
+                    if ($myFeed->isResolved == "true") : ?>
+                      <span>&#8226; <strong><?= $myFeed->date ?></strong></span>
                       <p>
                         <s>
-                          <?= nl2br($adFed->message) ?>
+                          <?= nl2br($myFeed->message) ?>
                         </s>
                       </p>
                       <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
                     <?php else : ?>
-                      <span>&#8226;<strong><?= $adFed->date ?></strong></span>
-                      <?php
-                      if ($user->role == "adviser") :
-                      ?>
-                        <a href="#" onclick="handleMarkResolved('<?= $adFed->token ?>', '<?= $data->id ?>', '<?= $user->role ?>')">
-                          <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Mark as resolved</span>
-                        </a>
-                      <?php
-                      endif;
-                      ?>
+                      <span>&#8226;<strong><?= $myFeed->date ?></strong></span>
+                      <a href="#" onclick="handleMarkResolved('<?= $otherFeed->token ?>', '<?= $data->id ?>', '<?= $user->role ?>')">
+                        <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Mark as resolved</span>
+                      </a>
                       <p>
-                        <?= nl2br($adFed->message) ?>
+                        <?= nl2br($myFeed->message) ?>
                       </p>
                       <span class="badge badge-warning rounded-pill px-2" style="float:right;font-size: 14px">To update</span>
                     <?php endif; ?>
@@ -102,7 +99,7 @@
                 <?php
                 endforeach;
               endif;
-              if ($adviserFeedbackData != null && $adviserFeedbackData->isApproved == "true") :
+              if ($myFeedback != null && $myFeedback->isApproved == "true") :
                 ?>
                 <p class='text-center'>
                   <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -113,7 +110,7 @@
             </td>
             <td>
               <?php
-              if ($instructorFeedbackData == null) :
+              if ($otherFeedback == null) :
               ?>
                 <p class='text-center'>
                   <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
@@ -122,31 +119,22 @@
                 </p>
                 <?php
               else :
-                foreach ($instructorFeedbackData->feedback as $insFed) :
+                foreach ($otherFeedback->feedback as $otherFeed) :
                 ?>
                   <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
                     <?php
-                    if ($insFed->isResolved == "true") : ?>
-                      <span>&#8226; <strong><?= $insFed->date ?></strong></span>
+                    if ($otherFeed->isResolved == "true") : ?>
+                      <span>&#8226; <strong><?= $otherFeed->date ?></strong></span>
                       <p>
                         <s>
-                          <?= nl2br($insFed->message) ?>
+                          <?= nl2br($otherFeed->message) ?>
                         </s>
                       </p>
                       <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Resolved</span>
                     <?php else : ?>
-                      <span>&#8226;<strong><?= $insFed->date ?></strong></span>
-                      <?php
-                      if ($user->role == "instructor") :
-                      ?>
-                        <a href="#" onclick="handleMarkResolved('<?= $insFed->token ?>', '<?= $data->id ?>', '<?= $user->role ?>')">
-                          <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">Mark as resolved</span>
-                        </a>
-                      <?php
-                      endif;
-                      ?>
+                      <span>&#8226;<strong><?= $otherFeed->date ?></strong></span>
                       <p>
-                        <?= nl2br($insFed->message) ?>
+                        <?= nl2br($otherFeed->message) ?>
                       </p>
                       <span class="badge badge-warning rounded-pill px-2" style="float:right;font-size: 14px">To update</span>
                     <?php endif; ?>
@@ -154,7 +142,7 @@
                 <?php
                 endforeach;
               endif;
-              if ($instructorFeedbackData != null && $instructorFeedbackData->isApproved == "true") :
+              if ($otherFeedback != null && $otherFeedback->isApproved == "true") :
                 ?>
                 <p class='text-center'>
                   <span class="badge badge-success rounded-pill px-4" style="font-size: 18px">
@@ -207,7 +195,7 @@
                     <div class="pl-4">
                       <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
                         <div class="mr-1">
-                          <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                          <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                         </div>
                         <div>
                           <?= $leaderName ?>
@@ -220,11 +208,11 @@
                     <div class="pl-4">
                       <?php
                       foreach ($memberData as $member) :
-                        $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+                        $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
                       ?>
                         <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
                           <div class="mr-1">
-                            <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                           </div>
                           <div>
                             <?= $memberName ?>

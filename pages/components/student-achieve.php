@@ -45,10 +45,10 @@ $document = getSubmittedDocuments($user);
         <div class="pl-4">
           <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
             <div class="mr-1">
-              <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+              <img src="<?= $user->avatar != null ? $SERVER_NAME . $user->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
             </div>
             <div>
-              <?= ucwords("$user->first_name " . $user->middle_name[0] . ". $user->last_name") ?>
+              <?= ucwords("$user->first_name " . ($user->middle_name != null ? $user->middle_name[0] . "." : "") . " $user->last_name") ?>
             </div>
           </div>
         </div>
@@ -59,11 +59,11 @@ $document = getSubmittedDocuments($user);
           <?php
           $memberData = json_decode(getMemberData($user->group_number, $user->id));
           foreach ($memberData as $member) :
-            $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+            $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
           ?>
             <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
               <div class="mr-1">
-                <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
               </div>
               <div>
                 <?= $memberName ?>

@@ -58,12 +58,12 @@ if (!isset($_GET['i'])) {
                       <i class="fa fa-arrow-left "></i>
                     </a>
                     <div class="mr-1">
-                      <img src="<?= $SERVER_NAME . $user_details->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                      <img src="<?= $user_details->avatar != null ? $SERVER_NAME . $user_details->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
                     <div>
                       <h6>
                         <strong>
-                          <?= ucwords("$user_details->first_name " . $user_details->middle_name[0] . ". $user_details->last_name") ?>
+                          <?= ucwords("$user_details->first_name " . ($user_details->middle_name != null ? $user_details->middle_name[0] . "." : "") . " $user_details->last_name") ?>
                         </strong>
                       </h6>
                     </div>

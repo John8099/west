@@ -16,13 +16,13 @@
           </div>
           <div class="col-lg-4">
             <div class="form-group">
-              <label class="control-label text-navy">MiddleName</label>
+              <label class="control-label text-navy">Middle name</label>
               <input type="text" name="mname" class="form-control form-control-border" value="<?= $user->middle_name ?>">
             </div>
           </div>
           <div class="col-lg-4">
             <div class="form-group">
-              <label class="control-label text-navy">LastName</label>
+              <label class="control-label text-navy">Last name</label>
               <input type="text" name="lname" class="form-control form-control-border" value="<?= $user->last_name ?>" required>
             </div>
           </div>

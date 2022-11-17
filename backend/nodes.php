@@ -131,6 +131,9 @@ if (isset($_GET['action'])) {
       case "insertMessage":
         print_r(insertMessage());
         break;
+      case "saveRating":
+        saveRating();
+        break;
       default:
         null;
         break;
@@ -139,6 +142,180 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function getPanelRating($panelId, $documentId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM panel_ratings WHERE document_id='$documentId' and panel_id='$panelId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object($query);
+  }
+  return null;
+}
+
+function saveRating()
+{
+  global $conn, $_POST;
+  $post = json_decode($_POST["data"], true);
+
+  $documentId = $post["documentId"];
+  $panelId = $post["panelId"];
+  $type = $post["type"];
+
+  $nameType = panelNameType($type);
+
+  if (!hasPanelRating($panelId, $type, $documentId)) {
+    $leaderId = $post["leaderId"];
+
+    $comment = nl2br($post["comment"]);
+    $actionTaken = $post["actionTaken"];
+    $individualGrade = json_encode($post["individualGrade"]);
+
+    $groupGrade = $type == "concept" ? json_encode($post["groupGrade"]) : json_encode($post["otherGroupGrade"]);
+
+    $query = mysqli_query(
+      $conn,
+      "INSERT INTO panel_ratings(document_id, leader_id, panel_id, rating_type, comment, `action`, group_grade, individual_grade) VALUES('$documentId', '$leaderId', '$panelId', '$type', '$comment', '$actionTaken', '$groupGrade', '$individualGrade')"
+    );
+
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Group successfully rated.";
+      updateDocumentPanelStatus($leaderId, $type, $documentId);
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "You already rate the group for $nameType";
+  }
+
+  returnResponse($response);
+}
+
+function panelNameType($type)
+{
+  $nameType = "";
+
+  switch ($type) {
+    case "concept":
+      $nameType = "Concept Proposal";
+      break;
+    case "20percent":
+      $nameType = "20% Progress";
+      break;
+    case "50percent":
+      $nameType = "50% Progress";
+      break;
+    case "final":
+      $nameType = "Final";
+      break;
+    default:
+      null;
+  }
+
+  return $nameType;
+}
+
+function updateDocumentPanelStatus($leaderId, $type, $documentId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leaderId'"
+  );
+  if (mysqli_num_rows($query) > 0) {
+    $panel_ids = json_decode(mysqli_fetch_object($query)->panel_ids);
+    $approved = 0;
+    $disapproved = 0;
+
+    foreach ($panel_ids as $panel_id) {
+      $panel_ratingQ = mysqli_query(
+        $conn,
+        "SELECT panel_id, `rating_type`, document_id, leader_id, `action` FROM panel_ratings WHERE panel_id='$panel_id' and `rating_type`='$type' and document_id='$documentId' and leader_id='$leaderId'"
+      );
+      while ($row = mysqli_fetch_object($panel_ratingQ)) {
+        if (strtolower($row->action) == "approved") {
+          $approved++;
+        } else if (strtolower($row->action) == "disapproved") {
+          $disapproved++;
+        }
+      }
+    }
+
+    if (($approved + $disapproved) == count($panel_ids)) {
+      $documentRateStatus = $approved > $disapproved ? "APPROVED" : "DISAPPROVED";
+
+      mysqli_query(
+        $conn,
+        "UPDATE documents SET panel_rate_status='$documentRateStatus' WHERE id='$documentId'"
+      );
+    }
+  }
+}
+
+function hasPanelRating($panelId, $ratingType, $documentId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM panel_ratings WHERE document_id='$documentId' and panel_id='$panelId' and rating_type='$ratingType'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  }
+  return false;
+}
+
+function generateTextareaTdRadio($len, $name)
+{
+  $tds = array();
+
+  for ($i = 1; $i <= $len; $i++) {
+    array_push($tds, "<td class='v-align-middle'>
+                        <div class='form-group' style='margin: 0;'>
+                          <input type='radio' value='$i' name='$name' class='radio-big rating-radio' required>
+                        </div>
+                      </td>");
+  }
+
+  return implode("\n", $tds);
+}
+
+function getPanelAssignedGroup($userId)
+{
+  global $conn;
+
+  $assignedGroupData = array();
+  $query = mysqli_query(
+    $conn,
+    "SELECT 
+    tg.group_leader_id,
+    tg.group_number,
+    tg.panel_ids,
+    d.* FROM thesis_groups tg 
+    INNER JOIN documents d 
+    ON tg.group_leader_id = d.leader_id"
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    $panel_ids = json_decode($row->panel_ids);
+    if (in_array($userId, $panel_ids)) {
+      array_push($assignedGroupData, $row);
+    }
+  }
+
+  return count($assignedGroupData) > 0 ? $assignedGroupData : null;
 }
 
 function getLatestMessageData($currentUserId, $otherId)
@@ -1211,7 +1388,7 @@ function addAdmin()
   global $conn, $_POST, $_FILES, $dateNow;
 
   $fname = $_POST["fname"];
-  $mname = $_POST["mname"];
+  $mname = $_POST["mname"] == "" ? null : $_POST["mname"];;
   $lname = $_POST["lname"];
   $email = $_POST["email"];
   $avatar = $_FILES["avatar"];
@@ -1238,7 +1415,7 @@ function addAdmin()
           $conn,
           "INSERT INTO 
           users(first_name, middle_name, last_name, avatar, username, email, `password`, `role`, date_added, is_new)
-          VALUES('$fname', '$mname', '$lname', '$img_url', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
+          VALUES('$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$img_url', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
         );
       } else {
         $response["message"] = "Error Uploading file.";
@@ -1248,7 +1425,7 @@ function addAdmin()
         $conn,
         "INSERT INTO 
         users(first_name, middle_name, last_name, username, email, `password`, `role`, date_added, is_new)
-        VALUES('$fname', '$mname', '$lname', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
+        VALUES('$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$username', '$email', '$password', '$role', '$dateNow', TRUE)"
       );
     }
 
@@ -1325,7 +1502,7 @@ function getCurrentInstructorWithOther()
       array_push($response["otherInstructors"], $row);
     }
 
-    $response["currentInstructor"] = ucwords("$currentInstructor->first_name " . $currentInstructor->middle_name[0] . ". $currentInstructor->last_name");
+    $response["currentInstructor"] = ucwords("$currentInstructor->first_name " . $currentInstructor->middle_name ? $currentInstructor->middle_name[0] : "" . ". $currentInstructor->last_name");
     $response["success"] = true;
   } else {
     $response["success"] = false;
@@ -1526,7 +1703,7 @@ function addGroupMate()
   $group_number = $_POST["group_number"];
 
   $fname = $_POST["fname"];
-  $mname = $_POST["mname"];
+  $mname = $_POST["mname"]  == "" ? null : $_POST["mname"];;
   $lname = $_POST["lname"];
   $roll = $_POST["roll"];
   $email = $_POST["email"];
@@ -1556,7 +1733,7 @@ function addGroupMate()
           $conn,
           "INSERT INTO 
           users(roll, first_name, middle_name, last_name, group_number, year_and_section, avatar, username, email, `role`, leader_id, date_added)
-          VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$img_url', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
+          VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$group_number', '$year-$section', '$img_url', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
         );
       } else {
         $response["message"] = "Error Uploading file.";
@@ -1566,7 +1743,7 @@ function addGroupMate()
         $conn,
         "INSERT INTO 
         users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `role`, leader_id, date_added)
-        VALUES('$roll', '$fname', '$mname', '$lname', '$group_number', '$year-$section', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
+        VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$group_number', '$year-$section', '$username', '$email', '$role', '$currentUser->id', '$dateNow')"
       );
     }
 
@@ -1671,7 +1848,7 @@ function updateUserDB($post, $img_url = null, $hash)
   $role = $post["role"];
 
   $fname = $post["fname"];
-  $mname = $post["mname"];
+  $mname = $post["mname"]  == "" ? null : $_POST["mname"];;
   $lname = $post["lname"];
   $email = $post["email"];
 
@@ -1688,7 +1865,7 @@ function updateUserDB($post, $img_url = null, $hash)
     $query = "UPDATE users SET
     " . ($roll == null ? '' : "roll='$roll',") . "
     first_name='$fname',
-    middle_name='$mname',
+    middle_name=" . ($mname ? "'$mname'" : 'NULL') . ",
     last_name='$lname',
     " . ($group_number == null ? '' : "group_number='$group_number',") . "
     " . ($year == null && $section == null ? '' : "year_and_section='$year-$section',") . "
@@ -1700,7 +1877,7 @@ function updateUserDB($post, $img_url = null, $hash)
     $query = "UPDATE users SET
     " . ($roll == null ? '' : "roll='$roll',") . "
     first_name='$fname',
-    middle_name='$mname',
+    middle_name=" . ($mname ? "'$mname'" : 'NULL') . ",
     last_name='$lname',
     " . ($img_url == null ? '' : "avatar='$img_url', ") . "
     email='$email',
@@ -1991,4 +2168,11 @@ function returnResponse($params)
   print_r(
     json_encode($params)
   );
+}
+
+function pr($data)
+{
+  echo "<pre>";
+  print_r($data); // or var_dump($data);
+  echo "</pre>";
 }

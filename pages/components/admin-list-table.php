@@ -30,13 +30,13 @@
           "SELECT * FROM users WHERE `role` != 'student' and id != '$user->id' ORDER BY id DESC"
         );
         while ($admin = mysqli_fetch_object($query)) :
-          $adminName = ucwords("$admin->first_name " . $admin->middle_name[0] . ". $admin->last_name");
+          $adminName = ucwords("$admin->first_name " . ($admin->middle_name != null ? $admin->middle_name[0] . "." : "") . " $admin->last_name");
         ?>
           <tr>
             <td><?= date("Y-m-d H:i", strtotime($admin->date_added)) ?></td>
             <td><?= date("Y-m-d H:i", strtotime($admin->date_updated)) ?></td>
             <td>
-              <img src="<?= $SERVER_NAME . $admin->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+              <img src="<?= $admin->avatar != null ? $SERVER_NAME . $admin->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
             </td>
             <td><?= $adminName ?></td>
             <td><?= $admin->email ?></td>

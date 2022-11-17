@@ -53,7 +53,7 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label for="img" class="control-label text-muted">Choose Image</label>
-              <input type="file" name="avatar" class="form-control border-0" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))" required>
+              <input type="file" name="avatar" class="form-control border-0" accept="image/png,image/jpeg" onchange="displayImg(this,$(this))">
             </div>
             <div class="form-group text-center">
               <img src="<?= $SERVER_NAME ?>/assets/dist/img/no-image-available.png" alt="My Avatar" id="cimg" class="img-fluid student-img bg-gradient-dark border" style="width: 217px; height: 217px;">

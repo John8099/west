@@ -78,7 +78,7 @@ $systemInfo = systemInfo();
                       );
                       while ($invite = mysqli_fetch_object($query)) :
                         $leader = get_user_by_id($invite->leader_id);
-                        $leaderName = ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name");
+                        $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
                         $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
 
                         $thesisGroupQuery = mysqli_query(
@@ -95,7 +95,7 @@ $systemInfo = systemInfo();
                           <td>
                             <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                               <div class="mr-1">
-                                <img src="<?= $SERVER_NAME . $leader->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                                <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                               </div>
                               <div>
                                 <?= $leaderName ?>
@@ -105,11 +105,11 @@ $systemInfo = systemInfo();
                           <td>
                             <?php
                             foreach ($memberData as $member) :
-                              $memberName = ucwords("$member->first_name " . $member->middle_name[0] . ". $member->last_name");
+                              $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
                             ?>
                               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                                 <div class="mr-1">
-                                  <img src="<?= $SERVER_NAME . $member->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                                  <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                                 </div>
                                 <div>
                                   <?= $memberName ?>

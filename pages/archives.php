@@ -74,7 +74,7 @@ $systemInfo = systemInfo();
                     $leader = $data->leader_id == null ? null : get_user_by_id($data->leader_id);
                     $leaderName = "";
                     if ($leader) {
-                      $leaderName = ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name");
+                      $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
                     }
                   ?>
                     <div class="list-group">

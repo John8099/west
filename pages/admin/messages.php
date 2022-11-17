@@ -103,12 +103,12 @@ $systemInfo = systemInfo();
                           </small>
                           <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                             <div class="mr-3">
-                              <img src="<?= $SERVER_NAME . $user->avatar ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                              <img src="<?= $user->avatar != null ? $SERVER_NAME . $user->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                             </div>
                             <div>
                               <h6>
                                 <strong>
-                                  <?= ucwords("$leader->first_name " . $leader->middle_name[0] . ". $leader->last_name") ?>
+                                  <?= ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name") ?>
                                 </strong>
                               </h6>
                               <small>
