@@ -1030,7 +1030,7 @@ function getChat()
   );
 
   while ($chat = mysqli_fetch_object($query)) {
-    $profile = $SERVER_NAME . $chat->avatar;
+    $profile = $chat->avatar != null ? $SERVER_NAME . $chat->avatar : $SERVER_NAME . "/public/default.png";
 
     $time = date_format(
       date_create($chat->date_created),
