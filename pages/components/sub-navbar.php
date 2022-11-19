@@ -2,7 +2,7 @@
 <nav class="navbar navbar-expand-md nav-white bg-white" style="position:fixed; top: 3.5rem; width: 100%;z-index: 999;">
   <div class="container-fluid">
     <a href="./" class="navbar-brand d-flex align-items-center">
-      <img src="<?= "http://{$_SERVER['SERVER_NAME']}/west" ?>/public/logo-1657357283.png" alt="Site Logo" class="brand-image img-circle elevation-3" style="opacity: .8;height: 33px;">
+      <img src="<?= "http://{$_SERVER['SERVER_NAME']}/west" ?>/public/logo-1657357283.png" alt="Site Logo" class="brand-image img-circle" style="opacity: .8;height: 33px;">
       <span class="ml-2" style="color: black">WVSU</span>
     </a>
 
@@ -15,24 +15,27 @@
         fn ($val) => in_array($user->role, $val["allowedViews"]),
         ARRAY_FILTER_USE_BOTH
       );
+      $leader = $isLeader ? $user : get_user_by_id($user->leader_id);
       foreach ($navBarLinks as $key => $value) :
-        $query = mysqli_query(
-          $conn,
-          "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id' and group_number='$user->group_number'"
-        );
-        $thesisGroupData = null;
+        if (!$isNotYetAssignedGroup) {
+          $query = mysqli_query(
+            $conn,
+            "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id' and group_number='$leader->group_number'"
+          );
+          $thesisGroupData = null;
 
-        if (mysqli_num_rows($query) > 0) {
-          $thesisGroupData = mysqli_fetch_object($query);
-        }
+          if (mysqli_num_rows($query) > 0) {
+            $thesisGroupData = mysqli_fetch_object($query);
+          }
 
-        $hasSubmittedDocuments = hasSubmittedDocuments($user);
-        if ($value["title"] == "Document Status" && !$hasSubmittedDocuments) {
-          continue;
-        }
-        
-        if ($value["title"] == "Messages" && $thesisGroupData != null && $thesisGroupData->instructor_id == null) {
-          continue;
+          $hasSubmittedDocuments = hasSubmittedDocuments($leader);
+          if ($value["title"] == "Document Status" && !$hasSubmittedDocuments) {
+            continue;
+          }
+
+          if ($value["title"] == "Messages" && $thesisGroupData != null && $thesisGroupData->instructor_id == null) {
+            continue;
+          }
         }
       ?>
         <li class="nav-item">

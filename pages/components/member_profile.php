@@ -6,14 +6,6 @@
     <div class="card-header">
       <h5 class="card-title"><?= ucwords("$member->last_name's") ?> Profile</h5>
       <div class="card-tools">
-        <button type="submit" class="btn btn-sm btn-primary m-1">
-          <i class="fa fa-edit"></i>
-          Edit
-        </button>
-        <button type="button" class="btn btn-sm btn-danger m-1" onclick="handleDeleteMember('<?= $member->id ?>')">
-          <i class="fa fa-trash"></i>
-          Delete
-        </button>
         <button type="button" onclick="return window.history.back()" class="btn btn-default border btn-sm m-1">
           <i class="fa fa-angle-left"></i>
           Back to List

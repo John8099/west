@@ -1,12 +1,12 @@
 <!-- Sub Navbar -->
 <nav class="navbar navbar-expand-md nav-white bg-white" style="position:fixed; top: 3.5rem; width: 100%;z-index: 999;">
-  <div class="container">
+  <div class="container-fluid">
     <a href="./" class="navbar-brand d-flex align-items-center">
       <img src="<?= $SERVER_NAME . $systemInfo->logo ?>" alt="Site Logo" class="brand-image img-circle elevation-3" style="opacity: .8;height: 33px;">
       <span class="ml-2" style="color: black">WVSU</span>
     </a>
 
-    <ul class="navbar-nav mr-auto ">
+    <ul class="navbar-nav d-flex justify-content-center ">
       <?php
       include_once("links.php");
       $self = "http://{$_SERVER['SERVER_NAME']}{$_SERVER['PHP_SELF']}";

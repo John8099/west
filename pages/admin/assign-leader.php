@@ -28,6 +28,18 @@ $systemInfo = systemInfo();
   <!-- DataTables -->
   <link rel="stylesheet" href="../../assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
   <link rel="stylesheet" href="../../assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+
+  <link rel="stylesheet" href="../../assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
+
+  <link rel="stylesheet" href="../../assets/plugins/datatables-select/css/select.bootstrap4.min.css">
+
+  <link rel="stylesheet" href="../../assets/plugins/datatables-searchbuilder/css/searchBuilder.bootstrap4.min.css">
+  <style>
+    .dt-button-collection {
+      width: auto !important;
+      left: 0 !important;
+    }
+  </style>
 </head>
 
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -52,7 +64,7 @@ $systemInfo = systemInfo();
                 <div class="card-header">
                   <div class="row mb-2">
                     <div class="col-sm-6">
-                      <h4>Group List</h4>
+                      <h4>Assign Leader</h4>
                     </div>
 
                   </div>
@@ -62,82 +74,53 @@ $systemInfo = systemInfo();
                   <table id="student_list" class="table table-bordered table-hover">
                     <thead>
                       <tr class="bg-gradient-dark text-light">
-                        <th>Group#</th>
-                        <th>Date created</th>
-                        <th>Leader</th>
-                        <th>Members</th>
-                        <th>Status</th>
+                        <th>Group Number</th>
+                        <th>Student Name</th>
+                        <th>Section</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php
+                      $handledSections = getInstructorHandledSections($user->id);
+                      $sections = (implode('\', \'', $handledSections));
+                      $fin = "'" . $sections . "'";
                       $query = mysqli_query(
                         $conn,
-                        "SELECT * FROM invite WHERE adviser_id='$user->id' ORDER BY `status` DESC"
+                        "SELECT * FROM users WHERE `role`='student' and group_number is not NULL and year_and_section in(" . $fin . ") and isLeader is NULL and leader_id is NULL GROUP BY year_and_section, group_number"
                       );
-                      while ($invite = mysqli_fetch_object($query)) :
-                        $leader = get_user_by_id($invite->leader_id);
-                        $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
-                        $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
 
-                        $thesisGroupQuery = mysqli_query(
-                          $conn,
-                          "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id' and group_number='$leader->group_number'"
-                        );
-
-                        $hasSubmittedGroup = mysqli_num_rows($thesisGroupQuery) > 0;
-                        $thesisGroupData = $hasSubmittedGroup ? mysqli_fetch_object($thesisGroupQuery) : null;
+                      while ($group = mysqli_fetch_object($query)) :
                       ?>
                         <tr>
-                          <td><?= $leader->group_number ?></td>
-                          <td><?= date("Y-m-d H:i:s", strtotime($invite->date_created)) ?></td>
-                          <td>
-                            <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
-                              <div class="mr-1">
-                                <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
-                              </div>
-                              <div>
-                                <?= $leaderName ?>
-                              </div>
-                            </div>
-                          </td>
+                          <td style="vertical-align: middle; text-align:center;font-size: 30px"><?= $group->group_number ?></td>
                           <td>
                             <?php
-                            foreach ($memberData as $member) :
-                              $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
+                            $studentQ = mysqli_query(
+                              $conn,
+                              "SELECT * FROM users WHERE group_number='$group->group_number' and isLeader is NULL and leader_id is NULL"
+                            );
+                            $options = array();
+                            while ($student = mysqli_fetch_object($studentQ)) :
+                              $studentsName = ucwords("$student->first_name " . ($student->middle_name != null ? $student->middle_name[0] . "." : "") . " $student->last_name");
+                              array_push($options, array("id" => $student->id, "name" => $studentsName));
                             ?>
                               <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                                 <div class="mr-1">
-                                  <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                                  <img src="<?= $student->avatar != null ? $SERVER_NAME . $student->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                                 </div>
                                 <div>
-                                  <?= $memberName ?>
+                                  <?= $studentsName ?>
                                 </div>
                               </div>
-                            <?php endforeach; ?>
+                            <?php endwhile; ?>
                           </td>
-                          <td class="text-center py-1 px-2">
-                            <?php
-                            $class = "";
-                            if ($invite->status == "PENDING") {
-                              $class = "rounded-pill badge badge-warning bg-gradient-warning px-3";
-                            } else if ($invite->status == "DECLINED") {
-                              $class = "rounded-pill badge badge-danger bg-gradient-danger px-3";
-                            } else {
-                              $class = "rounded-pill badge badge-success bg-gradient-success px-3";
-                            }
-                            ?>
-                            <span class="<?= $class ?>" style="font-size: 18px;">
-                              <?= $invite->status ?>
-                            </span>
-                          </td>
-                          <td class="text-center">
-                            <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>','approve')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
-                              Approved
-                            </button>
-                            <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleBtnClick('<?= $invite->id ?>', '<?= $invite->leader_id ?>', 'decline')" <?= $invite->status == "DECLINED" || $invite->status == "APPROVED"  ? "disabled" : "" ?>>
-                              Decline
+
+                          <td style="vertical-align: middle; text-align:center;font-size: 30px"><?= $group->year_and_section ?></td>
+                          <td>
+                            <input type="text" id="students_<?= $group->group_number ?>" value='<?= json_encode($options) ?>' hidden readonly>
+                            <button type="button" class="btn btn-primary btn-gradient-primary" onclick="handleSetLeader('students_<?= $group->group_number ?>', '<?= $group->group_number ?>')">
+                              Set group leader
                             </button>
                           </td>
                         </tr>
@@ -159,6 +142,7 @@ $systemInfo = systemInfo();
   </div>
   <!-- ./wrapper -->
 
+
   <!-- jQuery -->
   <script src="../../assets/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
@@ -175,32 +159,64 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/datatables/jquery.dataTables.min.js"></script>
   <script src="../../assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
   <script src="../../assets/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-  <script src="../../assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
 
   <script>
-    $(function() {
-      $("#student_list").DataTable({
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-      });
-    });
+    const table = $("#student_list").DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+    })
 
-    function handleBtnClick(inviteId, leaderId, action) {
+
+    function handleSetLeader(inputStudentList, groupNumber) {
+      const studentList = JSON.parse($(`#${inputStudentList}`).val());
+
+      let options = "<option value='' disabled selected> -- select leader -- </option>"
+      options += studentList.map((data) => {
+        return `<option value="${data.id}">
+                    ${data.name}
+                  </option>`
+      });
+      const html = `
+        <div class="form text-center">
+          <div class="form-group">
+            <label class="control-label text-navy">Select leader <span class="text-danger">*</span></label>
+            <select id="inputLeader" class="form-control" style="text-transform: capitalize">
+              ${studentList.length == 0  ? "<option value='' disabled selected> No available students </option>" : options}
+            </select>
+          </div>
+        </div>
+        `;
+
       swal.fire({
-        title: 'Are you sure',
         icon: 'question',
-        html: `you want to <strong>"${action}"</strong> this invite?`,
+        html: html,
         showDenyButton: true,
-        confirmButtonText: 'Yes',
-        denyButtonText: 'No',
+        confirmButtonText: 'Submit',
+        denyButtonText: 'Cancel',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        preConfirm: () => {
+          let error = 0;
+          if (!$("#inputLeader").val()) {
+            $("#inputLeader").addClass("is-invalid");
+            swal.showValidationMessage("Please select leader")
+            error++
+          }
+
+          return error == 0 ? true : false;
+        },
       }).then((res) => {
         if (res.isConfirmed) {
+          swal.showLoading()
+          const leaderId = $("#inputLeader").val();
           $.post(
-            `../../backend/nodes?action=handleAdviserInvite`, {
-              invite_id: inviteId,
-              action: action,
-              leader_id: leaderId
+            `../../backend/nodes?action=assignLeader`, {
+              leaderId: leaderId,
+              groupNumber: groupNumber,
             },
             (data, status) => {
               const resp = JSON.parse(data)
@@ -220,6 +236,13 @@ $systemInfo = systemInfo();
           });
         }
       })
+      $("#inputLeader").on("change", function(e) {
+        $("#inputLeader").removeClass("is-invalid");
+        swal.resetValidationMessage()
+      })
+      if (studentList.length == 0) {
+        swal.getConfirmButton().disabled = true
+      }
     }
   </script>
 </body>

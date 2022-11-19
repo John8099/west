@@ -31,7 +31,7 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label class="control-label text-navy">Role</label>
-              <select name="role" class="form-control">
+              <select name="role" id="inputRole" class="form-control">
                 <option value="" selected disabled>-- select admin role --</option>
                 <?php
                 foreach ($ADMIN_ROLES as $role) :
@@ -41,6 +41,22 @@
                 endforeach;
                 ?>
               </select>
+            </div>
+            <div class="form-group  mb-3" id="sections" style="display: none;">
+              <div class="col-md-12">
+                <label>
+                  Sections:
+                </label>
+                <div id="addedSections"></div>
+                <div class="row mt-2">
+                  <div class="col-12">
+                    <input type="text" name="sections[]" class="sections form-control" placeholder="">
+                  </div>
+                </div>
+                <button type="button" class="btn btn-success mt-2" onclick="addField()">
+                  Add
+                </button>
+              </div>
             </div>
 
             <div class="form-group">

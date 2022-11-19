@@ -61,7 +61,11 @@ $systemInfo = systemInfo();
               <div class="card-header rounded-0">
                 <h5 class="card-title">Your Information:</h5>
                 <div class="card-tools">
-                  <a href="<?= "$self?page=my_archive" ?>" class="btn btn-primary btn-gradient-primary"><i class="fa fa-archive"></i> My Archives</a>
+                  <?php
+                  if (!$isNotYetAssignedGroup && hasSubmittedDocuments($isLeader ? $user : get_user_by_id($user->leader_id))) :
+                  ?>
+                    <a href="<?= "$self?page=my_archive" ?>" class="btn btn-primary btn-gradient-primary"><i class="fa fa-archive"></i> Our Archives</a>
+                  <?php endif; ?>
                   <a href="<?= "$self?page=manage_profile" ?>" class="btn btn-default bg-navy "><i class="fa fa-edit"></i> Update Account</a>
                 </div>
               </div>
@@ -70,7 +74,7 @@ $systemInfo = systemInfo();
                   <div class="col-md-12">
                     <div class="row">
                       <div class="col-lg-4 col-sm-12">
-                        <img src="<?= $user->avatar == null ? "$SERVER_NAME/assets/dist/img/no-image-available.png" : $SERVER_NAME . $user->avatar ?>" alt="Student Image" class="img-fluid student-img bg-gradient-dark border" style="width: 217px; height: 217px;">
+                        <img src="<?= $user->avatar == null ? $SERVER_NAME . "/public/default.png" : $SERVER_NAME . $user->avatar ?>" alt="Student Image" class="img-fluid student-img" style="width: 217px; height: 217px;">
                       </div>
                       <div class="col-lg-8 col-sm-12">
                         <dl>
@@ -112,10 +116,11 @@ $systemInfo = systemInfo();
 <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../assets/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="../assets/dist/js/demo.js"></script>
 <!-- Alert -->
 <script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../assets/dist/js/demo.js"></script>
+
 <script>
   if (sessionStorage.getItem("searchInput")) {
     $("#searchInput").val(sessionStorage.getItem("searchInput"))
@@ -178,7 +183,7 @@ $systemInfo = systemInfo();
 
       reader.readAsDataURL(input.files[0]);
     } else {
-      $('#cimg').attr('src', "../assets/dist/img/no-image-available.png");
+      $('#cimg').attr('src', "../public/default.png");
     }
   }
 </script>

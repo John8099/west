@@ -46,9 +46,7 @@ $systemInfo = systemInfo();
       <div class="container" style="padding-top: 9rem">
         <?php
         if (isset($_GET['page'])) {
-          if ($_GET["page"] == "add-group-mate") {
-            include("../components/add-group-mate.php");
-          } else if ($_GET["page"] == "member_profile" && isset($_GET["u"])) {
+          if ($_GET["page"] == "member_profile" && isset($_GET["u"])) {
             include("../components/member_profile.php");
           }
         } else {
@@ -73,10 +71,10 @@ $systemInfo = systemInfo();
 <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../../assets/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="../../assets/dist/js/demo.js"></script>
 <!-- Alert -->
 <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../../assets/dist/js/demo.js"></script>
 
 <script src="../../assets/plugins/datatables/jquery.dataTables.min.js"></script>
 <script src="../../assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>

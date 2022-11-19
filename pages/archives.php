@@ -76,8 +76,9 @@ $systemInfo = systemInfo();
                     if ($leader) {
                       $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
                     }
+                    $description = $data->description;
                   ?>
-                    <div class="list-group">
+                    <div class="list-group mt-3">
                       <a href="./preview-document?id=<?= $data->id ?>" class="text-decoration-none text-dark list-group-item list-group-item-action">
                         <div class="row">
                           <div class="col-lg-4 col-md-5 col-sm-12 text-center">
@@ -87,7 +88,7 @@ $systemInfo = systemInfo();
                             <h3 class="text-navy"><b><?= $data->title ?></b></h3>
                             <small class="text-muted">By <b class="text-info"><?= $leaderName == "" ? "N/A" : $leaderName ?></b></small>
                             <p class="truncate-5">
-                              <?= nl2br($data->description) ?>
+                              <?= strlen($description) > 250 ? substr($description, 0, 250) . "..." : $description ?>
                             </p>
                           </div>
                         </div>
@@ -151,6 +152,8 @@ $systemInfo = systemInfo();
 <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../assets/dist/js/adminlte.min.js"></script>
+<!-- Alert -->
+<script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="../assets/dist/js/demo.js"></script>
 

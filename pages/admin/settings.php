@@ -123,10 +123,10 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
   <!-- AdminLTE App -->
   <script src="../../assets/dist/js/adminlte.min.js"></script>
-  <!-- AdminLTE for demo purposes -->
-  <script src="../../assets/dist/js/demo.js"></script>
   <!-- Alert -->
   <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="../../assets/dist/js/demo.js"></script>
   <!-- Summernote -->
   <script src="../../assets/plugins/summernote/summernote-bs4.min.js"></script>
 

@@ -83,10 +83,10 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
   <!-- AdminLTE App -->
   <script src="../../assets/dist/js/adminlte.min.js"></script>
-  <!-- AdminLTE for demo purposes -->
-  <script src="../../assets/dist/js/demo.js"></script>
   <!-- Alert -->
   <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+  <!-- AdminLTE for demo purposes -->
+  <script src="../../assets/dist/js/demo.js"></script>
 
   <script src="../../assets/plugins/datatables/jquery.dataTables.min.js"></script>
   <script src="../../assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
@@ -101,6 +101,33 @@ $systemInfo = systemInfo();
         "autoWidth": false,
       });
     });
+
+    $("#inputRole").on("change", function(e) {
+      if (e.target.value === "instructor") {
+        $(".sections").prop("required", true)
+        $("#sections").show();
+      } else {
+        $("#sections").hide();
+        $(".sections").prop("required", false)
+      }
+    })
+
+    function addField() {
+      $("#addedSections").prepend(
+        `<div class="row">
+          <div class="col-10 mt-2">
+            <input type="text" name="sections[]" class="form-control" placeholder="" required>
+          </div>
+          <div class="col-2 mt-2">
+            <button type="button" class="btn btn-danger" onclick="removeField($(this))"><i class='fa fa-trash'></i></button>
+          </div>
+        </div>`
+      )
+    }
+
+    function removeField(e) {
+      e.parents()[1].remove()
+    }
 
     function handleAddAdmin() {
       const current = `${window.location.origin}${window.location.pathname}?p=add`

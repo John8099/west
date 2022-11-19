@@ -42,6 +42,41 @@
                 ?>
               </select>
             </div>
+            <?php if ($admin->role == "instructor") : ?>
+              <div class="form-group  mb-3" id="sections">
+                <div class="col-md-12">
+                  <label>
+                    Sections:
+                  </label>
+                  <div id="addedSections">
+                    <?php
+                    $sectionHandledQ = mysqli_query(
+                      $conn,
+                      "SELECT * FROM instructor_sections WHERE instructor_id='$admin->id'"
+                    );
+                    if (mysqli_num_rows($sectionHandledQ) > 0) :
+                      $sections = mysqli_fetch_object($sectionHandledQ);
+                      foreach (json_decode($sections->sections, true) as $section) :
+                    ?>
+                        <div class="row">
+                          <div class="col-10 mt-2">
+                            <input type="text" name="sections[]" class="form-control" value="<?= $section ?>" required>
+                          </div>
+                          <div class="col-2 mt-2">
+                            <button type="button" class="btn btn-danger" onclick="removeField($(this))"><i class='fa fa-trash'></i></button>
+                          </div>
+                        </div>
+                    <?php
+                      endforeach;
+                    endif;
+                    ?>
+                  </div>
+                  <button type="button" class="btn btn-success mt-2" onclick="addField()">
+                    Add
+                  </button>
+                </div>
+              </div>
+            <?php endif; ?>
 
             <div class="form-group">
               <label class="control-label text-navy">Email</label>

@@ -1,5 +1,6 @@
 <?php
-$document = getSubmittedDocuments($user);
+$leader = $isLeader ? $user : get_user_by_id($user->leader_id);
+$document = getSubmittedDocuments($leader);
 ?>
 <div class="card card-outline card-primary shadow rounded-0">
   <div class="card-header">
@@ -45,10 +46,10 @@ $document = getSubmittedDocuments($user);
         <div class="pl-4">
           <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
             <div class="mr-1">
-              <img src="<?= $user->avatar != null ? $SERVER_NAME . $user->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+              <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
             </div>
             <div>
-              <?= ucwords("$user->first_name " . ($user->middle_name != null ? $user->middle_name[0] . "." : "") . " $user->last_name") ?>
+              <?= ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name") ?>
             </div>
           </div>
         </div>
@@ -57,7 +58,7 @@ $document = getSubmittedDocuments($user);
         <legend class="text-navy">Project Members:</legend>
         <div class="pl-4">
           <?php
-          $memberData = json_decode(getMemberData($user->group_number, $user->id));
+          $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
           foreach ($memberData as $member) :
             $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
           ?>

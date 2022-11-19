@@ -42,7 +42,8 @@ $user = get_user_by_username($_SESSION['username']);
       <!-- Main content -->
       <div class="container" style="padding-top: 9rem">
         <?php
-        $document = getSubmittedDocuments($user);
+        $leader = $isLeader ? $user : get_user_by_id($user->leader_id);
+        $document = getSubmittedDocuments($leader);
         ?>
         <div class="card card-outline card-primary shadow rounded-0">
           <div class="card-header">
@@ -57,16 +58,56 @@ $user = get_user_by_username($_SESSION['username']);
               <?= mysqli_fetch_object(mysqli_query($conn, "SELECT `name`, id FROM types WHERE id='$document->type_id'"))->name ?>
             </h3>
 
-            <div class="card-tools">
-              <button type="button" id="updateDocuments" class="btn btn-primary btn-gradient-primary btn-sm">
-                <i class="fa fa-edit"></i>
-                Update Document
-              </button>
-            </div>
+            <?php if ($document->publish_status  == "PENDING" && $isLeader) : ?>
+              <div class="card-tools">
+                <button type="button" onclick="handleRedirectToUpdatePage('update-documents?doc_id=<?= $document->id ?>')" class="btn btn-primary btn-gradient-primary btn-sm">
+                  <i class="fa fa-edit"></i>
+                  Update Document
+                </button>
+              </div>
+            <?php endif; ?>
           </div>
           <div class="card-body">
 
-            <table id="progress" class="table table-bordered table-hover table-striped">
+            <!-- Document Status -->
+            <?php
+            $documentStatus = getDocumentStatus($leader->id, $document->id);
+            if (count($documentStatus) > 0) :
+            ?>
+              <table class="table table-bordered table-hover table-striped">
+                <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
+                  <h5>Documents Status</h5>
+                </caption>
+                <thead>
+                  <tr class="bg-gradient-dark text-light">
+                    <?php foreach ($documentStatus as $index => $value) : ?>
+                      <th><?= $value["title"] ?></th>
+                    <?php endforeach; ?>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php foreach ($documentStatus as $index => $value) : ?>
+                    <td>
+                      <?php if ($value["status"]) : ?>
+                        <span class="badge badge-<?= $value["status"] == "APPROVED" ? "success" : "danger" ?> rounded-pill px-4" style="font-size: 18px">
+                          <em><?= $value["status"] ?></em>
+                        </span>
+                      <?php else : ?>
+                        <span class="badge badge-warning rounded-pill px-4" style="font-size: 18px">
+                          <em>PENDING</em>
+                        </span>
+                      <?php endif; ?>
+                    </td>
+                  <?php endforeach; ?>
+                </tbody>
+              </table>
+            <?php endif; ?>
+
+            <!-- Feedbacks -->
+            <table class="table table-bordered table-hover table-striped mt-4" >
+              <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
+                <h5>Feedbacks</h5>
+              </caption>
               <thead>
                 <tr class="bg-gradient-dark text-light">
                   <th>Adviser</th>
@@ -173,75 +214,111 @@ $user = get_user_by_username($_SESSION['username']);
               </tbody>
             </table>
 
-            <table id="panelRating" class="table table-bordered table-hover table-striped mt-5">
-              <thead>
-                <caption class="pl-3" style="color: black; text-align: left; caption-side: top; border: 1px solid #dee2e6">
-                  Panel Ratings
-                </caption>
-                <tr class="bg-gradient-dark text-light">
-                  <?php
-                  $panelsQ = mysqli_query(
-                    $conn,
-                    "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id'"
-                  );
-                  $panelIds = json_decode(mysqli_fetch_object($panelsQ)->panel_ids);
-                  $width = ceil(100 / count($panelIds));
-                  foreach ($panelIds as $panelId) :
-                    $panel = get_user_by_id($panelId);
-                    $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
-                  ?>
-                    <th style="width: <?= "$width%" ?>">
+            <!-- Panel Suggestions -->
+            <h5 class="mt-4">Panel Comments/Suggestions:</h5>
+            <div class="row mt-2 justify-content-start">
+              <?php
+              $panelsQ = mysqli_query(
+                $conn,
+                "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id'"
+              );
+              $panelIds = json_decode(mysqli_fetch_object($panelsQ)->panel_ids);
+              foreach ($panelIds as $panelId) :
+                $panel = get_user_by_id($panelId);
+              ?>
+                <div class="col-md-4 col-sm-12">
+                  <div class="card">
+                    <div class="card-header bg-gradient-dark text-light">
                       <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
                         <div class="mr-1">
                           <img src="<?= $panel->avatar != null ? $SERVER_NAME . $panel->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                         </div>
                         <div>
-                          <?= $panelName ?>
+                          <?= ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name") ?>
                         </div>
                       </div>
-                    </th>
-                  <?php
-                  endforeach;
-                  ?>
-                </tr>
+                    </div>
+                    <div class="card-body" style="background-color: #f2f2f2;">
+                      <?php
+                      $feedbacks = getPanelRating($panelId, $document->id);
+                      foreach ($feedbacks as $feedbackData) :
+                      ?>
+                        <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
+                          <?php if ($feedbackData->action == "Approved") : ?>
+                            <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
+                              Approved
+                            </span>
+                          <?php else : ?>
+                            <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
+                              Disapproved
+                            </span>
+                          <?php endif; ?>
+                          <span>
+                            &#8226;
+                            <strong>
+                              <?= panelNameType($feedbackData->rating_type) ?>
+                            </strong>
+                          </span>
+                          <p class="mt-3">
+                            <button type="button" class="btn btn-link" style="font-size: 14px;" onclick="handleOpenRatingModal('feedback<?= $feedbackData->rating_id ?>')">
+                              Comments/Suggestions
+                            </button>
+                          </p>
+                        </blockquote>
 
-              </thead>
-              <tbody>
-                <?php
-                foreach ($panelIds as $panelId) :
-                  $panel = get_user_by_id($panelId);
-                  $panelName = ucwords("$panel->first_name " . ($panel->middle_name != null ? $panel->middle_name[0] . "." : "") . " $panel->last_name");
-                  $feedbackData = getPanelRating($panelId, $document->id);
-                  // print_r($feedbackData);
-                ?>
-                  <td style="width: <?= "$tdWidth%" ?>">
-                    <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                      <?php if ($feedbackData->action == "Approved") : ?>
-                        <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
-                          Approved
-                        </span>
-                      <?php else : ?>
-                        <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
-                          Disapproved
-                        </span>
+                        <div class="modal fade" id="feedback<?= $feedbackData->rating_id ?>">
+                          <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">
+                                  <?= panelNameType($feedbackData->rating_type) ?>
+                                </h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true" style="font-size: 30px">&times;</span>
+                                </button>
+                              </div>
+                              <div class="modal-body">
+                                <div class="row">
+                                  <div class="col-12">
+                                    Action taken:
+                                    <?php if ($feedbackData->action == "Approved") : ?>
+                                      <span class="badge badge-success rounded-pill px-2" style="font-size: 14px">
+                                        Approved
+                                      </span>
+                                    <?php else : ?>
+                                      <span class="badge badge-danger rounded-pill px-2" style="font-size: 14px">
+                                        Disapproved
+                                      </span>
+                                    <?php endif; ?>
+                                  </div>
+                                  <div class="col-12 mt-2">
+                                    <label class="form-label">Comment/Suggestions</label>
+                                    <div class="jumbotron mb-0 p-3">
+                                      <?= nl2br($feedbackData->comment) ?>
+                                    </div>
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      <?php endforeach;
+                      if (count($feedbacks) == 0) :
+                      ?>
+                        <div style="text-align: center;">
+                          <span class="badge badge-primary rounded-pill px-2" style="font-size: 18px">
+                            No comments yet
+                          </span>
+                        </div>
                       <?php endif; ?>
-                      <span>
-                        &#8226;
-                        <strong>
-                          <?= panelNameType($feedbackData->rating_type) ?>
-                        </strong>
-                      </span>
-                      <p  class="mt-3">
-                        <a href="">
-                           Comments/Suggestions & Rating
-                        </a>
-                      </p>
-                    </blockquote>
-                  <?php
-                endforeach;
-                  ?>
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              <?php
+              endforeach;
+              ?>
+            </div>
           </div>
         </div>
 
@@ -262,10 +339,32 @@ $user = get_user_by_username($_SESSION['username']);
 <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../../assets/dist/js/adminlte.min.js"></script>
+<!-- Alert -->
+<script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="../../assets/dist/js/demo.js"></script>
 
 <script>
+  function handleRedirectToUpdatePage(url) {
+    swal.fire({
+      icon: 'warning',
+      html: "Please <strong>take note</strong> of the <strong>feedbacks</strong> and <strong>comments</strong> before updating documents.<br>This will be <strong>reset</strong> after updating documents.",
+    }).then((res) => {
+      if (res.isConfirmed) {
+        window.location.href = url
+      }
+    })
+  }
+
+  function handleOpenRatingModal(modalId) {
+    $(`#${modalId}`).modal({
+      show: true,
+      backdrop: 'static',
+      keyboard: false,
+      focus: true
+    })
+  }
+
   if (sessionStorage.getItem("searchInput")) {
     $("#searchInput").val(sessionStorage.getItem("searchInput"))
   }

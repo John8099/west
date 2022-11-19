@@ -16,8 +16,8 @@
         <tr class="bg-gradient-dark text-light">
           <th>Date Added</th>
           <th>Date Updated</th>
-          <th>Avatar</th>
           <th>Name</th>
+          <th>Handled sections</th>
           <th>Email</th>
           <th>Role</th>
           <th>Action</th>
@@ -36,9 +36,40 @@
             <td><?= date("Y-m-d H:i", strtotime($admin->date_added)) ?></td>
             <td><?= date("Y-m-d H:i", strtotime($admin->date_updated)) ?></td>
             <td>
-              <img src="<?= $admin->avatar != null ? $SERVER_NAME . $admin->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+              <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                <div class="mr-1">
+                  <img src="<?= $admin->avatar != null ? $SERVER_NAME . $admin->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                </div>
+                <div>
+                  <?= ucwords("$admin->first_name " . ($admin->middle_name != null ? $admin->middle_name[0] . "." : "") . " $admin->last_name") ?>
+                </div>
+              </div>
             </td>
-            <td><?= $adminName ?></td>
+            <td>
+              <?php
+              if ($admin->role == "instructor") :
+                $handledSections = mysqli_query(
+                  $conn,
+                  "SELECT * FROM instructor_sections WHERE instructor_id='$admin->id'"
+                );
+                if (mysqli_num_rows($handledSections) > 0) :
+                  $sectionData = mysqli_fetch_object($handledSections);
+                  foreach (json_decode($sectionData->sections, true) as $section) :
+              ?>
+                    <span class="badge badge-primary rounded-pill px-4 m-1" style="font-size: 18px">
+                      <em><?= $section ?></em>
+                    </span>
+                  <?php
+                  endforeach;
+                else :
+                  ?>
+                  ---
+                <?php
+                endif;
+              else : ?>
+                ---
+              <?php endif; ?>
+            </td>
             <td><?= $admin->email ?></td>
             <td><?= ucwords($admin->role) ?></td>
             <td class="text-center">

@@ -157,7 +157,7 @@
               <?php
               $thesisGroupId = $hasSubmittedGroup && $thesisGroupData != null ? $thesisGroupData->id : null;
               ?>
-              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="assignPanelClick('<?= $thesisGroupId ?>')" <?= $hasSubmittedGroup && $thesisGroupData != null && $thesisGroupData->status == "1" ? "" : "disabled" ?>>
+              <button type="button" class="btn btn-primary btn-gradient-primary" onclick="assignPanelClick('<?= $thesisGroupId ?>')" <?= $hasSubmittedGroup && $thesisGroupData != null ?>>
                 <?= $thesisGroupData->panel_ids != null ? "Update panels" : "Assign Panel" ?>
               </button>
             </td>

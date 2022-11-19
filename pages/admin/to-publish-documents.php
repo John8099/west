@@ -54,7 +54,7 @@ $systemInfo = systemInfo();
                 <div class="card-header">
                   <div class="row mb-2">
                     <div class="col-sm-6">
-                      <h4>Published Documents</h4>
+                      <h4>To Publish Documents</h4>
                     </div>
 
                   </div>
@@ -74,7 +74,7 @@ $systemInfo = systemInfo();
                       <?php
                       $documentQuery = mysqli_query(
                         $conn,
-                        "SELECT * FROM documents  WHERE publish_status='PUBLISHED'"
+                        "SELECT * FROM documents  WHERE publish_status='TO PUBLISH'"
                       );
                       while ($document = mysqli_fetch_object($documentQuery)) :
                         $leader = $document->leader_id ? get_user_by_id($document->leader_id) : null;
@@ -89,6 +89,9 @@ $systemInfo = systemInfo();
                           <td class="text-center">
                             <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" onclick="handleOpenModal('<?= $document->id ?>')">
                               Preview
+                            </button>
+                            <button type="button" class="btn btn-success btn-gradient-success m-1" onclick="handlePublishDocument('<?= $document->id ?>')">
+                              Publish
                             </button>
                           </td>
                         </tr>
@@ -182,6 +185,9 @@ $systemInfo = systemInfo();
                                 <button type="button" class="btn btn-secondary btn-gradient-secondary" onclick="return window.open('./preview-document?d=<?= urlencode($document->project_document) ?>')">
                                   Open document in new tab
                                 </button>
+                                <button type="button" class="btn btn-success btn-gradient-success" onclick="handlePublishDocument('<?= $document->id ?>')">
+                                  Publish
+                                </button>
                               </div>
                             </div>
                           </div>
@@ -243,6 +249,38 @@ $systemInfo = systemInfo();
         ]
       });
     });
+
+    function handlePublishDocument(documentId) {
+      swal.showLoading();
+      $.post(
+        "../../backend/nodes?action=publishDocument", {
+          documentId: documentId
+        },
+        (data, status) => {
+          const resp = JSON.parse(data)
+          if (resp.success) {
+            swal.fire({
+              title: 'Success!',
+              text: resp.message,
+              icon: 'success',
+            }).then(() => {
+              window.location.reload()
+            })
+          } else {
+            swal.fire({
+              title: 'Error!',
+              text: resp.message,
+              icon: 'error',
+            })
+          }
+        }).fail(function(e) {
+        swal.fire({
+          title: 'Error!',
+          text: e.statusText,
+          icon: 'error',
+        })
+      });
+    }
 
     function handleOpenModal(modalId = null) {
       if (modalId) {

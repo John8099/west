@@ -441,6 +441,14 @@ $systemInfo = systemInfo();
           grade;
       }
 
+      if (groupGrade.length > 0) {
+        total = 0;
+        for (let i = 0; i < groupGrade.length; i++) {
+          total += Number(groupGrade[i].grade);
+        }
+        $(".gradeTotal").html(total)
+      }
+
       console.log(modalRatingData);
     }
 
@@ -524,6 +532,94 @@ $systemInfo = systemInfo();
       });
     }
 
+    $(".updateRating").on("submit", function(e) {
+      $(".updateRating").validate(validateConfig);
+      if ($(`.updateRating`).valid()) {
+        swal.showLoading();
+        $.post(
+          "../../backend/nodes?action=updatePanelRating",
+          $(this).serialize(),
+          (data, status) => {
+            const resp = JSON.parse(data)
+            if (resp.success) {
+              swal.fire({
+                title: 'Success!',
+                text: resp.message,
+                icon: 'success',
+              })
+            } else {
+              swal.fire({
+                title: 'Error!',
+                text: resp.message,
+                icon: 'error',
+              })
+            }
+          }).fail(function(e) {
+          swal.fire({
+            title: 'Error!',
+            text: e.statusText,
+            icon: 'error',
+          })
+        });
+      } else {
+        swal.fire({
+          title: "Error!",
+          text: "Please check error fields",
+          icon: "error",
+        });
+      }
+
+      e.preventDefault()
+    })
+
+    function handleRedirectPanelRating(documentId, panelId) {
+      swal.showLoading()
+      $.post(
+        "../../backend/nodes?action=getPanelRatingType", {
+          panel_id: panelId,
+          document_id: documentId
+        },
+        (data, status) => {
+          swal.close()
+          const resp = JSON.parse(data)
+          if (resp.length > 0) {
+            swal.fire({
+              icon: "question",
+              html: '<label class="control-label">Rating type <span class="text-danger">*</span></label>',
+              input: "select",
+              inputOptions: Object.assign({}, ...resp),
+              inputPlaceholder: "-- select rating type to update --",
+              showDenyButton: true,
+              confirmButtonText: "Okay",
+              denyButtonText: "Cancel",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              inputValidator: (value) => {
+                return new Promise((resolve) => {
+                  if (value === "") {
+                    resolve("Please select rating type.");
+                  } else {
+                    window.location.href = `./assigned-groups?update&&documentId=${documentId}&&type=${value}`
+                  }
+                });
+              },
+            });
+          } else {
+            swal.fire({
+              text: "You don't have any rating to update on this group.",
+              icon: 'info',
+            })
+          }
+        }).fail(function(e) {
+        swal.fire({
+          title: 'Error!',
+          text: e.statusText,
+          icon: 'error',
+        })
+      });
+
+    }
+
     $("input[name=action]").on("change", function(e) {
       modalRatingData.actionTaken = e.target.value;
     });
@@ -534,6 +630,7 @@ $systemInfo = systemInfo();
       $(`#${modalName}_form${modalId}`).validate(validateConfig).resetForm();
       $(".summernote").summernote("reset");
       modalRatingData = defaultRatingData;
+      $(".gradeTotal").html("")
     }
 
     $(".summernote").summernote({

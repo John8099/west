@@ -4,19 +4,20 @@
       My Group list
       <div class='mt-2'>
         <?php
+        $leader = $isLeader ? $user : get_user_by_id($user->leader_id);
         $query = mysqli_query(
           $conn,
-          "SELECT * FROM thesis_groups WHERE group_leader_id='$user->id' and group_number='$user->group_number'"
+          "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id' and group_number='$leader->group_number'"
         );
 
         $inviteQuery = mysqli_query(
           $conn,
-          "SELECT * FROM invite WHERE leader_id='$user->id'"
+          "SELECT * FROM invite WHERE leader_id='$leader->id'"
         );
 
         $inviteData = null;
         $thesisGroupData = null;
-        $hasSubmittedDocuments = hasSubmittedDocuments($user);
+        $hasSubmittedDocuments = hasSubmittedDocuments($leader);
 
         if (mysqli_num_rows($inviteQuery) > 0) {
           $inviteData = mysqli_fetch_object($inviteQuery);
@@ -93,7 +94,7 @@
                 </div>
               </div>
             </div>
-          <?php
+        <?php
           } else {
             echo "<h6> Panel: <em>No assigned panel.</em> </h6>";
           }
@@ -101,11 +102,7 @@
           echo "<h6> Instructor: <em>No assigned instructor.</em> </h6>";
           echo "<h6> Panel: <em>No assigned panel.</em> </h6>";
         }
-
-        if ($thesisGroupData != null && $thesisGroupData->status == "0") :
-          ?>
-          <h6> Group List status: <em>(<?= strtoupper("PENDING") ?>)</em> </h6>
-        <?php endif; ?>
+        ?>
 
       </div>
     </h3>
@@ -135,35 +132,12 @@
 
       <?php endif; ?>
 
-      <?php if ($thesisGroupData != null && $thesisGroupData->status == "1" && $thesisGroupData->instructor_id != null  && !$hasSubmittedDocuments) : ?>
+      <?php if ($thesisGroupData != null && $thesisGroupData->instructor_id != null  && !$hasSubmittedDocuments) : ?>
 
         <button type="button" id="btnSubmitDocuments" onclick="return window.location.href = './submit-documents'" class="btn btn-success btn-sm">
           <i class="fa fa-check"></i>
           Submit Documents
         </button>
-      <?php endif;
-
-      if ($thesisGroupData == null || ($thesisGroupData != null && $thesisGroupData->instructor_id == null)) : ?>
-
-        <button type="button" id="btnSubmitToInstructor" class="btn btn-success btn-sm">
-          <i class="fa fa-check"></i>
-          Submit list to instructor
-        </button>
-
-      <?php elseif ($thesisGroupData != null && $thesisGroupData->instructor_id != null && $thesisGroupData->status == '0') : ?>
-
-        <button type="button" id="btnEditInstructor" class="btn btn-warning btn-gradient-warning btn-sm">
-          <i class="fa fa-edit"></i>
-          Edit instructor
-        </button>
-
-      <?php endif;
-
-      if ($thesisGroupData == null || ($thesisGroupData != null && $thesisGroupData->status == '0')) : ?>
-        <a href="<?= $SERVER_NAME ?>/pages/student/my-groupings?page=add-group-mate" class="btn btn-sm btn-primary">
-          <i class="fas fa-plus"></i>
-          Add New group mate
-        </a>
       <?php endif; ?>
 
     </div>
@@ -185,22 +159,22 @@
         <tbody>
           <tr>
             <td class="text-center">1</td>
-            <td><?= date("Y-m-d H:i", strtotime($user->date_added)) ?></td>
+            <td><?= date("Y-m-d H:i", strtotime($leader->date_added)) ?></td>
             <td>
-              <?= $user->roll ?>
+              <?= $leader->roll ?>
             </td>
             <td>Leader</td>
             <td>
-              <p class="m-0 truncate-1"><?= ucwords("$user->last_name, $user->first_name $middleName") ?></p>
+              <p class="m-0 truncate-1"><?= ucwords("$leader->last_name, $leader->first_name $middleName") ?></p>
             </td>
             <td align="center">
               <a href="<?= "$SERVER_NAME/pages/profile?page=manage_profile" ?>" class="btn btn-flat btn-default btn-sm border"><i class="fa fa-eye"></i> View</a>
             </td>
           </tr>
           <?php
-          $query = mysqli_query($conn, "SELECT * FROM users WHERE group_number = '$user->group_number' and id != '$user->id'");
           $count = 2;
-          while ($member = mysqli_fetch_object($query)) :
+          $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
+          foreach ($memberData as $member) :
             $memberMiddleName = $member->middle_name != null ? $member->middle_name[0] : "";
           ?>
             <tr>
@@ -218,8 +192,8 @@
               </td>
             </tr>
           <?php
-            $count++;
-          endwhile;
+          endforeach;
+          $count++;
           ?>
         </tbody>
       </table>

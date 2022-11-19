@@ -6,6 +6,10 @@ if (isset($_SESSION["username"])) {
 } else {
   header("location: ../../");
 }
+
+if (!isset($_GET['doc_id'])) {
+  header('Location: ' . $_SERVER['HTTP_REFERER']);
+}
 $systemInfo = systemInfo();
 ?>
 <!DOCTYPE html>
@@ -64,12 +68,16 @@ $systemInfo = systemInfo();
               <div class="card card-outline card-primary shadow rounded-0">
                 <div class="card-header rounded-0">
                   <h5 class="card-title">
-                    Submit Documents
+                    Update Documents
                   </h5>
                 </div>
                 <div class="card-body rounded-0">
                   <div class="container-fluid">
                     <form method="POST" id="archive-form" enctype="multipart/form-data">
+                      <?php
+                      $document = getSubmittedDocuments($user);
+                      ?>
+                      <input type="text" name="documentId" value="<?= $document->id ?>" hidden readonly>
                       <div class="form-group">
                         <label class="control-label text-navy">Project Leader</label>
                         <div class="ml-2 mt-2 mb-2 d-flex justify-content-start align-items-center">
@@ -102,7 +110,7 @@ $systemInfo = systemInfo();
 
                       <div class="form-group">
                         <label class="control-label text-navy">Document Title</label>
-                        <input type="text" name="title" placeholder="Project Title" class="form-control form-control-border" required>
+                        <input type="text" name="title" value="<?= $document->title ?>" placeholder="Project Title" class="form-control form-control-border" required>
                       </div>
 
                       <div class="form-group">
@@ -116,7 +124,7 @@ $systemInfo = systemInfo();
                           );
                           while ($type = mysqli_fetch_object($query)) :
                           ?>
-                            <option value="<?= $type->id ?>"><?= $type->name ?></option>
+                            <option value="<?= $type->id ?>" <?= $type->id == $document->type_id ? "selected" : "" ?>><?= $type->name ?></option>
                           <?php endwhile; ?>
                         </select>
                       </div>
@@ -128,44 +136,54 @@ $systemInfo = systemInfo();
                           for ($i = 0; $i < 51; $i++) :
                             $year = date("Y", strtotime(date("Y") . " -{$i} years"));
                           ?>
-                            <option value="<?= $year ?>"><?= $year ?></option>
+                            <option value="<?= $year ?>" <?= $year == $document->year ? "selected" : "" ?>><?= $year ?></option>
                           <?php endfor; ?>
                         </select>
                       </div>
 
                       <div class="form-group">
                         <label class="control-label text-navy">Description</label>
-                        <textarea rows="3" name="description" placeholder="abstract" class="form-control form-control-border summernote" required></textarea>
+                        <textarea rows="3" name="description" placeholder="abstract" class="form-control form-control-border summernote" required><?= nl2br($document->description) ?></textarea>
                       </div>
 
                       <div class="form-group">
                         <label class="control-label">Project Image/Banner Image</label>
                         <div class="custom-file">
-                          <input type="file" class="custom-file-input rounded-circle" name="banner" onchange="displayImg(this,$(this))" accept="image/*" required>
-                          <label class="custom-file-label">Choose file</label>
+                          <input type="file" class="custom-file-input rounded-circle" name="banner" onchange="displayImg(this,$(this))" accept="image/*">
+                          <?php
+                          $documentBanner = $document->img_banner;
+                          $explodedBannerName = explode($separator, $documentBanner);
+                          $bannerName = $explodedBannerName[count($explodedBannerName) - 1];
+                          ?>
+                          <label class="custom-file-label"><?= $bannerName ?></label>
                         </div>
                       </div>
 
                       <div class="form-group text-center">
-                        <img src="<?= "$SERVER_NAME/assets/dist/img/no-image-available.png" ?>" alt="My Avatar" id="cimg" class="img-fluid banner-img bg-gradient-dark border">
+                        <img src="<?= $SERVER_NAME . $document->img_banner ?>" alt="My Avatar" id="cimg" class="img-fluid banner-img bg-gradient-dark border">
                       </div>
 
                       <div class="form-group">
                         <label class="control-label">Project Document (PDF File Only)</label>
                         <div class="custom-file">
-                          <input type="file" name="pdfFile" class="custom-file-input rounded-circle" name="banner" onchange="displayPDF(this,$(this))" accept="application/pdf" required>
-                          <label class="custom-file-label">Choose file</label>
+                          <input type="file" name="pdfFile" class="custom-file-input rounded-circle" name="banner" onchange="displayPDF(this,$(this))" accept="application/pdf">
+                          <?php
+                          $documentPdf = $document->project_document;
+                          $explodedDocumentPdf = explode($separator, $documentPdf);
+                          $documentPdfName = $explodedDocumentPdf[count($explodedDocumentPdf) - 1];
+                          ?>
+                          <label class="custom-file-label"><?= $documentPdfName ?></label>
                         </div>
                       </div>
 
                       <div class="form-group">
-                        <div class="embed-responsive embed-responsive-4by3" id="divIframe" style="display: none;">
-                          <iframe class="embed-responsive-item" id="pdfPreview" allowfullscreen></iframe>
+                        <div class="embed-responsive embed-responsive-4by3">
+                          <iframe class="embed-responsive-item" src="<?= $SERVER_NAME . $document->project_document ?>#embedded=true&toolbar=0&navpanes=0" id="pdfPreview" allowfullscreen></iframe>
                         </div>
                       </div>
 
                       <div class="form-group d-flex justify-content-end">
-                        <button type="submit" class="btn btn-primary btn-gradient-primary m-1" id="btnSave" disabled> Save</button>
+                        <button type="submit" class="btn btn-primary btn-gradient-primary m-1"> Update</button>
                         <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="return window.history.back()"> Cancel</button>
                       </div>
                     </form>
@@ -217,8 +235,9 @@ $systemInfo = systemInfo();
   })
 
   $("#archive-form").on("submit", function(e) {
+    swal.showLoading()
     $.ajax({
-      url: "../../backend/nodes?action=saveDocument",
+      url: "../../backend/nodes?action=updateDocument",
       type: "POST",
       data: new FormData(this),
       contentType: false,
@@ -287,8 +306,7 @@ $systemInfo = systemInfo();
         reader.onload = function(e) {
           $(`#pdfPreview`).attr('src', `${e.target.result}#embedded=true&toolbar=0&navpanes=0`);
           _this.siblings('.custom-file-label').html(input.files[0].name)
-          $("#btnSave").prop("disabled", false)
-          $("#divIframe").show()
+
         }
       } else {
         swal.mixin({
@@ -304,14 +322,10 @@ $systemInfo = systemInfo();
         }).fire({
           icon: 'error',
           title: 'Upload pdf only'
-        }).then(() => {
-          $("#btnSave").prop("disabled", true)
         })
       }
 
       reader.readAsDataURL(input.files[0]);
-    } else {
-      $("#divIframe").hide()
     }
   }
 </script>

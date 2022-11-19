@@ -98,9 +98,6 @@ if (isset($_GET['action'])) {
       case "cancelAdvisorInvite":
         cancelAdvisorInvite();
         break;
-      case "instructorApprovedGroupList":
-        instructorApprovedGroupList();
-        break;
       case "handleAdviserInvite":
         handleAdviserInvite();
         break;
@@ -134,6 +131,24 @@ if (isset($_GET['action'])) {
       case "saveRating":
         saveRating();
         break;
+      case "getPanelRatingType":
+        getPanelRatingType();
+        break;
+      case "updatePanelRating":
+        updatePanelRating();
+        break;
+      case "updateDocument":
+        updateDocument();
+        break;
+      case "assignGroupNumber":
+        assignGroupNumber();
+        break;
+      case "assignLeader":
+        assignLeader();
+        break;
+      case "publishDocument":
+        publishDocument();
+        break;
       default:
         null;
         break;
@@ -144,19 +159,534 @@ if (isset($_GET['action'])) {
   }
 }
 
+function publishDocument()
+{
+  global $conn, $_POST;
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE documents SET publish_status='PUBLISHED' WHERE id='$_POST[documentId]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Document successfully published.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function getBarData()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT 
+    t.name,
+    d.year 
+    FROM documents d 
+    INNER JOIN types t
+    ON
+    d.type_id = t.id 
+    WHERE d.publish_status = 'PUBLISHED'"
+  );
+
+  $data = array();
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($data, $row);
+  }
+
+  return $data;
+}
+
+function getTotalCategories()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM category_list"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_num_rows($query);
+  }
+
+  return 0;
+}
+
+function getTodayScheduledTask()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM schedule_list"
+  );
+
+  $count = 0;
+  while ($row = mysqli_fetch_object($query)) {
+    if (date("m-d-Y", strtotime($row->schedule_from)) == date("m-d-Y")) {
+      $count++;
+    }
+  }
+
+  return $count;
+}
+
+function getUpcomingScheduledTask()
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM schedule_list"
+  );
+
+  $count = 0;
+  while ($row = mysqli_fetch_object($query)) {
+    if (date("m-d-Y", strtotime($row->schedule_from)) > date("m-d-Y")) {
+      $count++;
+    }
+  }
+
+  return $count;
+}
+
+function assignLeader()
+{
+  global $conn, $_POST, $_SESSION;
+
+  $currentUser = get_user_by_username($_SESSION['username']);
+
+  $leaderId = $_POST["leaderId"];
+  $groupNumber = $_POST["groupNumber"];
+
+  $getStudentsQ = mysqli_query(
+    $conn,
+    "SELECT * FROM users WHERE `role`='student' and group_number='$groupNumber' and isLeader is NULL and leader_id is NULL"
+  );
+
+  $memberIds = array();
+
+  $query = null;
+  while ($student = mysqli_fetch_object($getStudentsQ)) {
+    if ($student->id == $leaderId) {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE users SET isLeader='1' WHERE id='$student->id'"
+      );
+    } else {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE users SET leader_id='$leaderId' WHERE id='$student->id'"
+      );
+      array_push($memberIds, $student->id);
+    }
+  }
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Leader successfully assigned";
+    addThesisGroup($leaderId, $groupNumber, json_encode($memberIds), $currentUser->id);
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function addThesisGroup($leaderId, $groupNumber, $memberIds, $instructorId)
+{
+  global $conn;
+
+  mysqli_query(
+    $conn,
+    "INSERT INTO thesis_groups(group_leader_id, group_number, group_member_ids, instructor_id) VALUES('$leaderId', '$groupNumber', '$memberIds', '$instructorId')"
+  );
+}
+
+function assignGroupNumber()
+{
+  global $conn, $_POST;
+
+  $groupNumber = $_POST["groupNumber"];
+  $userIds = $_POST["userIds"];
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE users SET group_number='$groupNumber' WHERE id in(" . implode(', ', $userIds) . ")"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Student(s) successfully assigned groups";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function getInstructorHandledSections($userId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM instructor_sections WHERE instructor_id='$userId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return json_decode(mysqli_fetch_object($query)->sections, true);
+  }
+
+  return null;
+}
+
+function isNotYetAssignedGroup($userId)
+{
+  $currentUser = get_user_by_id($userId);
+
+  if ($currentUser->isLeader == null && $currentUser->leader_id == null && $currentUser->group_number == null) {
+    return true;
+  }
+
+  return false;
+}
+
+function isMember($userId)
+{
+  $currentUser = get_user_by_id($userId);
+
+  if ($currentUser->isLeader == null && $currentUser->leader_id != null) {
+    return true;
+  }
+
+  return false;
+}
+
+function isLeader($userId)
+{
+  $currentUser = get_user_by_id($userId);
+
+  if ($currentUser->isLeader != null && $currentUser->leader_id == null) {
+    return true;
+  }
+
+  return false;
+}
+
+function updateDocument()
+{
+  global $conn, $_POST, $_FILES, $separator;
+
+  $documentId = $_POST['documentId'];
+
+  $submittedDocument = getDocumentById($documentId);
+
+  $title = $_POST["title"];
+  $type = $_POST["type"];
+  $year = $_POST["year"];
+  $description = mysqli_escape_string($conn, nl2br($_POST["description"]));
+  $banner = $_FILES["banner"];
+  $pdf = $_FILES["pdfFile"];
+
+  $query = null;
+
+  if (intval($banner["error"]) == 0 && intval($pdf["error"]) == 0) {
+    $bannerFile = date("mdY-his") . $separator . basename($banner['name']);
+    $bannerDir = "../media/documents/banner/";
+    $bannerUrl = "/media/documents/banner/$bannerFile";
+
+    $pdfFile = date("mdY-his") . $separator . basename($pdf['name']);
+    $pdfDir = "../media/documents/files/";
+    $pdfUrl = "/media/documents/files/$pdfFile";
+
+    if (!is_dir($bannerDir)) {
+      mkdir($bannerDir, 0777, true);
+    }
+
+    if (!is_dir($pdfDir)) {
+      mkdir($pdfDir, 0777, true);
+    }
+
+    if (move_uploaded_file($banner['tmp_name'], "$bannerDir/$bannerFile") && move_uploaded_file($pdf['tmp_name'], "$pdfDir/$pdfFile")) {
+      $query = mysqli_query(
+        $conn,
+        "UPDATE documents SET title='$title', `type_id`='$type', `year`='$year', `description`='$description', img_banner='$bannerUrl', project_document='$pdfUrl' WHERE id='$documentId'"
+      );
+    }
+  } else {
+    $query = mysqli_query(
+      $conn,
+      "UPDATE documents SET title='$title', `type_id`='$type', `year`='$year', `description`='$description' WHERE id='$documentId'"
+    );
+  }
+
+  if ($query) {
+    resetPanelComments($documentId, $submittedDocument->leader_id);
+    $response["success"] = true;
+    $response["message"] = "Document successfully updated.";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function resetPanelComments($documentId, $leaderId)
+{
+  global $conn;
+  $documentStatus = getDocumentStatus($leaderId, $documentId);
+
+  $typeDisapproved = "";
+
+  foreach ($documentStatus as $index => $value) {
+    if ($value["status"] == "DISAPPROVED") {
+      $typeDisapproved = $index;
+      break;
+    }
+  }
+
+  if ($typeDisapproved != "") {
+    $resetFeedbackAndRatingQ = mysqli_query(
+      $conn,
+      "UPDATE documents SET adviser_feedback=NULL, instructor_feedback=NULL, panel_rate_status=NULL WHERE id='$documentId'"
+    );
+
+    if ($resetFeedbackAndRatingQ) {
+      $panelIds = getPanelAssigned($leaderId);
+
+      if ($panelIds != null) {
+        mysqli_query(
+          $conn,
+          "DELETE FROM panel_ratings WHERE " . ($typeDisapproved != "" ? "rating_type='$typeDisapproved' and" : "") . " panel_id in(" . (implode(', ', $panelIds)) . ")"
+        );
+      }
+    }
+  }
+}
+
+function getPanelAssigned($leaderId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leaderId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return json_decode(mysqli_fetch_object($query)->panel_ids, true);
+  }
+
+  return null;
+}
+
+function getDocumentStatus($leaderId, $documentId)
+{
+  global $conn;
+
+  $status = array();
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leaderId'"
+  );
+  if (mysqli_num_rows($query) > 0) {
+    $panel_ids = json_decode(mysqli_fetch_object($query)->panel_ids);
+    $ratingTypes = array("concept", "20percent", "50percent", "final");
+
+    foreach ($ratingTypes as $ratingType) {
+      $approved = 0;
+      $disapproved = 0;
+
+      $query = mysqli_query(
+        $conn,
+        "SELECT * FROM panel_ratings WHERE leader_id='$leaderId' and document_id='$documentId' and rating_type='$ratingType'"
+      );
+
+      while ($row = mysqli_fetch_object($query)) {
+        if (strtolower($row->action) == "approved") {
+          $approved++;
+        } else if (strtolower($row->action) == "disapproved") {
+          $disapproved++;
+        }
+
+        if (!in_array(panelNameType($ratingType), $status)) {
+          $status[$ratingType] = array(
+            "title" => panelNameType($ratingType),
+            "status" => ""
+          );
+        }
+      }
+      if (($approved + $disapproved) == count($panel_ids)) {
+        $documentRateStatus = $approved > $disapproved ? "APPROVED" : "DISAPPROVED";
+        $status[$ratingType]["status"] = $documentRateStatus;
+      }
+    }
+  }
+
+  return $status;
+}
+
+function updatePanelRating()
+{
+  global $conn, $_POST;
+
+  $ratingId = $_POST["ratingId"];
+
+  $panelRatings = getPanelRatingById($ratingId);
+  $nameType = panelNameType($panelRatings->rating_type);
+
+  $comment = nl2br($_POST["comment"]);
+  $action = $_POST["action"];
+
+  $newGroupGrade = json_encode(newGroupGrade($panelRatings, $_POST, $panelRatings->rating_type));
+  $newIndividualGrade = json_encode(newIndividualGrade($panelRatings, $panelRatings->rating_type, $_POST));
+
+  $query = mysqli_query(
+    $conn,
+    "UPDATE panel_ratings SET comment='$comment', `action`='$action', group_grade='$newGroupGrade', individual_grade='$newIndividualGrade' WHERE rating_id='$ratingId'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "$nameType rating updated successfully.";
+    updateDocumentPanelStatus($panelRatings->leader_id, $panelRatings->rating_type, $panelRatings->document_id);
+    updateDocumentsToPublished($panelRatings->document_id, $panelRatings->leader_id, $panelRatings->rating_type);
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function newIndividualGrade($panelRatings, $ratingType, $post = null)
+{
+  $oldIndividualGrade = json_decode($panelRatings->individual_grade, true);
+  $newIndividualGrade = array();
+
+  if ($ratingType == "concept") {
+    for ($i = 0; $i < count($oldIndividualGrade); $i++) {
+      $gradeName = $oldIndividualGrade[$i]["id"] . "_grade";
+      array_push($newIndividualGrade, array(
+        "id" => $oldIndividualGrade[$i]["id"],
+        "name" => $oldIndividualGrade[$i]["name"],
+        "grade" => $post[$gradeName]
+      ));
+    }
+  } else {
+    for ($i = 0; $i < count($oldIndividualGrade); $i++) {
+      $remarksName = $oldIndividualGrade[$i]["id"] . "_remarks";
+      array_push($newIndividualGrade, array(
+        "id" => $oldIndividualGrade[$i]["id"],
+        "name" => $oldIndividualGrade[$i]["name"],
+        "rating" => $post[$oldIndividualGrade[$i]["id"]],
+        "remarks" => $post[$remarksName]
+      ));
+    }
+  }
+
+  return $newIndividualGrade;
+}
+
+function newGroupGrade($panelRatings, $post, $ratingType)
+{
+  $oldGroupGrades = json_decode($panelRatings->group_grade, true);
+  $newGroupGrade = array();
+
+  if ($ratingType == "concept") {
+    foreach ($oldGroupGrades as $oldGroupGrade) {
+      array_push($newGroupGrade, array(
+        "title" => $oldGroupGrade["title"],
+        "name" => $oldGroupGrade["name"],
+        "max" => intval($oldGroupGrade["max"]),
+        "grade" => $post[$oldGroupGrade["name"]]
+      ));
+    }
+  } else {
+    $count = 0;
+    foreach ($oldGroupGrades as $index => $value) {
+      $remarksName = $index . "_remarks";
+      $newGroupGrade[$index] = array(
+        "title" => $value["title"],
+        "remarks" => $post[$remarksName],
+        "ratings" => array()
+      );
+      foreach ($value["ratings"] as $rating) {
+        array_push($newGroupGrade[$index]["ratings"], array(
+          "title" => $rating["title"],
+          "name" => $rating["name"],
+          "rating" => $post[$rating["name"]]
+        ));
+      }
+      $count++;
+    }
+  }
+
+  return $newGroupGrade;
+}
+
+function getPanelRatingType()
+{
+  global $conn;
+
+  $ratingTypes = array();
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM panel_ratings WHERE panel_id='$_POST[panel_id]' and document_id='$_POST[document_id]' GROUP BY rating_type"
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($ratingTypes, array($row->rating_type => panelNameType($row->rating_type)));
+  }
+
+  returnResponse($ratingTypes);
+}
+
+function getPanelRatingById($ratingId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM panel_ratings WHERE rating_id='$ratingId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object($query);
+  }
+
+  return null;
+}
+
 function getPanelRating($panelId, $documentId)
 {
   global $conn;
 
+  $feedbackData = array();
   $query = mysqli_query(
     $conn,
     "SELECT * FROM panel_ratings WHERE document_id='$documentId' and panel_id='$panelId'"
   );
 
   if (mysqli_num_rows($query) > 0) {
-    return mysqli_fetch_object($query);
+    while ($row = mysqli_fetch_object($query)) {
+      array_push($feedbackData, $row);
+    }
   }
-  return null;
+  return $feedbackData;
 }
 
 function saveRating()
@@ -188,6 +718,7 @@ function saveRating()
       $response["success"] = true;
       $response["message"] = "Group successfully rated.";
       updateDocumentPanelStatus($leaderId, $type, $documentId);
+      updateDocumentsToPublished($documentId, $leaderId, $type);
     } else {
       $response["success"] = false;
       $response["message"] = mysqli_error($conn);
@@ -222,6 +753,47 @@ function panelNameType($type)
   }
 
   return $nameType;
+}
+
+function updateDocumentsToPublished($documentId, $leaderId, $type)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leaderId'"
+  );
+  if (mysqli_num_rows($query) > 0) {
+    $panel_ids = json_decode(mysqli_fetch_object($query)->panel_ids);
+    $approved = 0;
+    $disapproved = 0;
+    $countFinalType = 0;
+
+    foreach ($panel_ids as $panel_id) {
+      $panel_ratingQ = mysqli_query(
+        $conn,
+        "SELECT panel_id, `rating_type`, document_id, leader_id, `action` FROM panel_ratings WHERE panel_id='$panel_id' and `rating_type`='$type' and document_id='$documentId' and leader_id='$leaderId'"
+      );
+      while ($row = mysqli_fetch_object($panel_ratingQ)) {
+        if (strtolower($row->action) == "approved") {
+          $approved++;
+        } else if (strtolower($row->action) == "disapproved") {
+          $disapproved++;
+        }
+
+        if ($row->rating_type == "final") {
+          $countFinalType++;
+        }
+      }
+    }
+
+    if (($approved + $disapproved) == count($panel_ids) && $countFinalType == count($panel_ids)) {
+      mysqli_query(
+        $conn,
+        "UPDATE documents SET publish_status='TO PUBLISH' WHERE id='$documentId'"
+      );
+    }
+  }
 }
 
 function updateDocumentPanelStatus($leaderId, $type, $documentId)
@@ -277,14 +849,14 @@ function hasPanelRating($panelId, $ratingType, $documentId)
   return false;
 }
 
-function generateTextareaTdRadio($len, $name)
+function generateTextareaTdRadio($len, $name, $grade = null)
 {
   $tds = array();
 
   for ($i = 1; $i <= $len; $i++) {
     array_push($tds, "<td class='v-align-middle'>
                         <div class='form-group' style='margin: 0;'>
-                          <input type='radio' value='$i' name='$name' class='radio-big rating-radio' required>
+                          <input type='radio' value='$i' name='$name' class='radio-big rating-radio' " . ($grade != null && $i == $grade ? "checked" : "") . " required>
                         </div>
                       </td>");
   }
@@ -529,7 +1101,7 @@ function getPageCount($searchVal = "", $limit)
 
 function saveOldDocuments()
 {
-  global $conn, $_POST, $_FILES;
+  global $conn, $_POST, $_FILES, $separator;
 
   $title = $_POST["title"];
   $type = $_POST["type"];
@@ -540,11 +1112,11 @@ function saveOldDocuments()
 
   if (intval($banner["error"]) == 0 && intval($pdf["error"]) == 0) {
 
-    $bannerFile = date("mdY-his") . "_" . basename($banner['name']);
+    $bannerFile = date("mdY-his") . $separator . basename($banner['name']);
     $bannerDir = "../media/documents/banner/";
     $bannerUrl = "/media/documents/banner/$bannerFile";
 
-    $pdfFile = date("mdY-his") . "_" . basename($pdf['name']);
+    $pdfFile = date("mdY-his") . $separator . basename($pdf['name']);
     $pdfDir = "../media/documents/files/";
     $pdfUrl = "/media/documents/files/$pdfFile";
 
@@ -872,6 +1444,24 @@ function getDocumentById($id)
   return null;
 }
 
+function getDocumentByLeaderId($leaderId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE leader_id ='$leaderId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object(
+      $query
+    );
+  }
+
+  return null;
+}
+
 function hasSubmittedDocuments($currentUser)
 {
   global $conn;
@@ -984,27 +1574,6 @@ function handleAdviserInvite()
         "UPDATE thesis_groups SET adviser_id='$currentUser->id' WHERE	group_leader_id='$leaderId'"
       );
     }
-  } else {
-    $response["success"] = false;
-    $response["message"] = mysqli_error($conn);
-  }
-
-  returnResponse($response);
-}
-
-function instructorApprovedGroupList()
-{
-  global $conn, $_POST;
-  $group_id = $_POST["group_id"];
-
-  $query = mysqli_query(
-    $conn,
-    "UPDATE thesis_groups SET status = '1' WHERE id ='$group_id'"
-  );
-
-  if ($query) {
-    $response["success"] = true;
-    $response["message"] = "Group list successfully approved.";
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
@@ -1393,12 +1962,13 @@ function addAdmin()
   $email = $_POST["email"];
   $avatar = $_FILES["avatar"];
   $password = password_hash($email, PASSWORD_ARGON2I);
+  $sections = isset($_POST["sections"]) ?  json_encode(explode(', ', strtoupper(implode(', ', $_POST["sections"])))) : null;
 
   $role = $_POST["role"];
 
   $username = generateUsername($fname, $lname);
 
-  if (!isEmailAlreadyUse($email)) {
+  if (!isEmailAlreadyUse($email) && !hasSectionsAssigned($sections)) {
     $query = null;
     if (intval($avatar["error"]) == 0) {
       $uploadFile = date("mdY-his") . "_" . basename($avatar['name']);
@@ -1432,16 +2002,68 @@ function addAdmin()
     if ($query) {
       $response["success"] = true;
       $response["message"] = "Admin added successfully<br>Would you like to add another?";
+      if ($role == "instructor") {
+        $instructorId = mysqli_insert_id($conn);
+        addUpdateInstructorSections($instructorId, $sections, "insert");
+      }
     } else {
       $response["success"] = false;
       $response["message"] = mysqli_error($conn);
     }
   } else {
     $response["success"] = false;
-    $response["message"] = "Email already use by other user.";
+    $response["message"] = isEmailAlreadyUse($email) ? "Email already use by other user." : "Section was already assigned to other instructor";
   }
 
   returnResponse($response);
+}
+
+function hasSectionsAssigned($sections, $instructorId = null)
+{
+  global $conn;
+  $sections = json_decode($sections, true);
+
+  $hasSection = false;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM instructor_sections " . ($instructorId != null ? "WHERE instructor_id != '$instructorId'" : "") . ""
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    $has = false;
+    foreach (json_decode($row->sections, true) as $dbSection) {
+      if (in_array(strtoupper($dbSection), $sections)) {
+        $has = true;
+        break;
+      }
+    }
+    if ($has) {
+      $hasSection = true;
+      break;
+    }
+  }
+
+  return $hasSection;
+}
+
+function addUpdateInstructorSections($instructorId, $sections, $action)
+{
+  global $conn;
+
+  if (count(json_decode($sections, true)) > 0) {
+    if ($action == "insert") {
+      mysqli_query(
+        $conn,
+        "INSERT INTO instructor_sections(instructor_id, sections) VALUES('$instructorId', '$sections')"
+      );
+    } else {
+      mysqli_query(
+        $conn,
+        "UPDATE instructor_sections SET sections='$sections' WHERE instructor_id='$instructorId'"
+      );
+    }
+  }
 }
 
 function sendToInstructor()
@@ -1780,7 +2402,9 @@ function updateUser()
   $cpassword = isset($_POST["cpassword"]) ? $_POST["cpassword"] : "";
   $oldpassword = isset($_POST["oldpassword"]) ? $_POST["oldpassword"] : "";
 
-  if (!isEmailAlreadyUseWithId($email, $userId)) {
+  $instructorSections = isset($_POST["sections"]) ?  json_encode(explode(', ', strtoupper(implode(', ', $_POST["sections"])))) : null;
+
+  if (!isEmailAlreadyUseWithId($email, $userId) && !hasSectionsAssigned($instructorSections, $userId)) {
     if ($password != "" || $cpassword != "" || $oldpassword != "") {
       $verifyPassword = json_decode(validatePassword($userId, $password, $cpassword, $oldpassword));
       if ($verifyPassword->validate) {
@@ -1834,7 +2458,7 @@ function updateUser()
     }
   } else {
     $response["success"] = false;
-    $response["message"] = "Email already use by other user.";
+    $response["message"] = isEmailAlreadyUseWithId($email, $userId) ? "Email already use by other user." : "Section was already assigned to other instructor";;
   }
 
   returnResponse($response);
@@ -1855,7 +2479,7 @@ function updateUserDB($post, $img_url = null, $hash)
   $roll = isset($post["roll"]) ? $post["roll"] : null;
   $group_number = isset($post["group_number"]) ? $post["group_number"] : null;
   $year = isset($post["year"]) ? $post["year"] : null;
-  $section = isset($post["section"]) ? $post["section"] : null;
+  $section = isset($post["section"]) ? strtoupper($post["section"]) : null;
 
   $username = generateUsername($fname, $lname);
   $currentUser = get_user_by_id($userId);
@@ -1890,6 +2514,10 @@ function updateUserDB($post, $img_url = null, $hash)
   if ($insertQuery) {
     $response["success"] = true;
     $response["message"] = $role != "student" ? "Admin updated successfully." : "User updated successfully.";
+    if ($role == "instructor") {
+      $instructorSections = json_encode(explode(', ', strtoupper(implode(', ', $post["sections"]))));
+      addUpdateInstructorSections($userId, $instructorSections, "update");
+    }
     if ($_SESSION["username"] == $currentUser->username) {
       $_SESSION["username"] = $username;
     }
@@ -2026,9 +2654,9 @@ function student_registration()
   $fname = $_POST["fname"];
   $mname = $_POST["mname"] == "" ? null : $_POST["mname"];
   $lname = $_POST["lname"];
-  $group_number = $_POST["group_number"];
+  $sy = "SY: $_POST[sy]";
   $year = $_POST["year"];
-  $section = $_POST["section"];
+  $section = strtoupper($_POST["section"]);
   $email = $_POST["email"];
   $password = password_hash($_POST["password"], PASSWORD_ARGON2I);
 
@@ -2040,8 +2668,8 @@ function student_registration()
     $query = mysqli_query(
       $conn,
       "INSERT INTO 
-      users(roll, first_name, middle_name, last_name, group_number, year_and_section, username, email, `password`, `role`, isLeader, date_added)
-      VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$group_number', '$year-$section', '$username', '$email', '$password', '$role', '1', '$dateNow')"
+      users(roll, first_name, middle_name, last_name, school_year, year_and_section, username, email, `password`, `role`, date_added)
+      VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$sy', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
     );
 
     if ($query) {

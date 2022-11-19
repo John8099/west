@@ -1,8 +1,17 @@
 <?php
 $self = "http://{$_SERVER['SERVER_NAME']}{$_SERVER['REQUEST_URI']}";
 
-$links = array(
+$isNotYetAssignedGroup = null;
+$isMember = null;
+$isLeader = null;
 
+if ($_SESSION["username"]) {
+  $isNotYetAssignedGroup = isNotYetAssignedGroup($user->id);
+  $isMember = isMember($user->id);
+  $isLeader = isLeader($user->id);
+}
+
+$links = array(
   array(
     "title" => "Home",
     "url" => "$SERVER_NAME/pages/student/index",
@@ -21,22 +30,22 @@ $links = array(
   array(
     "title" => "Groupings",
     "url" => "$SERVER_NAME/pages/student/my-groupings",
-    "allowedViews" => array("student")
+    "allowedViews" => array(!$isNotYetAssignedGroup ? "student" : "")
   ),
   array(
     "title" => "Schedules",
     "url" => "$SERVER_NAME/pages/student/schedule",
-    "allowedViews" => array("student")
+    "allowedViews" => array(!$isNotYetAssignedGroup ? "student" : "")
   ),
   array(
     "title" => "Document Status",
     "url" => "$SERVER_NAME/pages/student/document-status",
-    "allowedViews" => array("student")
+    "allowedViews" => array(!$isNotYetAssignedGroup ? "student" : "")
   ),
   array(
     "title" => "Messages",
     "url" => "$SERVER_NAME/pages/student/messages",
-    "allowedViews" => array("student")
+    "allowedViews" => array(!$isNotYetAssignedGroup && $isLeader ? "student" : "")
   ),
   array(
     "title" => "Dashboard",
@@ -87,11 +96,19 @@ $links = array(
     )
   ),
   array(
+    "title" => "To publish documents",
+    "url" => "$SERVER_NAME/pages/admin/to-publish-documents",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "file-import"
+    )
+  ),
+  array(
     "title" => "Published documents",
     "url" => "$SERVER_NAME/pages/admin/published-documents",
     "allowedViews" => array("coordinator"),
     "config" => array(
-      "icon" => "folder"
+      "icon" => "cloud"
     )
   ),
   array(
@@ -111,11 +128,27 @@ $links = array(
     )
   ),
   array(
-    "title" => "Groups",
-    "url" => "$SERVER_NAME/pages/admin/groups",
+    "title" => "Unassigned Students",
+    "url" => "$SERVER_NAME/pages/admin/unassigned",
     "allowedViews" => array("instructor"),
     "config" => array(
       "icon" => "users-cog"
+    )
+  ),
+  array(
+    "title" => "Assign Leader",
+    "url" => "$SERVER_NAME/pages/admin/assign-leader",
+    "allowedViews" => array("instructor"),
+    "config" => array(
+      "icon" => "users-cog"
+    )
+  ),
+  array(
+    "title" => "Students",
+    "url" => "$SERVER_NAME/pages/admin/students",
+    "allowedViews" => array("instructor"),
+    "config" => array(
+      "icon" => "list"
     )
   ),
   array(
@@ -139,7 +172,7 @@ $links = array(
     "url" => "$SERVER_NAME/pages/admin/admin-lists",
     "allowedViews" => array("coordinator"),
     "config" => array(
-      "icon" => "users-cog"
+      "icon" => "user-shield"
     )
   ),
   array(

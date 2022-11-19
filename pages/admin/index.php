@@ -60,7 +60,7 @@ $systemInfo = systemInfo();
                 <div class="info-box-content">
                   <span class="info-box-text">Total Categories</span>
                   <span class="info-box-number text-right">
-                    4 default
+                    <?= getTotalCategories() ?>
                   </span>
                 </div>
                 <!-- /.info-box-content -->
@@ -74,7 +74,7 @@ $systemInfo = systemInfo();
                 <div class="info-box-content">
                   <span class="info-box-text">Today's Scheduled Tasks</span>
                   <span class="info-box-number text-right">
-                    0 default
+                    <?= getTodayScheduledTask() ?>
                   </span>
                 </div>
                 <!-- /.info-box-content -->
@@ -88,7 +88,7 @@ $systemInfo = systemInfo();
                 <div class="info-box-content">
                   <span class="info-box-text">Upcoming Scheduled Tasks</span>
                   <span class="info-box-number text-right">
-                    0 default
+                    <?= getUpcomingScheduledTask() ?>
                   </span>
                 </div>
                 <!-- /.info-box-content -->
@@ -100,7 +100,8 @@ $systemInfo = systemInfo();
 
           <div class="row">
             <div class="col-sm-12">
-              <canvas id="bubbleChart" style="min-height: 400px; height: 400px; max-height: 400px; max-width: 100%;"></canvas>
+              <input type="text" id="barData" value='<?= json_encode(getBarData()) ?>' hidden readonly>
+              <div id="chart"></div>
             </div>
           </div>
         </div>
@@ -120,43 +121,136 @@ $systemInfo = systemInfo();
   <script src="../../assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
   <!-- AdminLTE App -->
   <script src="../../assets/dist/js/adminlte.min.js"></script>
+  <!-- Alert -->
+  <script src="../../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
   <!-- AdminLTE for demo purposes -->
   <script src="../../assets/dist/js/demo.js"></script>
-  <script src="../../assets/plugins/chart.js/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </body>
 
 <script>
-  var bubbleChart = $('#bubbleChart').get(0).getContext('2d')
-  const data = {
-    datasets: [{
-      label: 'First Dataset',
-      data: [{
-        x: "4-A",
-        y: 10,
-        r: (10 / 12) * 100 
-      }, {
-        x: "2012",
-        y: 20,
-        r: 10
-      }],
-      backgroundColor: "#007bff7d",
-    }]
-  };
+  var barChart = document.getElementById("barChart");
 
-  const config = {
-    type: 'bubble',
-    data: data,
-    options: {
-      maintainAspectRatio: false,
-      responsive: true,
-      scaleOverride: true,
-      scaleSteps: 10,
-      scaleStepWidth: 2020,
-      scaleStartValue: 2012,
-      pointStyle : "dash"
+  const barData = JSON.parse($("#barData").val())
+
+  const result = Object.values(barData.reduce((r, e) => {
+    let k = `${e.name}|${e.year}`;
+    if (!r[k]) r[k] = {
+      ...e,
+      count: 1
+    }
+    else r[k].count += 1;
+    return r;
+  }, {}))
+
+  let data = [];
+  let years = [];
+
+  result.forEach((res) => {
+    if (!years.includes(res.year)) {
+      years.push(res.year)
+    }
+
+    const toLoop = Number(years.indexOf(res.year) + 1);
+    const yearIndex = years.indexOf(res.year);
+
+    if (data.some((d) => d.name === res.name)) {
+      const index = data.map((d) => d.name).indexOf(res.name)
+      data[index].data.push(res.count)
+    } else {
+
+      let a = [];
+      for (let i = 0; i < toLoop; i++) {
+        if (i == yearIndex) {
+          a.push(res.count)
+        } else {
+          a.push(0)
+        }
+      }
+      data.push({
+        name: res.name,
+        data: a
+      })
+    }
+  })
+
+
+  for (let i = 0; i < data.length; i++) {
+    const seriesData = data[i].data
+    for (let j = seriesData.length; j < years.length; j++) {
+      data[i].data.push(0)
+    }
+  }
+
+  console.log(years)
+  console.log(result)
+  console.log(data)
+
+  var options = {
+    series: data,
+    chart: {
+      type: 'bar',
+      height: 480,
+      stacked: true,
+      toolbar: {
+        tools: {
+          download: false,
+        },
+      }
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        dataLabels: {
+          total: {
+            enabled: true,
+            offsetX: 0,
+            style: {
+              fontSize: '13px',
+              fontWeight: 900
+            }
+          }
+        }
+      },
+    },
+    stroke: {
+      width: 1,
+      colors: ['#fff']
+    },
+    title: {
+      text: 'Fields types per year'
+    },
+    xaxis: {
+      categories: years,
+      labels: {
+        formatter: (val) => val
+      }
+    },
+    yaxis: {
+      title: {
+        text: undefined
+      },
+      labels: {
+        formatter: (val) => val
+      }
+    },
+    tooltip: {
+      y: {
+        formatter: (val) => val
+      }
+    },
+    fill: {
+      opacity: 1
+    },
+    legend: {
+      position: 'top',
+      horizontalAlign: 'left',
+      offsetX: 40
     }
   };
-  new Chart(bubbleChart, config)
+
+  var chart = new ApexCharts(document.querySelector("#chart"), options);
+  chart.render();
 </script>
 
 </html>

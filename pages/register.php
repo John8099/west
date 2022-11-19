@@ -60,33 +60,40 @@ $systemInfo = systemInfo();
                     <label class="col-form-label">
                       Roll
                     </label>
-                    <input type="text" name="roll" class="form-control form-control-sm form-control-border" placeholder="Your roll ..." required>
+                    <input type="text" name="roll" class="form-control form-control-border" placeholder="Your roll ..." required>
 
                   </div>
                   <div class="form-group">
                     <label class="col-form-label">
-                      Leader's name
+                      Name
                     </label>
-                    <input type="text" class="form-control form-control-sm form-control-border" name="fname" placeholder="First name" required>
+                    <input type="text" class="form-control form-control-border" name="fname" placeholder="First name" required>
                     <br>
-                    <input type="text" class="form-control form-control-sm form-control-border" name="mname" placeholder="Middle name (optional)">
+                    <input type="text" class="form-control form-control-border" name="mname" placeholder="Middle name (optional)">
                     <br>
-                    <input type="text" class="form-control form-control-sm form-control-border" name="lname" placeholder="Last name" required>
+                    <input type="text" class="form-control form-control-border" name="lname" placeholder="Last name" required>
                   </div>
-                  <div class="form-group">
+
+                  <div class="form-group mb-0">
                     <label class="col-form-label">
-                      Group number
+                      School year
                     </label>
-                    <input type="number" name="group_number" class="form-control form-control-sm form-control-border" placeholder="Your group number ..." required>
                   </div>
+                  <div class="input-group mb-2">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text" style="background-color: transparent; border: 0; border-bottom: 1px solid #ced4da;">S.Y.</span>
+                    </div>
+                    <input type="text" class="form-control form-control-border" name="sy" placeholder="eg. <?= (date("Y") - 1) . "-" . date("Y") ?>" required>
+                  </div>
+
                   <div class="form-group">
                     <label class="col-form-label">
                       Year & Section
                     </label>
                     <div class="input-group">
-                      <input type="number" name="year" class="form-control form-control-sm form-control-border mr-3" placeholder="Year" required>
+                      <input type="number" name="year" class="form-control form-control-border mr-3" placeholder="Year" required>
 
-                      <input type="text" name="section" class="form-control form-control-sm form-control-border ml-3" placeholder="Section" required>
+                      <input type="text" name="section" class="form-control form-control-border ml-3" placeholder="Section" required>
                     </div>
                   </div>
 
@@ -94,7 +101,7 @@ $systemInfo = systemInfo();
                     <label class="col-form-label">
                       Email
                     </label>
-                    <input type="email" name="email" id="inputEmail" class="form-control form-control-sm form-control-border" placeholder="Your email ..." required>
+                    <input type="email" name="email" id="inputEmail" class="form-control form-control-border" placeholder="Your email ..." required>
 
                     <span id="emailErrorField" class="error invalid-feedback"></span>
                   </div>
@@ -103,7 +110,7 @@ $systemInfo = systemInfo();
                     <label class="col-form-label">
                       Password
                     </label>
-                    <input type="password" name="password" class="form-control form-control-sm form-control-border" placeholder="Your password ..." required>
+                    <input type="password" name="password" class="form-control form-control-border" placeholder="Your password ..." required>
                   </div>
 
                   <div class="form-group d-flex justify-content-end">
@@ -143,10 +150,10 @@ $systemInfo = systemInfo();
 <script src="../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../assets/dist/js/adminlte.min.js"></script>
-<!-- AdminLTE for demo purposes -->
-<script src="../assets/dist/js/demo.js"></script>
 <!-- Alert -->
 <script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="../assets/dist/js/demo.js"></script>
 
 <script>
   const emailInput = $("#inputEmail")
@@ -166,31 +173,9 @@ $systemInfo = systemInfo();
             title: 'Success!',
             text: resp.message,
             icon: 'success',
-          }).finally(() => {
-            let location = `${window.location.origin}/west/pages/`
-
-            const locations = {
-              student: `${window.location.origin}/west/pages/student/`,
-              instructor: `${window.location.origin}/west/pages/instructor/`,
-              coordinator: `${window.location.origin}/west/pages/coordinator/`,
-              panel: `${window.location.origin}/west/pages/panel/`,
-              adviser: `${window.location.origin}/west/pages/adviser/`,
-            }
-
-            if (resp.role === "student") {
-              location = locations.student
-            } else if (resp.role === "instructor") {
-              location = locations.instructor
-            } else if (resp.role === "coordinator") {
-              location = locations.coordinator
-            } else if (resp.role === "panel") {
-              location = locations.panel
-            } else if (resp.role === "adviser") {
-              location = locations.adviser
-            }
-
-            window.location.href = location
-          })
+          }).finally(() =>
+            window.location.href = `${window.location.origin}/west/pages/student/index`
+          )
         } else {
           swal.fire({
             title: 'Error!',
