@@ -204,6 +204,10 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                 <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" onclick="return window.location.href='students?rating&&leaderId=<?= $leader->id ?>&&groupNumber=<?= $leader->group_number ?>'" <?= $disabled ?>>
                   Preview rating
                 </button>
+                <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="return window.location.href = './message?i=<?= $leader->id ?>'">
+                  <i class="fa fa-paper-plane"></i>
+                  Chat
+                </button>
               </td>
             </tr>
           <?php endwhile; ?>
