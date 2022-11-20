@@ -867,7 +867,6 @@ function generateTextareaTdRadio($len, $name, $grade = null)
 function getPanelAssignedGroup($userId)
 {
   global $conn;
-
   $assignedGroupData = array();
   $query = mysqli_query(
     $conn,
@@ -880,10 +879,14 @@ function getPanelAssignedGroup($userId)
     ON tg.group_leader_id = d.leader_id"
   );
 
-  while ($row = mysqli_fetch_object($query)) {
-    $panel_ids = json_decode($row->panel_ids);
-    if (in_array($userId, $panel_ids)) {
-      array_push($assignedGroupData, $row);
+  if (mysqli_num_rows($query) > 0) {
+    while ($row = mysqli_fetch_object($query)) {
+      $panel_ids = json_decode($row->panel_ids);
+      if ($panel_ids) {
+        if (in_array($userId, $panel_ids)) {
+          array_push($assignedGroupData, $row);
+        }
+      }
     }
   }
 
