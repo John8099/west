@@ -149,6 +149,12 @@ if (isset($_GET['action'])) {
       case "publishDocument":
         publishDocument();
         break;
+      case "saveCourse":
+        saveCourse();
+        break;
+      case "deleteCourse":
+        deleteCourse();
+        break;
       default:
         null;
         break;
@@ -157,6 +163,73 @@ if (isset($_GET['action'])) {
     $response["success"] = false;
     $response["message"] = $e->getMessage();
   }
+}
+
+function deleteCourse()
+{
+  global $conn, $_POST;
+
+  $query = mysqli_query(
+    $conn,
+    "DELETE FROM courses WHERE course_id = '$_POST[id]'"
+  );
+
+  if ($query) {
+    $response["success"] = true;
+    $response["message"] = "Course deleted successfully";
+  } else {
+    $response["success"] = false;
+    $response["message"] = mysqli_error($conn);
+  }
+
+  returnResponse($response);
+}
+
+function saveCourse()
+{
+  global $conn;
+
+  $action = $_POST["action"];
+  $courseId = isset($_POST['courseId']) ? $_POST['courseId'] : null;
+  $name = strtoupper($_POST["name"]);
+  $short_name = strtoupper($_POST["short_name"]);
+
+  if (!hasCourse($name, $short_name, $courseId)) {
+    $qStr = $action == "add" && $courseId == null ? "INSERT INTO courses(`name`, short_name) VALUES('$name', '$short_name')" : "UPDATE courses SET `name`='$name', short_name='$short_name' WHERE course_id='$courseId'";
+    $query = mysqli_query(
+      $conn,
+      $qStr
+    );
+
+    if ($query) {
+      $response["success"] = true;
+      $response["message"] = "Course " . ($action == "add" ? "added" : "updated") . " successfully";
+    } else {
+      $response["success"] = false;
+      $response["message"] = mysqli_error($conn);
+    }
+  } else {
+    $response["success"] = false;
+    $response["message"] = "Course already exist.";
+  }
+
+  returnResponse($response);
+}
+
+function hasCourse($courseName, $shortName, $courseId = null)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM courses WHERE " . ($courseId != null ? "course_id !='$courseId' and " : "") . "  (`name` LIKE '%$courseName%' or `name` LIKE '%$shortName%')"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return true;
+  }
+
+  return false;
 }
 
 function publishDocument()
@@ -787,7 +860,7 @@ function updateDocumentsToPublished($documentId, $leaderId, $type)
       }
     }
 
-    if (($approved + $disapproved) == count($panel_ids) && $countFinalType == count($panel_ids)) {
+    if (($approved + $disapproved) == count($panel_ids) && $approved > $disapproved && $countFinalType == count($panel_ids)) {
       mysqli_query(
         $conn,
         "UPDATE documents SET publish_status='TO PUBLISH' WHERE id='$documentId'"
@@ -2483,6 +2556,7 @@ function updateUserDB($post, $img_url = null, $hash)
   $group_number = isset($post["group_number"]) ? $post["group_number"] : null;
   $year = isset($post["year"]) ? $post["year"] : null;
   $section = isset($post["section"]) ? strtoupper($post["section"]) : null;
+  $courseId = isset($post["courseId"]) ? strtoupper($post["courseId"]) : null;
 
   $username = generateUsername($fname, $lname);
   $currentUser = get_user_by_id($userId);
@@ -2491,6 +2565,7 @@ function updateUserDB($post, $img_url = null, $hash)
   if ($role == "student") {
     $query = "UPDATE users SET
     " . ($roll == null ? '' : "roll='$roll',") . "
+    " . ($courseId == null ? '' : "course_id='$courseId',") . "
     first_name='$fname',
     middle_name=" . ($mname ? "'$mname'" : 'NULL') . ",
     last_name='$lname',
@@ -2660,6 +2735,7 @@ function student_registration()
   $sy = "SY: $_POST[sy]";
   $year = $_POST["year"];
   $section = strtoupper($_POST["section"]);
+  $courseId = $_POST['courseId'];
   $email = $_POST["email"];
   $password = password_hash($_POST["password"], PASSWORD_ARGON2I);
 
@@ -2671,8 +2747,8 @@ function student_registration()
     $query = mysqli_query(
       $conn,
       "INSERT INTO 
-      users(roll, first_name, middle_name, last_name, school_year, year_and_section, username, email, `password`, `role`, date_added)
-      VALUES('$roll', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$sy', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
+      users(roll, course_id, first_name, middle_name, last_name, school_year, year_and_section, username, email, `password`, `role`, date_added)
+      VALUES('$roll', '$courseId', '$fname', " . ($mname ? "'$mname'" : 'NULL') . ", '$lname', '$sy', '$year-$section', '$username', '$email', '$password', '$role', '$dateNow')"
     );
 
     if ($query) {

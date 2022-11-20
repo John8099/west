@@ -99,6 +99,24 @@ $systemInfo = systemInfo();
 
                   <div class="form-group">
                     <label class="col-form-label">
+                      Course
+                    </label>
+                    <select name="courseId" class="form-control form-control-border mr-3">
+                      <option value="">-- select course --</option>
+                      <?php
+                      $query = mysqli_query(
+                        $conn,
+                        "SELECT * FROM courses"
+                      );
+                      while ($course = mysqli_fetch_object($query)) :
+                      ?>
+                        <option value="<?= $course->course_id ?>"><?= "($course->short_name)" . $course->name ?></option>
+                      <?php endwhile; ?>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="col-form-label">
                       Email
                     </label>
                     <input type="email" name="email" id="inputEmail" class="form-control form-control-border" placeholder="Your email ..." required>

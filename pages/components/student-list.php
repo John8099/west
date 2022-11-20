@@ -148,6 +148,7 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
             <th>Group Number</th>
             <th>Group list</th>
             <th>Section</th>
+            <th>Course</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -193,6 +194,7 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                 <?php endif; ?>
               </td>
               <td style="vertical-align: middle; text-align:center;font-size: 30px"><?= $leader->year_and_section ?></td>
+              <td style="vertical-align: middle; text-align:center;font-size: 30px">BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY</td>
               <td class="text-center">
                 <?php
                 $panelRatingQ = mysqli_query(

@@ -58,6 +58,25 @@
             </div>
 
             <div class="form-group">
+              <label class="col-form-label">
+                Course
+              </label>
+              <select name="courseId" class="form-control form-control-border mr-3">
+                <option value="">-- select course --</option>
+                <?php
+                $query = mysqli_query(
+                  $conn,
+                  "SELECT * FROM courses"
+                );
+                while ($course = mysqli_fetch_object($query)) :
+                  $selected = $course->course_id == $user->course_id ? "selected" : "";
+                ?>
+                  <option value="<?= $course->course_id ?>" <?= $selected  ?>><?= $course->name ?></option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+
+            <div class="form-group">
               <label for="email" class="control-label text-navy">Email</label>
               <input type="email" name="email" class="form-control form-control-border" required value="<?= $user->email ?>">
             </div>

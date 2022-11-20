@@ -56,6 +56,14 @@ $links = array(
     )
   ),
   array(
+    "title" => "Courses",
+    "url" => "$SERVER_NAME/pages/admin/course",
+    "allowedViews" => array("coordinator"),
+    "config" => array(
+      "icon" => "university"
+    )
+  ),
+  array(
     "title" => "Messages",
     "url" => "$SERVER_NAME/pages/admin/messages",
     "allowedViews" => array("instructor", "adviser"),

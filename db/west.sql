@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 19, 2022 at 03:24 PM
+-- Generation Time: Nov 20, 2022 at 06:37 AM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 7.4.27
 
@@ -60,6 +60,37 @@ CREATE TABLE `chat` (
   `date_created` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+--
+-- Dumping data for table `chat`
+--
+
+INSERT INTO `chat` (`chat_id`, `incoming_id`, `outgoing_id`, `sender_type`, `message`, `message_type`, `date_created`) VALUES
+(1, 2, 9, 'student', 'test', 'text', '2022-11-19 14:27:17'),
+(2, 9, 2, 'student', 'test', 'text', '2022-11-19 14:29:57'),
+(3, 2, 9, 'student', '11192022-103020!I_I!prod-1.jpg', 'image', '2022-11-19 14:30:20'),
+(4, 9, 2, 'student', 'test', 'text', '2022-11-20 03:19:03');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `courses`
+--
+
+CREATE TABLE `courses` (
+  `course_id` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `short_name` varchar(32) NOT NULL,
+  `date_created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `date_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `courses`
+--
+
+INSERT INTO `courses` (`course_id`, `name`, `short_name`, `date_created`, `date_updated`) VALUES
+(1, 'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', 'BSIT', '2022-11-20 04:54:22', '2022-11-20 04:59:57');
+
 -- --------------------------------------------------------
 
 --
@@ -88,7 +119,7 @@ CREATE TABLE `documents` (
 --
 
 INSERT INTO `documents` (`id`, `leader_id`, `title`, `type_id`, `year`, `description`, `img_banner`, `project_document`, `adviser_feedback`, `instructor_feedback`, `panel_rate_status`, `publish_status`, `date_created`, `date_updated`) VALUES
-(1, 9, 'Sample title', 1, '2021', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, NULL, 'PENDING', '2022-11-19 13:15:07', '2022-11-19 13:15:07');
+(1, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, NULL, 'PENDING', '2022-11-19 13:15:07', '2022-11-20 03:49:01');
 
 -- --------------------------------------------------------
 
@@ -99,15 +130,16 @@ INSERT INTO `documents` (`id`, `leader_id`, `title`, `type_id`, `year`, `descrip
 CREATE TABLE `instructor_sections` (
   `id` int(11) NOT NULL,
   `instructor_id` int(11) NOT NULL,
-  `sections` text NOT NULL
+  `sections` text NOT NULL,
+  `course` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `instructor_sections`
 --
 
-INSERT INTO `instructor_sections` (`id`, `instructor_id`, `sections`) VALUES
-(1, 2, '[\"4-C\",\"4-B\",\"4-A\"]');
+INSERT INTO `instructor_sections` (`id`, `instructor_id`, `sections`, `course`) VALUES
+(1, 2, '[\"4-C\",\"4-B\",\"4-A\"]', '');
 
 -- --------------------------------------------------------
 
@@ -147,7 +179,12 @@ CREATE TABLE `panel_ratings` (
 --
 
 INSERT INTO `panel_ratings` (`rating_id`, `document_id`, `leader_id`, `panel_id`, `rating_type`, `comment`, `action`, `group_grade`, `individual_grade`) VALUES
-(1, 1, 9, 4, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"18\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"35\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"25\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"80\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"80\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"80\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"80\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"80\"}]');
+(2, 1, 9, 4, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"18\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"25\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"25\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"80\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"80\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"80\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"80\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"80\"}]'),
+(3, 1, 9, 5, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
+(4, 1, 9, 7, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"18\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"25\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"25\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"80\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"80\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"80\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"80\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"80\"}]'),
+(5, 1, 9, 8, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
+(6, 1, 9, 6, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
+(12, 1, 9, 5, '20percent', '<p>test</p>', 'Approved', '{\"documentation\":{\"title\":\"Documentation\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Significant Improvement from previous document\",\"name\":\"documentation_a\",\"rating\":\"5\"},{\"title\":\"Applied and Implemented previous suggestions/recommendations\",\"name\":\"documentation_b\",\"rating\":\"3\"},{\"title\":\"Well researched as shown by the use of references\",\"name\":\"documentation_c\",\"rating\":\"2\"}]},\"system\":{\"title\":\"System/Program\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Significant improvement from previous system presented\",\"name\":\"system_a\",\"rating\":\"1\"},{\"title\":\"Continuity of the development of the system (not another system presented)\",\"name\":\"system_b\",\"rating\":\"2\"},{\"title\":\"Applied/integrated previous comments/suggestions/recommendation\",\"name\":\"system_c\",\"rating\":\"3\"},{\"title\":\"Completeness deliverable\",\"name\":\"system_d\",\"rating\":\"4\"}]},\"presentation\":{\"title\":\"Group Presentation\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Preparedness/Use of Visual Aids\",\"name\":\"presentation_a\",\"rating\":\"1\"},{\"title\":\"Collaboration/cooperation\",\"name\":\"presentation_b\",\"rating\":\"2\"},{\"title\":\"Mastery of the Study\",\"name\":\"presentation_c\",\"rating\":\"3\"},{\"title\":\"Over-all Impact of the presentation\",\"name\":\"presentation_d\",\"rating\":\"4\"}]}}', '[{\"id\":\"9\",\"name\":\"Leader L. Leader\",\"rating\":\"1\",\"remarks\":\"test1\"},{\"id\":\"10\",\"name\":\"Student  One\",\"rating\":\"2\",\"remarks\":\"test1\"},{\"id\":\"11\",\"name\":\"Student  Two\",\"rating\":\"3\",\"remarks\":\"test1\"},{\"id\":\"12\",\"name\":\"Student  Three\",\"rating\":\"4\",\"remarks\":\"test1\"},{\"id\":\"13\",\"name\":\"Student  Four\",\"rating\":\"5\",\"remarks\":\"test1\"}]');
 
 -- --------------------------------------------------------
 
@@ -213,7 +250,7 @@ CREATE TABLE `thesis_groups` (
 --
 
 INSERT INTO `thesis_groups` (`id`, `group_leader_id`, `group_number`, `group_member_ids`, `instructor_id`, `panel_ids`, `adviser_id`, `date_created`, `date_updated`) VALUES
-(1, 9, 1, '[\"10\",\"11\",\"12\",\"13\"]', 2, '[\"4\",\"5\",\"6\",\"7\",\"8\"]', NULL, '2022-11-19 13:12:04', '2022-11-19 13:12:32');
+(2, 9, 1, '[\"10\",\"11\",\"12\",\"13\"]', 2, '[\"4\",\"5\",\"6\",\"7\",\"8\"]', NULL, '2022-11-20 03:13:30', '2022-11-20 03:40:41');
 
 -- --------------------------------------------------------
 
@@ -234,7 +271,8 @@ CREATE TABLE `types` (
 
 INSERT INTO `types` (`id`, `name`, `date_created`, `date_updated`) VALUES
 (1, 'Data mining', '2022-10-21 13:17:20', '2022-10-25 01:50:39'),
-(2, 'Robotics', '2022-10-21 13:17:20', '2022-10-25 01:50:39');
+(2, 'Robotics', '2022-10-21 13:17:20', '2022-10-25 01:50:39'),
+(3, 'Test', '2022-10-21 13:17:20', '2022-10-25 01:50:39');
 
 -- --------------------------------------------------------
 
@@ -245,6 +283,7 @@ INSERT INTO `types` (`id`, `name`, `date_created`, `date_updated`) VALUES
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `roll` varchar(250) DEFAULT NULL,
+  `course_id` int(11) DEFAULT NULL,
   `first_name` varchar(250) NOT NULL,
   `middle_name` varchar(250) DEFAULT NULL,
   `last_name` varchar(250) NOT NULL,
@@ -267,20 +306,20 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `roll`, `first_name`, `middle_name`, `last_name`, `school_year`, `group_number`, `year_and_section`, `avatar`, `username`, `email`, `password`, `role`, `isLeader`, `leader_id`, `is_new`, `date_added`, `date_updated`) VALUES
-(1, NULL, 'coordinator', 'coordinator', 'coordinator', NULL, NULL, NULL, '/media/avatar/10162022-031509_10152022-111537_10072022-033907_avatar4.png', 'coordinator-coordinator-YZNlsAI7LOqw', 'coordinator@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$OXRvbjgxWUpnMW5mZU00cA$+aapaOG+CDk1+hgObV+ODcnlmTazsF7MpKS823s6+qY', 'coordinator', NULL, NULL, 0, '2022-09-28 03:58:39', '2022-11-19 12:23:27'),
-(2, NULL, 'instructor', 'instructor', 'instructor', NULL, NULL, NULL, '/media/avatar/11192022-084503_avatar.png', 'instructor-instructor-Zrd0P4NzmtH', 'instructor@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$NU90am5OS0lCVWhQeG9XMQ$jBGoY/ZNnuX6xL9Hq6VRk8djacZfagKtkzQQYCeVMV4', 'instructor', NULL, NULL, 0, '2022-11-19 20:45:03', '2022-11-19 13:07:58'),
-(3, NULL, 'adviser', 'adviser', 'adviser', NULL, NULL, NULL, '/media/avatar/11192022-084828_avatar5.png', 'adviser-adviser-rBlKUpDC6GN', 'adviser@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YjdqN1pCM3B2ZFJrVzhVSg$ms1+AHX0l6ZZgndinZPnLMpFIChwV4K0xxBbUpT9Bz4', 'adviser', NULL, NULL, 1, '2022-11-19 20:48:27', '2022-11-19 12:48:28'),
-(4, NULL, 'panel', NULL, 'one', NULL, NULL, NULL, '/media/avatar/11192022-085150_user1-128x128.jpg', 'panel-one-iuhpigLFyXAi', 'panel_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Z29lME5weGtzRndwVFIvUw$qXh99wqFL6XiczKcJG6wGP/LVwUsA1pfKRJnags/fv4', 'panel', NULL, NULL, 0, '2022-11-19 20:51:50', '2022-11-19 14:19:11'),
-(5, NULL, 'panel', NULL, 'two', NULL, NULL, NULL, '/media/avatar/11192022-085253_user2-160x160.jpg', 'panel-two-z2P1xZQ8HUC', 'panel_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$ZE04NHd0WTBuVG0veDU3Uw$e3vZ9/sxDYgeOVxQeP6Andsq7dbAMcRk7bYy5XXzHXk', 'panel', NULL, NULL, 1, '2022-11-19 20:52:53', '2022-11-19 12:52:53'),
-(6, NULL, 'panel', NULL, 'three', NULL, NULL, NULL, '/media/avatar/11192022-085421_user3-128x128.jpg', 'panel-three-UMRcDuxaaFdK', 'panel_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$QWVyL05SVjhGU2NTLjhBTw$Vz/EIBmnN02nJ8AnsVNiZHCSkCl8yk+DmrY/wepIIAY', 'panel', NULL, NULL, 1, '2022-11-19 20:54:21', '2022-11-19 12:54:21'),
-(7, NULL, 'panel', NULL, 'four', NULL, NULL, NULL, '/media/avatar/11192022-085520_user4-128x128.jpg', 'panel-four-zhOwMXLTVM7i', 'panel_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$S3VtSUtVSVBSaWtlN3NoVA$28a1VF24JPzNqE4YmTQbT0SsnyzYcQGKRjhzdfBLjRY', 'panel', NULL, NULL, 1, '2022-11-19 20:55:19', '2022-11-19 12:55:20'),
-(8, NULL, 'panel', NULL, 'five', NULL, NULL, NULL, '/media/avatar/11192022-085812_user6-128x128.jpg', 'panel-five-TDnkgEeaidWs', 'panel_five@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$MlQvZm0wTWhYaEhDN0VyWg$loOCKTkTlu1oF4MPmRoRbhDukhyVWth1qPNgU9asSEs', 'panel', NULL, NULL, 1, '2022-11-19 20:57:29', '2022-11-19 12:58:12'),
-(9, '2468', 'leader', 'leader', 'leader', 'SY: 2021-22', 1, '4-A', NULL, 'leader-leader-F0Qi4eZ1x7lG', 'leader@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$U1plbnVHUzFabWZaYkZzVQ$aGENFN5EPdwTipO8FOvqApI/GVkoIyWBC8Biaww/wHo', 'student', 1, NULL, 0, '2022-11-19 20:59:36', '2022-11-19 13:12:04'),
-(10, '1357', 'student', NULL, 'one', 'SY: 2021-22', 1, '4-A', NULL, 'student-one-9Z5ldidSW02B', 'student_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$aFh2ak42OWsxdzk3U09mNg$KzCFzg8okp0DbK+7tK6yF3IBB2OdWjDw74X2p8e2M/s', 'student', NULL, 9, 0, '2022-11-19 21:05:34', '2022-11-19 13:12:04'),
-(11, '12345', 'student', NULL, 'two', 'SY: 2021-22', 1, '4-A', NULL, 'student-two-VtiFj9Rr1aAk', 'student_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YTVJUUVDNkREZTZLcURUeg$9xB67KpblUoVOgZ4r0fBgFkuYDHoaAnQdV22CG8ZxdY', 'student', NULL, 9, 0, '2022-11-19 21:06:16', '2022-11-19 13:12:04'),
-(12, '54321', 'student', NULL, 'three', 'SY: 2021-22', 1, '4-A', NULL, 'student-three-6UDvBHYuvp0f', 'student_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$d2ptNjlnQ0U5UHZWNHNleg$BbRp+NB/DAwpObC3Zyu2gLCLntFTKQyknWz0CuAWaRc', 'student', NULL, 9, 0, '2022-11-19 21:07:00', '2022-11-19 13:12:04'),
-(13, '98765', 'student', NULL, 'four', 'SY: 2021-22', 1, '4-A', NULL, 'student-four-u5X9QiWhR4eC', 'student_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Zk1VR3Y0dzFwandIUTFvaw$vYXUDcoKoYvVjxN8jSaBPpyDyuH65u4CMHMv+WI0zC4', 'student', NULL, 9, 0, '2022-11-19 21:07:31', '2022-11-19 13:12:04');
+INSERT INTO `users` (`id`, `roll`, `course_id`, `first_name`, `middle_name`, `last_name`, `school_year`, `group_number`, `year_and_section`, `avatar`, `username`, `email`, `password`, `role`, `isLeader`, `leader_id`, `is_new`, `date_added`, `date_updated`) VALUES
+(1, NULL, NULL, 'coordinator', 'coordinator', 'coordinator', NULL, NULL, NULL, '/media/avatar/10162022-031509_10152022-111537_10072022-033907_avatar4.png', 'coordinator-coordinator-YZNlsAI7LOqw', 'coordinator@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$OXRvbjgxWUpnMW5mZU00cA$+aapaOG+CDk1+hgObV+ODcnlmTazsF7MpKS823s6+qY', 'coordinator', NULL, NULL, 0, '2022-09-28 03:58:39', '2022-11-19 12:23:27'),
+(2, NULL, NULL, 'instructor', 'instructor', 'instructor', NULL, NULL, NULL, '/media/avatar/11192022-084503_avatar.png', 'instructor-instructor-Zrd0P4NzmtH', 'instructor@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$L2FNYW5WVWRkdmdaUEdWMw$uPv0wtzUAg8Wx8wKIZJ5fLClydIjhl03fYzQGGE/3Dk', 'instructor', NULL, NULL, 0, '2022-11-19 20:45:03', '2022-11-20 03:09:13'),
+(3, NULL, NULL, 'adviser', 'adviser', 'adviser', NULL, NULL, NULL, '/media/avatar/11192022-084828_avatar5.png', 'adviser-adviser-rBlKUpDC6GN', 'adviser@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YjdqN1pCM3B2ZFJrVzhVSg$ms1+AHX0l6ZZgndinZPnLMpFIChwV4K0xxBbUpT9Bz4', 'adviser', NULL, NULL, 1, '2022-11-19 20:48:27', '2022-11-19 12:48:28'),
+(4, NULL, NULL, 'panel', NULL, 'one', NULL, NULL, NULL, '/media/avatar/11192022-085150_user1-128x128.jpg', 'panel-one-iuhpigLFyXAi', 'panel_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Z29lME5weGtzRndwVFIvUw$qXh99wqFL6XiczKcJG6wGP/LVwUsA1pfKRJnags/fv4', 'panel', NULL, NULL, 0, '2022-11-19 20:51:50', '2022-11-19 14:19:11'),
+(5, NULL, NULL, 'panel', NULL, 'two', NULL, NULL, NULL, '/media/avatar/11192022-085253_user2-160x160.jpg', 'panel-two-z2P1xZQ8HUC', 'panel_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$TUtKdXdlOXFNUWE4QXZ1Zw$Yn4C9uS1C7dv40+yiCSxZGn+bkPilAge2P7+Lh2aZz4', 'panel', NULL, NULL, 0, '2022-11-19 20:52:53', '2022-11-20 03:46:19'),
+(6, NULL, NULL, 'panel', NULL, 'three', NULL, NULL, NULL, '/media/avatar/11192022-085421_user3-128x128.jpg', 'panel-three-UMRcDuxaaFdK', 'panel_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$QWVyL05SVjhGU2NTLjhBTw$Vz/EIBmnN02nJ8AnsVNiZHCSkCl8yk+DmrY/wepIIAY', 'panel', NULL, NULL, 1, '2022-11-19 20:54:21', '2022-11-19 12:54:21'),
+(7, NULL, NULL, 'panel', NULL, 'four', NULL, NULL, NULL, '/media/avatar/11192022-085520_user4-128x128.jpg', 'panel-four-zhOwMXLTVM7i', 'panel_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$S3VtSUtVSVBSaWtlN3NoVA$28a1VF24JPzNqE4YmTQbT0SsnyzYcQGKRjhzdfBLjRY', 'panel', NULL, NULL, 1, '2022-11-19 20:55:19', '2022-11-19 12:55:20'),
+(8, NULL, NULL, 'panel', NULL, 'five', NULL, NULL, NULL, '/media/avatar/11192022-085812_user6-128x128.jpg', 'panel-five-TDnkgEeaidWs', 'panel_five@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$MlQvZm0wTWhYaEhDN0VyWg$loOCKTkTlu1oF4MPmRoRbhDukhyVWth1qPNgU9asSEs', 'panel', NULL, NULL, 1, '2022-11-19 20:57:29', '2022-11-19 12:58:12'),
+(9, '2468', 3, 'leader', 'leader', 'leader', 'SY: 2021-22', 1, '4-A', NULL, 'leader-leader-F0Qi4eZ1x7lG', 'leader@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$U1plbnVHUzFabWZaYkZzVQ$aGENFN5EPdwTipO8FOvqApI/GVkoIyWBC8Biaww/wHo', 'student', 1, NULL, 0, '2022-11-19 20:59:36', '2022-11-20 05:16:55'),
+(10, '1357', NULL, 'student', NULL, 'one', 'SY: 2021-22', 1, '4-A', NULL, 'student-one-9Z5ldidSW02B', 'student_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$aFh2ak42OWsxdzk3U09mNg$KzCFzg8okp0DbK+7tK6yF3IBB2OdWjDw74X2p8e2M/s', 'student', NULL, 9, 0, '2022-11-19 21:05:34', '2022-11-20 03:13:30'),
+(11, '12345', NULL, 'student', NULL, 'two', 'SY: 2021-22', 1, '4-A', NULL, 'student-two-VtiFj9Rr1aAk', 'student_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YTVJUUVDNkREZTZLcURUeg$9xB67KpblUoVOgZ4r0fBgFkuYDHoaAnQdV22CG8ZxdY', 'student', NULL, 9, 0, '2022-11-19 21:06:16', '2022-11-20 03:13:30'),
+(12, '54321', NULL, 'student', NULL, 'three', 'SY: 2021-22', 1, '4-A', NULL, 'student-three-6UDvBHYuvp0f', 'student_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$d2ptNjlnQ0U5UHZWNHNleg$BbRp+NB/DAwpObC3Zyu2gLCLntFTKQyknWz0CuAWaRc', 'student', NULL, 9, 0, '2022-11-19 21:07:00', '2022-11-20 03:13:30'),
+(13, '98765', NULL, 'student', NULL, 'four', 'SY: 2021-22', 1, '4-A', NULL, 'student-four-u5X9QiWhR4eC', 'student_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Zk1VR3Y0dzFwandIUTFvaw$vYXUDcoKoYvVjxN8jSaBPpyDyuH65u4CMHMv+WI0zC4', 'student', NULL, 9, 0, '2022-11-19 21:07:31', '2022-11-20 03:13:30');
 
 --
 -- Indexes for dumped tables
@@ -297,6 +336,12 @@ ALTER TABLE `category_list`
 --
 ALTER TABLE `chat`
   ADD PRIMARY KEY (`chat_id`);
+
+--
+-- Indexes for table `courses`
+--
+ALTER TABLE `courses`
+  ADD PRIMARY KEY (`course_id`);
 
 --
 -- Indexes for table `documents`
@@ -368,13 +413,19 @@ ALTER TABLE `category_list`
 -- AUTO_INCREMENT for table `chat`
 --
 ALTER TABLE `chat`
-  MODIFY `chat_id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `chat_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `courses`
+--
+ALTER TABLE `courses`
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
 
 --
 -- AUTO_INCREMENT for table `documents`
 --
 ALTER TABLE `documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `instructor_sections`
@@ -392,7 +443,7 @@ ALTER TABLE `invite`
 -- AUTO_INCREMENT for table `panel_ratings`
 --
 ALTER TABLE `panel_ratings`
-  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `schedule_list`
@@ -410,13 +461,13 @@ ALTER TABLE `system_config`
 -- AUTO_INCREMENT for table `thesis_groups`
 --
 ALTER TABLE `thesis_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `types`
 --
 ALTER TABLE `types`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `users`
