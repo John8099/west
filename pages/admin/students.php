@@ -100,6 +100,21 @@ $systemInfo = systemInfo();
       "info": true,
       "autoWidth": false,
       "responsive": true,
+      "columns": [{
+          "width": "5%"
+        }, {
+          "width": "30%"
+        },
+        {
+          "width": "5%"
+        },
+        {
+          "width": "20%"
+        },
+        {
+          "width": "15%"
+        }
+      ]
     })
 
     function handleOpenRatingModal(modalId) {

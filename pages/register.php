@@ -101,7 +101,7 @@ $systemInfo = systemInfo();
                     <label class="col-form-label">
                       Course
                     </label>
-                    <select name="courseId" class="form-control form-control-border mr-3">
+                    <select name="courseId" class="form-control form-control-border mr-3" required>
                       <option value="">-- select course --</option>
                       <?php
                       $query = mysqli_query(
@@ -120,8 +120,9 @@ $systemInfo = systemInfo();
                       Email
                     </label>
                     <input type="email" name="email" id="inputEmail" class="form-control form-control-border" placeholder="Your email ..." required>
-
-                    <span id="emailErrorField" class="error invalid-feedback"></span>
+                    <div class="invalid-feedback" style="padding-left: 5px;">
+                      <p id="inputEmailError" style="margin-bottom: 0;"></p>
+                    </div>
                   </div>
 
                   <div class="form-group">
@@ -132,7 +133,7 @@ $systemInfo = systemInfo();
                   </div>
 
                   <div class="form-group d-flex justify-content-end">
-                    <button type="submit" class="btn bg-navy">Register</button>
+                    <button type="submit" class="btn bg-navy" id="btnReg">Register</button>
                   </div>
                 </form>
               </div>
@@ -174,10 +175,14 @@ $systemInfo = systemInfo();
 <script src="../assets/dist/js/demo.js"></script>
 
 <script>
-  const emailInput = $("#inputEmail")
-  const emailFieldError = $("#emailErrorField")
-
-  emailFieldError.hide();
+  $("#inputEmail").on("blur", function(e) {
+    const emailEnd = e.target.value.split("@")[1];
+    if (emailEnd !== "wvsu.edu.ph") {
+      $(this).addClass("is-invalid")
+      $("#inputEmailError").html("Please use your school email (@wvsu.edu.ph)")
+      $("#btnReg").prop("disabled", true)
+    }
+  })
 
   $("#registration-form").on("submit", function(e) {
     swal.showLoading();

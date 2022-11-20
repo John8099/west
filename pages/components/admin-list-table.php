@@ -54,11 +54,25 @@
                 );
                 if (mysqli_num_rows($handledSections) > 0) :
                   $sectionData = mysqli_fetch_object($handledSections);
-                  foreach (json_decode($sectionData->sections, true) as $section) :
+                  $sections = json_decode($sectionData->sections, true);
+                  foreach ($sections as $section) :
               ?>
-                    <span class="badge badge-primary rounded-pill px-4 m-1" style="font-size: 18px">
-                      <em><?= $section ?></em>
-                    </span>
+                    <div>
+                      <div>
+                        <label>
+                          <?= $section["name"] ?><br>
+                        </label>
+                      </div>
+                      <?php
+                      foreach ($section["sections"] as $sectionName) :
+                      ?>
+                        <span class="badge badge-primary rounded-pill px-4 m-1" style="font-size: 18px">
+                          <em><?= $sectionName ?></em>
+                        </span>
+                      <?php
+                      endforeach;
+                      ?>
+                    </div>
                   <?php
                   endforeach;
                 else :

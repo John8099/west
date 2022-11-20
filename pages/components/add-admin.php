@@ -29,7 +29,7 @@
 
         <div class="row">
           <div class="col-lg-6">
-            <div class="form-group">
+            <div class="form-group ">
               <label class="control-label text-navy">Role</label>
               <select name="role" id="inputRole" class="form-control">
                 <option value="" selected disabled>-- select admin role --</option>
@@ -42,19 +42,41 @@
                 ?>
               </select>
             </div>
-            <div class="form-group  mb-3" id="sections" style="display: none;">
-              <div class="col-md-12">
-                <label>
-                  Sections:
-                </label>
-                <div id="addedSections"></div>
-                <div class="row mt-2">
-                  <div class="col-12">
-                    <input type="text" name="sections[]" class="sections form-control" placeholder="">
+            <div class="input-group" id="courseYearSection" style="display: none;">
+              <div id="divCourses"></div>
+              <div>
+                <div class="form-group col-12">
+                  <div class="d-flex justify-content-between align-items-center mt-2">
+                    <label>
+                      Course:
+                    </label>
                   </div>
+                  <select name="courseId[]" class="selectCourse form-control" required>
+                    <option value="">-- select course --</option>
+                    <?php
+                    $query = mysqli_query(
+                      $conn,
+                      "SELECT * FROM courses"
+                    );
+                    while ($course = mysqli_fetch_object($query)) :
+                    ?>
+                      <option value="<?= $course->course_id ?>"><?= "($course->short_name) " . $course->name ?></option>
+                    <?php endwhile; ?>
+                  </select>
                 </div>
-                <button type="button" class="btn btn-success mt-2" onclick="addField()">
-                  Add
+                <div class="form-group col-12">
+                  <label>
+                    Year & Sections <br>
+                    <small>
+                      Please separate year & sections by comma(,)
+                    </small>
+                  </label>
+                  <input type="text" name="sections[]" placeholder="eg. 4-A, 4-B" style="text-transform:uppercase" class="form-control" required>
+                </div>
+              </div>
+              <div class="col-12 d-flex justify-content-end">
+                <button type="button" class="btn btn-primary btn-sm mt-2" onclick="handleAddCourse()">
+                  Add Course
                 </button>
               </div>
             </div>

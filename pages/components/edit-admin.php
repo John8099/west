@@ -32,7 +32,7 @@
           <div class="col-lg-6">
             <div class="form-group">
               <label class="control-label text-navy">Role</label>
-              <select name="role" class="form-control">
+              <select name="role" id="inputRole" class="form-control">
                 <?php
                 foreach ($ADMIN_ROLES as $role) :
                 ?>
@@ -43,36 +43,55 @@
               </select>
             </div>
             <?php if ($admin->role == "instructor") : ?>
-              <div class="form-group  mb-3" id="sections">
-                <div class="col-md-12">
-                  <label>
-                    Sections:
-                  </label>
-                  <div id="addedSections">
-                    <?php
-                    $sectionHandledQ = mysqli_query(
-                      $conn,
-                      "SELECT * FROM instructor_sections WHERE instructor_id='$admin->id'"
-                    );
-                    if (mysqli_num_rows($sectionHandledQ) > 0) :
-                      $sections = mysqli_fetch_object($sectionHandledQ);
-                      foreach (json_decode($sections->sections, true) as $section) :
-                    ?>
-                        <div class="row">
-                          <div class="col-10 mt-2">
-                            <input type="text" name="sections[]" class="form-control" value="<?= $section ?>" required>
-                          </div>
-                          <div class="col-2 mt-2">
-                            <button type="button" class="btn btn-danger" onclick="removeField($(this))"><i class='fa fa-trash'></i></button>
-                          </div>
+              <div class="input-group" id="courseYearSection">
+                <div id="divCourses"></div>
+                <?php
+                $handledSections = mysqli_query(
+                  $conn,
+                  "SELECT * FROM instructor_sections WHERE instructor_id='$admin->id'"
+                );
+                if (mysqli_num_rows($handledSections) > 0) :
+                  $sectionData = mysqli_fetch_object($handledSections);
+                  $sections = json_decode($sectionData->sections, true);
+                  foreach ($sections as $section) :
+
+                ?>
+                    <div>
+                      <div class="form-group col-12">
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                          <label>
+                            Course:
+                          </label>
                         </div>
-                    <?php
-                      endforeach;
-                    endif;
-                    ?>
-                  </div>
-                  <button type="button" class="btn btn-success mt-2" onclick="addField()">
-                    Add
+                        <select name="courseId[]" class="selectCourse form-control" required>
+                          <?php
+                          $query = mysqli_query(
+                            $conn,
+                            "SELECT * FROM courses"
+                          );
+                          while ($course = mysqli_fetch_object($query)) :
+                          ?>
+                            <option value="<?= $course->course_id ?>" <?= $section["id"]  == $course->course_id ? "selected" : "" ?>><?= "($course->short_name) " . $course->name ?></option>
+                          <?php endwhile; ?>
+                        </select>
+                      </div>
+                      <div class="form-group col-12">
+                        <label>
+                          Year & Sections <br>
+                          <small>
+                            Please separate year & sections by comma(,)
+                          </small>
+                        </label>
+                        <input type="text" name="sections[]" value="<?= implode(', ', $section["sections"]) ?>" placeholder="eg. 4-A, 4-B" style="text-transform:uppercase" class="form-control" required>
+                      </div>
+                    </div>
+                <?php
+                  endforeach;
+                endif;
+                ?>
+                <div class="col-12 d-flex justify-content-end">
+                  <button type="button" class="btn btn-primary btn-sm mt-2" onclick="handleAddCourse()">
+                    Add Course
                   </button>
                 </div>
               </div>

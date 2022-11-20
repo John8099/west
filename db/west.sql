@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 20, 2022 at 06:37 AM
+-- Generation Time: Nov 20, 2022 at 04:22 PM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 7.4.27
 
@@ -89,7 +89,8 @@ CREATE TABLE `courses` (
 --
 
 INSERT INTO `courses` (`course_id`, `name`, `short_name`, `date_created`, `date_updated`) VALUES
-(1, 'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', 'BSIT', '2022-11-20 04:54:22', '2022-11-20 04:59:57');
+(3, 'BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY', 'BSIT', '2022-11-20 04:54:22', '2022-11-20 04:59:57'),
+(5, 'BACHELOR OF SCIENCE IN TEST', 'BST', '2022-11-20 04:54:22', '2022-11-20 04:59:57');
 
 -- --------------------------------------------------------
 
@@ -130,16 +131,15 @@ INSERT INTO `documents` (`id`, `leader_id`, `title`, `type_id`, `year`, `descrip
 CREATE TABLE `instructor_sections` (
   `id` int(11) NOT NULL,
   `instructor_id` int(11) NOT NULL,
-  `sections` text NOT NULL,
-  `course` text NOT NULL
+  `sections` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `instructor_sections`
 --
 
-INSERT INTO `instructor_sections` (`id`, `instructor_id`, `sections`, `course`) VALUES
-(1, 2, '[\"4-C\",\"4-B\",\"4-A\"]', '');
+INSERT INTO `instructor_sections` (`id`, `instructor_id`, `sections`) VALUES
+(1, 2, '[{\"id\":\"5\",\"name\":\"BACHELOR OF SCIENCE IN TEST\",\"shortName\":\"BST\",\"sections\":[\"4-A\",\"4-B\"]},{\"id\":\"3\",\"name\":\"BACHELOR OF SCIENCE IN INFORMATION TECHNOLOGY\",\"shortName\":\"BSIT\",\"sections\":[\"4-C\",\"4-B\"]}]');
 
 -- --------------------------------------------------------
 
@@ -308,18 +308,18 @@ CREATE TABLE `users` (
 
 INSERT INTO `users` (`id`, `roll`, `course_id`, `first_name`, `middle_name`, `last_name`, `school_year`, `group_number`, `year_and_section`, `avatar`, `username`, `email`, `password`, `role`, `isLeader`, `leader_id`, `is_new`, `date_added`, `date_updated`) VALUES
 (1, NULL, NULL, 'coordinator', 'coordinator', 'coordinator', NULL, NULL, NULL, '/media/avatar/10162022-031509_10152022-111537_10072022-033907_avatar4.png', 'coordinator-coordinator-YZNlsAI7LOqw', 'coordinator@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$OXRvbjgxWUpnMW5mZU00cA$+aapaOG+CDk1+hgObV+ODcnlmTazsF7MpKS823s6+qY', 'coordinator', NULL, NULL, 0, '2022-09-28 03:58:39', '2022-11-19 12:23:27'),
-(2, NULL, NULL, 'instructor', 'instructor', 'instructor', NULL, NULL, NULL, '/media/avatar/11192022-084503_avatar.png', 'instructor-instructor-Zrd0P4NzmtH', 'instructor@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$L2FNYW5WVWRkdmdaUEdWMw$uPv0wtzUAg8Wx8wKIZJ5fLClydIjhl03fYzQGGE/3Dk', 'instructor', NULL, NULL, 0, '2022-11-19 20:45:03', '2022-11-20 03:09:13'),
+(2, NULL, NULL, 'instructor', 'instructor', 'instructor', NULL, NULL, NULL, '/media/avatar/11192022-084503_avatar.png', 'instructor-instructor-4fmWSQkya39B', 'instructor@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$L2FNYW5WVWRkdmdaUEdWMw$uPv0wtzUAg8Wx8wKIZJ5fLClydIjhl03fYzQGGE/3Dk', 'instructor', NULL, NULL, 0, '2022-11-19 20:45:03', '2022-11-20 13:58:52'),
 (3, NULL, NULL, 'adviser', 'adviser', 'adviser', NULL, NULL, NULL, '/media/avatar/11192022-084828_avatar5.png', 'adviser-adviser-rBlKUpDC6GN', 'adviser@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YjdqN1pCM3B2ZFJrVzhVSg$ms1+AHX0l6ZZgndinZPnLMpFIChwV4K0xxBbUpT9Bz4', 'adviser', NULL, NULL, 1, '2022-11-19 20:48:27', '2022-11-19 12:48:28'),
 (4, NULL, NULL, 'panel', NULL, 'one', NULL, NULL, NULL, '/media/avatar/11192022-085150_user1-128x128.jpg', 'panel-one-iuhpigLFyXAi', 'panel_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Z29lME5weGtzRndwVFIvUw$qXh99wqFL6XiczKcJG6wGP/LVwUsA1pfKRJnags/fv4', 'panel', NULL, NULL, 0, '2022-11-19 20:51:50', '2022-11-19 14:19:11'),
 (5, NULL, NULL, 'panel', NULL, 'two', NULL, NULL, NULL, '/media/avatar/11192022-085253_user2-160x160.jpg', 'panel-two-z2P1xZQ8HUC', 'panel_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$TUtKdXdlOXFNUWE4QXZ1Zw$Yn4C9uS1C7dv40+yiCSxZGn+bkPilAge2P7+Lh2aZz4', 'panel', NULL, NULL, 0, '2022-11-19 20:52:53', '2022-11-20 03:46:19'),
 (6, NULL, NULL, 'panel', NULL, 'three', NULL, NULL, NULL, '/media/avatar/11192022-085421_user3-128x128.jpg', 'panel-three-UMRcDuxaaFdK', 'panel_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$QWVyL05SVjhGU2NTLjhBTw$Vz/EIBmnN02nJ8AnsVNiZHCSkCl8yk+DmrY/wepIIAY', 'panel', NULL, NULL, 1, '2022-11-19 20:54:21', '2022-11-19 12:54:21'),
 (7, NULL, NULL, 'panel', NULL, 'four', NULL, NULL, NULL, '/media/avatar/11192022-085520_user4-128x128.jpg', 'panel-four-zhOwMXLTVM7i', 'panel_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$S3VtSUtVSVBSaWtlN3NoVA$28a1VF24JPzNqE4YmTQbT0SsnyzYcQGKRjhzdfBLjRY', 'panel', NULL, NULL, 1, '2022-11-19 20:55:19', '2022-11-19 12:55:20'),
 (8, NULL, NULL, 'panel', NULL, 'five', NULL, NULL, NULL, '/media/avatar/11192022-085812_user6-128x128.jpg', 'panel-five-TDnkgEeaidWs', 'panel_five@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$MlQvZm0wTWhYaEhDN0VyWg$loOCKTkTlu1oF4MPmRoRbhDukhyVWth1qPNgU9asSEs', 'panel', NULL, NULL, 1, '2022-11-19 20:57:29', '2022-11-19 12:58:12'),
-(9, '2468', 3, 'leader', 'leader', 'leader', 'SY: 2021-22', 1, '4-A', NULL, 'leader-leader-F0Qi4eZ1x7lG', 'leader@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$U1plbnVHUzFabWZaYkZzVQ$aGENFN5EPdwTipO8FOvqApI/GVkoIyWBC8Biaww/wHo', 'student', 1, NULL, 0, '2022-11-19 20:59:36', '2022-11-20 05:16:55'),
-(10, '1357', NULL, 'student', NULL, 'one', 'SY: 2021-22', 1, '4-A', NULL, 'student-one-9Z5ldidSW02B', 'student_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$aFh2ak42OWsxdzk3U09mNg$KzCFzg8okp0DbK+7tK6yF3IBB2OdWjDw74X2p8e2M/s', 'student', NULL, 9, 0, '2022-11-19 21:05:34', '2022-11-20 03:13:30'),
-(11, '12345', NULL, 'student', NULL, 'two', 'SY: 2021-22', 1, '4-A', NULL, 'student-two-VtiFj9Rr1aAk', 'student_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YTVJUUVDNkREZTZLcURUeg$9xB67KpblUoVOgZ4r0fBgFkuYDHoaAnQdV22CG8ZxdY', 'student', NULL, 9, 0, '2022-11-19 21:06:16', '2022-11-20 03:13:30'),
-(12, '54321', NULL, 'student', NULL, 'three', 'SY: 2021-22', 1, '4-A', NULL, 'student-three-6UDvBHYuvp0f', 'student_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$d2ptNjlnQ0U5UHZWNHNleg$BbRp+NB/DAwpObC3Zyu2gLCLntFTKQyknWz0CuAWaRc', 'student', NULL, 9, 0, '2022-11-19 21:07:00', '2022-11-20 03:13:30'),
-(13, '98765', NULL, 'student', NULL, 'four', 'SY: 2021-22', 1, '4-A', NULL, 'student-four-u5X9QiWhR4eC', 'student_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Zk1VR3Y0dzFwandIUTFvaw$vYXUDcoKoYvVjxN8jSaBPpyDyuH65u4CMHMv+WI0zC4', 'student', NULL, 9, 0, '2022-11-19 21:07:31', '2022-11-20 03:13:30');
+(9, '2468', 3, 'leader', 'leader', 'leader', 'SY: 2021-23', 1, '4-A', NULL, 'leader-leader-QALbjykTXS', 'leader@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$U1plbnVHUzFabWZaYkZzVQ$aGENFN5EPdwTipO8FOvqApI/GVkoIyWBC8Biaww/wHo', 'student', 1, NULL, 0, '2022-11-19 20:59:36', '2022-11-20 14:56:36'),
+(10, '1357', 3, 'student', NULL, 'one', 'SY: 2021-22', 1, '4-A', NULL, 'student-one-9Z5ldidSW02B', 'student_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$aFh2ak42OWsxdzk3U09mNg$KzCFzg8okp0DbK+7tK6yF3IBB2OdWjDw74X2p8e2M/s', 'student', NULL, 9, 0, '2022-11-19 21:05:34', '2022-11-20 14:44:08'),
+(11, '12345', 3, 'student', NULL, 'two', 'SY: 2021-22', 1, '4-A', NULL, 'student-two-VtiFj9Rr1aAk', 'student_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YTVJUUVDNkREZTZLcURUeg$9xB67KpblUoVOgZ4r0fBgFkuYDHoaAnQdV22CG8ZxdY', 'student', NULL, 9, 0, '2022-11-19 21:06:16', '2022-11-20 14:44:08'),
+(12, '54321', 3, 'student', NULL, 'three', 'SY: 2021-22', 1, '4-A', NULL, 'student-three-6UDvBHYuvp0f', 'student_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$d2ptNjlnQ0U5UHZWNHNleg$BbRp+NB/DAwpObC3Zyu2gLCLntFTKQyknWz0CuAWaRc', 'student', NULL, 9, 0, '2022-11-19 21:07:00', '2022-11-20 14:44:08'),
+(13, '98765', 3, 'student', NULL, 'four', 'SY: 2021-22', 1, '4-A', NULL, 'student-four-u5X9QiWhR4eC', 'student_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Zk1VR3Y0dzFwandIUTFvaw$vYXUDcoKoYvVjxN8jSaBPpyDyuH65u4CMHMv+WI0zC4', 'student', NULL, 9, 0, '2022-11-19 21:07:31', '2022-11-20 14:44:08');
 
 --
 -- Indexes for dumped tables
@@ -347,7 +347,8 @@ ALTER TABLE `courses`
 -- Indexes for table `documents`
 --
 ALTER TABLE `documents`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `type_id` (`type_id`);
 
 --
 -- Indexes for table `instructor_sections`
@@ -419,7 +420,7 @@ ALTER TABLE `chat`
 -- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1;
+  MODIFY `course_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `documents`
@@ -431,7 +432,7 @@ ALTER TABLE `documents`
 -- AUTO_INCREMENT for table `instructor_sections`
 --
 ALTER TABLE `instructor_sections`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `invite`
@@ -461,7 +462,7 @@ ALTER TABLE `system_config`
 -- AUTO_INCREMENT for table `thesis_groups`
 --
 ALTER TABLE `thesis_groups`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `types`

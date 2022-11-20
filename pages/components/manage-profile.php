@@ -36,9 +36,19 @@
             </div>
             <div class="form-group">
               <label class="control-label text-navy">Group number</label>
-              <input type="number" name="group_number" class="form-control form-control-border" value="<?= $user->group_number ?>" required>
+              <input type="number" name="group_number" class="form-control form-control-border" value="<?= $user->group_number ?>" required readonly>
             </div>
-
+            <div class="form-group mb-0">
+              <label class="col-form-label">
+                School year
+              </label>
+            </div>
+            <div class="input-group mb-3">
+              <div class="input-group-prepend">
+                <span class="input-group-text" style="background-color: transparent; border: 0; border-bottom: 1px solid #ced4da;">S.Y.</span>
+              </div>
+              <input type="text" class="form-control form-control-border" name="sy" value="<?= str_replace("SY: ", "", $user->school_year) ?>" required>
+            </div>
             <div class="form-group">
               <label class="control-label text-navy">Year and Section</label>
               <div class="row">
@@ -78,7 +88,10 @@
 
             <div class="form-group">
               <label for="email" class="control-label text-navy">Email</label>
-              <input type="email" name="email" class="form-control form-control-border" required value="<?= $user->email ?>">
+              <input type="email" name="email" id="inputEmail" class="form-control form-control-border" required value="<?= $user->email ?>">
+              <div class="invalid-feedback" style="padding-left: 5px;">
+                <p id="inputEmailError" style="margin-bottom: 0;"></p>
+              </div>
             </div>
             <div class="form-group">
               <label for="password" class="control-label text-navy">New Password</label>
@@ -115,7 +128,7 @@
         <div class="row">
           <div class="col-lg-12">
             <div class="form-group text-center">
-              <button type="submit" class="btn btn-default bg-navy m-1"> Update</button>
+              <button type="submit" class="btn btn-default bg-navy m-1" id="updateBtn"> Update</button>
               <button type="button" onclick="return window.history.back()" class="btn btn-danger btn-gradient-danger m-1"> Cancel</button>
             </div>
           </div>

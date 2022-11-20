@@ -88,6 +88,8 @@ $systemInfo = systemInfo();
                           <dd class="pl-4"><?= $user->group_number ?></dd>
                           <dt class="text-navy">Year and Section:</dt>
                           <dd class="pl-4"><?= strtoupper($user->year_and_section) ?></dd>
+                          <dt class="text-navy">Course:</dt>
+                          <dd class="pl-4"><?= getCourseData($user->course_id)->name ?></dd>
                         </dl>
                       </div>
                     </div>
@@ -120,7 +122,7 @@ $systemInfo = systemInfo();
 <script src="../assets/plugins/sweetalert2/sweetalert2.all.min.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="../assets/dist/js/demo.js"></script>
-
+<div></div>
 <script>
   if (sessionStorage.getItem("searchInput")) {
     $("#searchInput").val(sessionStorage.getItem("searchInput"))
@@ -136,6 +138,15 @@ $systemInfo = systemInfo();
       window.location.replace(`${window.location.origin}/west/pages/archives?s=${$("#searchInput").val()}`)
     }
   });
+
+  $("#inputEmail").on("blur", function(e) {
+    const emailEnd = e.target.value.split("@")[1];
+    if (emailEnd !== "wvsu.edu.ph") {
+      $(this).addClass("is-invalid")
+      $("#inputEmailError").html("Please use your school email (@wvsu.edu.ph)")
+      $("#updateBtn").prop("disabled", true)
+    }
+  })
 
   $("#update-form").on("submit", function(e) {
     swal.showLoading()

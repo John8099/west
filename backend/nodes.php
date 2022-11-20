@@ -2038,13 +2038,29 @@ function addAdmin()
   $email = $_POST["email"];
   $avatar = $_FILES["avatar"];
   $password = password_hash($email, PASSWORD_ARGON2I);
-  $sections = isset($_POST["sections"]) ?  json_encode(explode(', ', strtoupper(implode(', ', $_POST["sections"])))) : null;
+  $sections = isset($_POST["sections"]) ?  $_POST["sections"] : null;
+  $courseIds = isset($_POST["courseId"]) ? $_POST["courseId"] : null;
 
   $role = $_POST["role"];
 
+  $courseSectionHandled = array();
+
+  if ($role == "instructor") {
+    for ($i = 0; $i < count($sections); $i++) {
+      $courseData = getCourseData($courseIds[$i]);
+      array_push($courseSectionHandled, array(
+        "id" => $courseData->course_id,
+        "name" => $courseData->name,
+        "shortName" => $courseData->short_name,
+        "sections" => formatSections($sections[$i])
+      ));
+    }
+  }
+
+
   $username = generateUsername($fname, $lname);
 
-  if (!isEmailAlreadyUse($email) && !hasSectionsAssigned($sections)) {
+  if (!isEmailAlreadyUse($email) && !hasSectionsAssigned($courseSectionHandled) && !hasCourseDuplicate($courseIds)) {
     $query = null;
     if (intval($avatar["error"]) == 0) {
       $uploadFile = date("mdY-his") . "_" . basename($avatar['name']);
@@ -2080,7 +2096,7 @@ function addAdmin()
       $response["message"] = "Admin added successfully<br>Would you like to add another?";
       if ($role == "instructor") {
         $instructorId = mysqli_insert_id($conn);
-        addUpdateInstructorSections($instructorId, $sections, "insert");
+        addUpdateInstructorSections($instructorId, json_encode($courseSectionHandled), "insert");
       }
     } else {
       $response["success"] = false;
@@ -2088,16 +2104,68 @@ function addAdmin()
     }
   } else {
     $response["success"] = false;
-    $response["message"] = isEmailAlreadyUse($email) ? "Email already use by other user." : "Section was already assigned to other instructor";
+    if (isEmailAlreadyUse($email)) {
+
+      $response["message"] = "Email already use by other user.";
+    } else if (hasCourseDuplicate($_POST["courseId"])) {
+
+      $response["message"] = "Course assigned duplicate.";
+    } else {
+
+      $response["message"] = "Course section was already assigned to other instructor";
+    }
   }
 
   returnResponse($response);
 }
 
+function formatSections($section)
+{
+  $newSections = array();
+  $split = preg_split('/,/', preg_replace('/\s+/', '', $section));
+
+  foreach ($split as $value) {
+    if ($value != "") {
+      array_push($newSections, strtoupper($value));
+    }
+  }
+
+  return $newSections;
+}
+
+function getCourseData($courseId)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM courses WHERE course_id='$courseId'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    return mysqli_fetch_object($query);
+  }
+
+  return null;
+}
+
+function hasCourseDuplicate($courseIds)
+{
+  if ($courseIds) {
+    $count = array_count_values($courseIds);
+
+    foreach ($count as $index => $value) {
+      if ($value > 1) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 function hasSectionsAssigned($sections, $instructorId = null)
 {
   global $conn;
-  $sections = json_decode($sections, true);
 
   $hasSection = false;
 
@@ -2109,7 +2177,18 @@ function hasSectionsAssigned($sections, $instructorId = null)
   while ($row = mysqli_fetch_object($query)) {
     $has = false;
     foreach (json_decode($row->sections, true) as $dbSection) {
-      if (in_array(strtoupper($dbSection), $sections)) {
+      $err = false;
+      foreach ($sections as $value) {
+        if ($dbSection["id"] == $value["id"]) {
+          foreach ($value["sections"] as $section) {
+            if (in_array($section, $dbSection["sections"])) {
+              $err = true;
+              break;
+            }
+          }
+        }
+      }
+      if ($err) {
         $has = true;
         break;
       }
@@ -2478,9 +2557,30 @@ function updateUser()
   $cpassword = isset($_POST["cpassword"]) ? $_POST["cpassword"] : "";
   $oldpassword = isset($_POST["oldpassword"]) ? $_POST["oldpassword"] : "";
 
-  $instructorSections = isset($_POST["sections"]) ?  json_encode(explode(', ', strtoupper(implode(', ', $_POST["sections"])))) : null;
+  $sections = isset($_POST["sections"]) ?  $_POST["sections"] : null;
+  $courseIds = null;
 
-  if (!isEmailAlreadyUseWithId($email, $userId) && !hasSectionsAssigned($instructorSections, $userId)) {
+  if ($_POST["role"] == "instructor" && isset($_POST["courseId"])) {
+    $courseIds = $_POST["courseId"];
+  } else {
+    strtoupper($_POST["courseId"]);
+  }
+
+  $courseSectionHandled = array();
+
+  if ($_POST["role"] == "instructor") {
+    for ($i = 0; $i < count($sections); $i++) {
+      $courseData = getCourseData($courseIds[$i]);
+      array_push($courseSectionHandled, array(
+        "id" => $courseData->course_id,
+        "name" => $courseData->name,
+        "shortName" => $courseData->short_name,
+        "sections" => formatSections($sections[$i])
+      ));
+    }
+  }
+
+  if (!isEmailAlreadyUseWithId($email, $userId) && !hasSectionsAssigned($courseSectionHandled, $userId) && !hasCourseDuplicate($courseIds)) {
     if ($password != "" || $cpassword != "" || $oldpassword != "") {
       $verifyPassword = json_decode(validatePassword($userId, $password, $cpassword, $oldpassword));
       if ($verifyPassword->validate) {
@@ -2497,13 +2597,13 @@ function updateUser()
           if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
             $img_url = "/media/avatar/$uploadFile";
 
-            updateUserDB($_POST, $img_url, $passwordHash);
+            updateUserDB($_POST, $img_url, $passwordHash, $courseSectionHandled);
             exit();
           } else {
             $response["message"] = "Error Uploading file.";
           }
         } else {
-          updateUserDB($_POST, null, $passwordHash);
+          updateUserDB($_POST, null, $passwordHash, $courseSectionHandled);
           exit();
         }
       } else {
@@ -2522,25 +2622,34 @@ function updateUser()
         if (move_uploaded_file($avatar['tmp_name'], "$target_dir/$uploadFile")) {
           $img_url = "/media/avatar/$uploadFile";
 
-          updateUserDB($_POST, $img_url, null);
+          updateUserDB($_POST, $img_url, null, $courseSectionHandled);
           exit();
         } else {
           $response["message"] = "Error Uploading file.";
         }
       } else {
-        updateUserDB($_POST, null, null);
+        updateUserDB($_POST, null, null, $courseSectionHandled);
         exit();
       }
     }
   } else {
     $response["success"] = false;
-    $response["message"] = isEmailAlreadyUseWithId($email, $userId) ? "Email already use by other user." : "Section was already assigned to other instructor";;
+    if (isEmailAlreadyUseWithId($email, $userId)) {
+
+      $response["message"] = "Email already use by other user.";
+    } else if (hasCourseDuplicate($courseIds)) {
+
+      $response["message"] = "Course assigned duplicate.";
+    } else {
+
+      $response["message"] = "Course section was already assigned to other instructor";
+    }
   }
 
   returnResponse($response);
 }
 
-function updateUserDB($post, $img_url = null, $hash)
+function updateUserDB($post, $img_url = null, $hash, $instructorSections)
 {
   global $conn;
 
@@ -2556,7 +2665,14 @@ function updateUserDB($post, $img_url = null, $hash)
   $group_number = isset($post["group_number"]) ? $post["group_number"] : null;
   $year = isset($post["year"]) ? $post["year"] : null;
   $section = isset($post["section"]) ? strtoupper($post["section"]) : null;
-  $courseId = isset($post["courseId"]) ? strtoupper($post["courseId"]) : null;
+  $sy = isset($post["sy"]) ? "SY: $post[sy]" : null;
+  $courseId = null;
+
+  if ($role == "instructor" && isset($post["courseId"])) {
+    $courseId = $post["courseId"];
+  } else {
+    strtoupper($post["courseId"]);
+  }
 
   $username = generateUsername($fname, $lname);
   $currentUser = get_user_by_id($userId);
@@ -2569,6 +2685,7 @@ function updateUserDB($post, $img_url = null, $hash)
     first_name='$fname',
     middle_name=" . ($mname ? "'$mname'" : 'NULL') . ",
     last_name='$lname',
+    " . ($sy == null ? '' : "school_year='$sy',") . "
     " . ($group_number == null ? '' : "group_number='$group_number',") . "
     " . ($year == null && $section == null ? '' : "year_and_section='$year-$section',") . "
     " . ($img_url == null ? '' : "avatar='$img_url', ") . "
@@ -2593,8 +2710,7 @@ function updateUserDB($post, $img_url = null, $hash)
     $response["success"] = true;
     $response["message"] = $role != "student" ? "Admin updated successfully." : "User updated successfully.";
     if ($role == "instructor") {
-      $instructorSections = json_encode(explode(', ', strtoupper(implode(', ', $post["sections"]))));
-      addUpdateInstructorSections($userId, $instructorSections, "update");
+      addUpdateInstructorSections($userId, json_encode($instructorSections), "update");
     }
     if ($_SESSION["username"] == $currentUser->username) {
       $_SESSION["username"] = $username;

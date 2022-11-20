@@ -77,20 +77,39 @@ $systemInfo = systemInfo();
                         <th>Group Number</th>
                         <th>Student Name</th>
                         <th>Section</th>
+                        <th>Course</th>
                         <th>Action</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php
                       $handledSections = getInstructorHandledSections($user->id);
-                      $sections = (implode('\', \'', $handledSections));
+
+                      $courses = array();
+
+                      foreach ($handledSections as $course) {
+                        array_push($courses, $course["id"]);
+                      }
+                      $courses = (implode('\', \'', $courses));
+                      $finCourse = "'" . $courses . "'";
+
+                      $sections = array();
+
+                      foreach ($handledSections as $index => $value) {
+                        foreach ($value["sections"] as $s) {
+                          array_push($sections, $s);
+                        }
+                      }
+                      $sections = (implode('\', \'', array_unique($sections)));
                       $fin = "'" . $sections . "'";
+
                       $query = mysqli_query(
                         $conn,
-                        "SELECT * FROM users WHERE `role`='student' and group_number is not NULL and year_and_section in(" . $fin . ") and isLeader is NULL and leader_id is NULL GROUP BY year_and_section, group_number"
+                        "SELECT * FROM users WHERE `role`='student' and group_number is not NULL and course_id in(" . $finCourse . ") and year_and_section in(" . $fin . ") and isLeader is NULL and leader_id is NULL GROUP BY year_and_section, group_number"
                       );
 
                       while ($group = mysqli_fetch_object($query)) :
+                        $courseData = getCourseData($group->course_id);
                       ?>
                         <tr>
                           <td style="vertical-align: middle; text-align:center;font-size: 30px"><?= $group->group_number ?></td>
@@ -115,8 +134,8 @@ $systemInfo = systemInfo();
                               </div>
                             <?php endwhile; ?>
                           </td>
-
                           <td style="vertical-align: middle; text-align:center;font-size: 30px"><?= $group->year_and_section ?></td>
+                          <td style="vertical-align: middle; text-align:center;font-size: 20px"><?= $courseData->name ?></td>
                           <td>
                             <input type="text" id="students_<?= $group->group_number ?>" value='<?= json_encode($options) ?>' hidden readonly>
                             <button type="button" class="btn btn-primary btn-gradient-primary" onclick="handleSetLeader('students_<?= $group->group_number ?>', '<?= $group->group_number ?>')">
@@ -168,6 +187,21 @@ $systemInfo = systemInfo();
       "info": true,
       "autoWidth": false,
       "responsive": true,
+      "columns": [{
+          "width": "5%"
+        }, {
+          "width": "30%"
+        },
+        {
+          "width": "5%"
+        },
+        {
+          "width": "20%"
+        },
+        {
+          "width": "15%"
+        }
+      ]
     })
 
 

@@ -104,29 +104,56 @@ $systemInfo = systemInfo();
 
     $("#inputRole").on("change", function(e) {
       if (e.target.value === "instructor") {
+        $(".selectCourse").prop("required", true)
         $(".sections").prop("required", true)
-        $("#sections").show();
+        $("#courseYearSection").show();
       } else {
-        $("#sections").hide();
+        $(".selectCourse").prop("required", false)
         $(".sections").prop("required", false)
+        $("#courseYearSection").hide();
       }
     })
 
-    function addField() {
-      $("#addedSections").prepend(
-        `<div class="row">
-          <div class="col-10 mt-2">
-            <input type="text" name="sections[]" class="form-control" placeholder="" required>
+    function handleAddCourse() {
+      $("#divCourses").append(`
+        <div>
+          <div class="form-group col-12">
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <label>
+                Course:
+              </label>
+              <button type="button" class="close">
+                <span aria-hidden="true" style="font-size: 30px" onclick="removeCourse($(this))">&times;</span>
+              </button>
+            </div>
+            <select name="courseId[]" class="selectCourse form-control" required>
+              <option value="">-- select course --</option>
+              <?php
+              $query = mysqli_query(
+                $conn,
+                "SELECT * FROM courses"
+              );
+              while ($course = mysqli_fetch_object($query)) :
+              ?>
+                <option value="<?= $course->course_id ?>"><?= "($course->short_name) " . $course->name ?></option>
+              <?php endwhile; ?>
+            </select>
           </div>
-          <div class="col-2 mt-2">
-            <button type="button" class="btn btn-danger" onclick="removeField($(this))"><i class='fa fa-trash'></i></button>
+          <div class="form-group col-12">
+            <label>
+              Year & Sections <br>
+              <small>
+                Please separate year & sections by comma(,)
+              </small>
+            </label>
+            <input type="text" name="sections[]" placeholder="eg. 4-A, 4-B" style="text-transform:uppercase" class="form-control" required>
           </div>
-        </div>`
-      )
+        </div>
+      `)
     }
 
-    function removeField(e) {
-      e.parents()[1].remove()
+    function removeCourse(e) {
+      $(e).parents()[3].remove()
     }
 
     function handleAddAdmin() {
