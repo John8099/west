@@ -2562,8 +2562,8 @@ function updateUser()
 
   if ($_POST["role"] == "instructor" && isset($_POST["courseId"])) {
     $courseIds = $_POST["courseId"];
-  } else {
-    strtoupper($_POST["courseId"]);
+  } else if (isset($_POST["courseId"])) {
+    $courseIds = strtoupper($_POST["courseId"]);
   }
 
   $courseSectionHandled = array();
@@ -2670,8 +2670,8 @@ function updateUserDB($post, $img_url = null, $hash, $instructorSections)
 
   if ($role == "instructor" && isset($post["courseId"])) {
     $courseId = $post["courseId"];
-  } else {
-    strtoupper($post["courseId"]);
+  } else if (isset($post["courseId"])) {
+    $courseId = strtoupper($post["courseId"]);
   }
 
   $username = generateUsername($fname, $lname);
