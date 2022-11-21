@@ -86,11 +86,26 @@
             </td>
             <td><?= $admin->email ?></td>
             <td><?= ucwords($admin->role) ?></td>
+            <?php
+            $thesisGroupQ = mysqli_query(
+              $conn,
+              "SELECT * FROM thesis_groups WHERE panel_ids is not NULL"
+            );
+            $disabled = "";
+
+            while ($thesisGroup = mysqli_fetch_object($thesisGroupQ)) {
+              $panelIds = $thesisGroup->panel_ids;
+              if (in_array($admin->id, json_decode($panelIds, true))) {
+                $disabled = "disabled";
+                break;
+              }
+            }
+            ?>
             <td class="text-center">
               <button type="button" class="btn btn-warning btn-gradient-warning m-1" onclick="handleOnclickEditAdmin('<?= $admin->username ?>')">
                 Edit
               </button>
-              <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')">
+              <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleOnclickDeleteAdmin('<?= $admin->id ?>')" <?= $disabled ?>>
                 Delete
               </button>
             </td>
