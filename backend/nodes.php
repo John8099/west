@@ -2438,7 +2438,9 @@ function deleteUser()
     if ($user->role == "instructor") {
       removeInstructorToGroupList($user->id);
     }
-    unlink("..$user->avatar");
+    if ($user->avatar != null) {
+      unlink("..$user->avatar");
+    }
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
