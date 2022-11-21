@@ -144,7 +144,7 @@ $systemInfo = systemInfo();
       swal.fire({
         title: 'Are you sure',
         icon: 'question',
-        html: `you want to delete this category?`,
+        html: `you want to delete this thesis type?`,
         showDenyButton: true,
         confirmButtonText: 'Yes',
         denyButtonText: 'No',
