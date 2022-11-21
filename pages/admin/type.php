@@ -97,7 +97,7 @@ $systemInfo = systemInfo();
           focus: true
         })
       } else {
-        $(`#addType${modalId}`).modal({
+        $(`#addType`).modal({
           show: true,
           backdrop: 'static',
           keyboard: false,

@@ -146,7 +146,7 @@ $systemInfo = systemInfo();
                 Please separate year & sections by comma(,)
               </small>
             </label>
-            <input type="text" name="sections[]" placeholder="eg. 4-A, 4-B" style="text-transform:uppercase" class="form-control" required>
+            <input type="text" name="sections[]" placeholder="eg. 4-A, 4-B" style="text-transform:uppercase" class="sections form-control" required>
           </div>
         </div>
       `)
