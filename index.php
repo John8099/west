@@ -84,7 +84,6 @@ $systemInfo = systemInfo();
                 <div class="container-fluid">
                   <h3 class="text-center">Welcome</h3>
                   <hr>
-                  <?= password_hash("password", PASSWORD_ARGON2I) ?>
                   <div class="welcome-content">
                     <?= nl2br($systemInfo->home_content) ?>
                   </div>

@@ -87,6 +87,19 @@ $systemInfo = systemInfo();
                             <?= strlen($description) > 250 ? substr($description, 0, 250) . "..." : $description ?>
                           </td>
                           <td class="text-center">
+                            <?php
+                            if ($document->leader_id != null) :
+                              $panelRatingQ = mysqli_query(
+                                $conn,
+                                "SELECT * FROM panel_ratings WHERE leader_id='$leader->id'"
+                              );
+                              $disabled = mysqli_num_rows($panelRatingQ) > 0 ? "" : "disabled";
+                            ?>
+                              <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="return window.location.href='students?rating&&leaderId=<?= $leader->id ?>&&groupNumber=<?= $leader->group_number ?>'" <?= $disabled ?>>
+                                Preview rating
+                              </button>
+                            <?php endif; ?>
+
                             <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" onclick="handleOpenModal('<?= $document->id ?>')">
                               Preview
                             </button>
@@ -230,7 +243,7 @@ $systemInfo = systemInfo();
         "lengthChange": false,
         "autoWidth": false,
         "columns": [{
-            "width": "15%"
+            "width": "10%"
           }, {
             "width": "20%"
           },
@@ -238,7 +251,7 @@ $systemInfo = systemInfo();
             "width": "50%"
           },
           {
-            "width": "5%"
+            "width": "15%"
           }
         ]
       });
