@@ -186,7 +186,7 @@ $links = array(
   array(
     "title" => "Settings",
     "url" => "$SERVER_NAME/pages/admin/settings",
-    "allowedViews" => array("coordinator", "panel", "adviser"),
+    "allowedViews" => array("coordinator"),
     "config" => array(
       "icon" => "tools"
     )

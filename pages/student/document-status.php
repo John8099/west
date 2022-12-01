@@ -244,7 +244,7 @@ $user = get_user_by_username($_SESSION['username']);
                       foreach ($feedbacks as $feedbackData) :
                       ?>
                         <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                          <?php if ($feedbackData->action == "Approved") : ?>
+                          <!-- <?php if ($feedbackData->action == "Approved") : ?>
                             <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
                               Approved
                             </span>
@@ -252,7 +252,7 @@ $user = get_user_by_username($_SESSION['username']);
                             <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
                               Disapproved
                             </span>
-                          <?php endif; ?>
+                          <?php endif; ?> -->
                           <span>
                             &#8226;
                             <strong>

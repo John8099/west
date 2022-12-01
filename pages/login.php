@@ -58,9 +58,9 @@ $systemInfo = systemInfo();
                 <form id="login-form" method="POST">
                   <div class="form-group">
                     <label class="col-form-label">
-                      Email
+                      Email or Roll
                     </label>
-                    <input type="email" name="email" class="form-control form-control-sm form-control-border" placeholder="Your email ..." required>
+                    <input type="text" name="email" class="form-control form-control-sm form-control-border" required>
 
                   </div>
 

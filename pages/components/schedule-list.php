@@ -43,6 +43,26 @@
               </select>
             </div>
             <div class="form-group">
+              <label for="leader_id" class="control-label">Leader</label>
+              <select name="leader_id" class="form-control" required>
+                <option value="" selected disabled>-- select leader --</option>
+                <?php
+                $leaderQ = mysqli_query(
+                  $conn,
+                  "SELECT * FROM users u INNER JOIN courses c ON u.course_id = c.course_id WHERE u.role='student' and u.isLeader='1'"
+                );
+                while ($leaderData = mysqli_fetch_object($leaderQ)) :
+                  $leader = get_user_by_id($leaderData->id);
+                ?>
+                  <option value="<?= $leader->id ?>">
+                    <?=
+                    ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name") . " (Group #$leader->group_number $leaderData->short_name $leader->year_and_section)"
+                    ?>
+                  </option>
+                <?php endwhile; ?>
+              </select>
+            </div>
+            <div class="form-group">
               <label for="title" class="control-label">Task Title</label>
               <input type="text" name="title" id="title" class="form-control" required>
             </div>
@@ -56,7 +76,7 @@
             </div>
             <div class="form-group">
               <label for="schedule_to" class="control-label">Schedule End <small>(Leave it blank if you want it whole day)</small></label>
-              <input type="datetime-local" min="<?= date("Y-m-d\TH:i") ?>" name="schedule_to" class="form-control" />
+              <input type="datetime-local" name="schedule_to" class="form-control" />
             </div>
           </div>
         </div>
@@ -80,6 +100,11 @@ $query = mysqli_query(
 while ($schedule = mysqli_fetch_object($query)) :
   $category = getCategoryById($schedule->category_id);
   $taskBy = get_user_by_id($schedule->user_id);
+
+  $leader = get_user_by_id($schedule->leader_id);
+  $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
+  $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
+  $courseData = getCourseData($leader->course_id);
 ?>
   <div class="modal fade" id="preview<?= $schedule->id ?>">
     <div class="modal-dialog">
@@ -95,6 +120,38 @@ while ($schedule = mysqli_fetch_object($query)) :
             <dl>
               <dt class="text-muted">User</dt>
               <dd class="pl-4"><?= ucwords("$taskBy->first_name " . ($taskBy->middle_name != null ? $taskBy->middle_name[0] . "." : "") . " $taskBy->last_name") ?></dd>
+              <dt class="text-muted">Group #</dt>
+              <dd class="pl-4"><?= $leader->group_number ?></dd>
+              <dt class="text-muted">Course</dt>
+              <dd class="pl-4"><?= $courseData->name ?></dd>
+              <dt class="text-muted">Year and section</dt>
+              <dd class="pl-4"><?= $leader->year_and_section ?></dd>
+              <dt class="text-muted">Group List</dt>
+              <dd class="pl-4">
+                <h6>Leader:</h6>
+                <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                  <div class="mr-1">
+                    <img src="<?= $leader->avatar != null ? $SERVER_NAME . $leader->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                  </div>
+                  <div>
+                    <?= $leaderName ?>
+                  </div>
+                </div>
+                <h6>Members:</h6>
+                <?php
+                foreach ($memberData as $member) :
+                  $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
+                ?>
+                  <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                    <div class="mr-1">
+                      <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                    </div>
+                    <div>
+                      <?= $memberName ?>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              </dd>
               <dt class="text-muted">Category</dt>
               <dd class="pl-4"><?= $category->name ?></dd>
               <dt class="text-muted">Schedule Start</dt>
@@ -121,6 +178,7 @@ while ($schedule = mysqli_fetch_object($query)) :
             <button type="button" class="btn btn-primary btn-gradient-primary m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
             <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
           <?php endif; ?>
+          
           <button type="button" class="btn btn-dark m-1" data-dismiss="modal">Close</button>
         </div>
       </div>

@@ -18,6 +18,7 @@
         $inviteData = null;
         $thesisGroupData = null;
         $hasSubmittedDocuments = hasSubmittedDocuments($leader);
+        $hasSubmittedThreeDocuments = hasSubmittedThreeDocuments($leader);
 
         if (mysqli_num_rows($inviteQuery) > 0) {
           $inviteData = mysqli_fetch_object($inviteQuery);
@@ -132,7 +133,7 @@
 
       <?php endif; ?>
 
-      <?php if ($thesisGroupData != null && $thesisGroupData->instructor_id != null  && !$hasSubmittedDocuments) : ?>
+      <?php if ($thesisGroupData != null && $thesisGroupData->instructor_id != null  && !$hasSubmittedThreeDocuments) : ?>
 
         <button type="button" id="btnSubmitDocuments" onclick="return window.location.href = './submit-documents'" class="btn btn-success btn-sm">
           <i class="fa fa-check"></i>

@@ -1502,6 +1502,24 @@ function getSubmittedDocuments($currentUser)
   return null;
 }
 
+function getAllSubmittedDocument($currentUser)
+{
+  global $conn;
+
+  $documents = array();
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE leader_id ='$currentUser->id'"
+  );
+
+  while ($row = mysqli_fetch_object($query)) {
+    array_push($documents, $row);
+  }
+
+  return $documents;
+}
+
 function getDocumentById($id)
 {
   global $conn;
@@ -1536,6 +1554,21 @@ function getDocumentByLeaderId($leaderId)
   }
 
   return null;
+}
+
+function hasSubmittedThreeDocuments($currentUser)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM documents WHERE leader_id ='$currentUser->id'"
+  );
+
+  if (mysqli_num_rows($query) === 3) {
+    return true;
+  }
+  return false;
 }
 
 function hasSubmittedDocuments($currentUser)
@@ -1756,6 +1789,7 @@ function saveSchedule()
 
   $id = isset($_POST["id"]) ? $_POST["id"] : null;
   $category_id = $_POST["category_id"];
+  $leader_id = $_POST["leader_id"];
   $title = $_POST["title"];
   $description = $_POST["description"];
   $schedule_from = $_POST["schedule_from"];
@@ -1768,7 +1802,7 @@ function saveSchedule()
     if ($id) {
       $query = mysqli_query(
         $conn,
-        "UPDATE schedule_list SET " . ($schedule_to != null ? "schedule_to='$schedule_to', is_whole=0, " : "schedule_to='NULL', is_whole=1, ") . " category_id='$category_id', title='$title', description='$description', schedule_from='$schedule_from' WHERE id = '$id'"
+        "UPDATE schedule_list SET " . ($schedule_to != null ? "schedule_to='$schedule_to', is_whole=0, " : "schedule_to='NULL', is_whole=1, ") . " category_id='$category_id', leader_id='$leader_id', title='$title', description='$description', schedule_from='$schedule_from' WHERE id = '$id'"
       );
     } else {
       $user = get_user_by_username($_SESSION['username']);
@@ -1779,6 +1813,7 @@ function saveSchedule()
           is_whole,
           `user_id`, 
           category_id, 
+          leader_id,
           title, 
           `description`, 
           schedule_from
@@ -1787,6 +1822,7 @@ function saveSchedule()
           " . ($schedule_to == null ? "'1'," : "'0',") . "
           '$user->id', 
           '$category_id', 
+          '$leader_id',
           '$title', 
           '$description', 
           '$schedule_from'
@@ -2786,11 +2822,11 @@ function login()
 
   $query = mysqli_query(
     $conn,
-    "SELECT * FROM users WHERE email='$email'"
+    "SELECT * FROM users WHERE email='$email' or roll='$email'"
   );
 
   if (mysqli_num_rows($query) > 0) {
-    $user = get_user_by_email($email);
+    $user = get_user_by_email($email) ? get_user_by_email($email) : mysqli_fetch_object($query);
     if (password_verify($password, $user->password)) {
       $response["success"] = true;
       $response["role"] = $user->role;
