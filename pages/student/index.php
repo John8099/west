@@ -59,6 +59,24 @@ $user = get_user_by_username($_SESSION['username']);
       color: white !important;
       text-shadow: 4px 5px 3px #414447 !important;
     }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+      .site-title {
+        font-size: 3em !important;
+      }
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
 
@@ -73,7 +91,7 @@ $user = get_user_by_username($_SESSION['username']);
       <div class="content" style="padding:9rem 0rem 0rem 0rem;">
         <div id="header" class="shadow mb-4">
           <div class="d-flex justify-content-center h-100 w-100 align-items-center flex-column">
-            <h1 class="w-100 text-center site-title"><?= $systemInfo->system_name ?></h1>
+            <p class="w-100 text-center site-title"><?= $systemInfo->system_name ?></p>
           </div>
         </div>
       </div>

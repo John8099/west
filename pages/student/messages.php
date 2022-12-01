@@ -23,9 +23,25 @@ $user = get_user_by_username($_SESSION['username']);
   <link rel="stylesheet" href="../../assets/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="../../assets/dist/css/adminlte.min.css">
+
   <style>
     #searchNav::after {
       content: none
+    }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
     }
   </style>
 </head>
@@ -70,7 +86,6 @@ $user = get_user_by_username($_SESSION['username']);
                   $instructorName = ucwords("$instructor->first_name " . ($instructor->middle_name != null ? $instructor->middle_name[0] . "." : "") . " $instructor->last_name");
                   $instructorId = $instructor->id;
                 }
-                
               }
               ?>
               <div class="card-body p-0" style="display: block;">

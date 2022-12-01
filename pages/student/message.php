@@ -28,9 +28,25 @@ if (!isset($_GET['i'])) {
   <link rel="stylesheet" href="../../assets/dist/css/adminlte.min.css">
   <link rel="stylesheet" href="../../assets/dist/css/message.css">
   <link href="../../assets/plugins/toggle/bootstrap4-toggle.min.css" rel="stylesheet" />
+
   <style>
     #searchNav::after {
       content: none
+    }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
     }
   </style>
 </head>
@@ -48,15 +64,18 @@ if (!isset($_GET['i'])) {
           <div class="col-md-8 col-sm-12">
             <div class="card p-0 w-100">
               <div class="row card-title d-flex align-items-center border-bottom p-1">
-                <div class="col-md-11">
+                <div class="col-1">
+                  <a href="#" onclick="return history.back()" class="pull-left mr-4 h3">
+                    <i class="fa fa-arrow-left "></i>
+                  </a>
+                </div>
+                <div class="col-10">
                   <?php
                   $user_details = get_user_by_id($_GET["i"]);
                   ?>
 
                   <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
-                    <a href="#" onclick="return history.back()" class="pull-left mr-4 h3">
-                      <i class="fa fa-arrow-left "></i>
-                    </a>
+
                     <div class="mr-1">
                       <img src="<?= $user_details->avatar != null ? $SERVER_NAME . $user_details->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
                     </div>
@@ -69,7 +88,7 @@ if (!isset($_GET['i'])) {
                     </div>
                   </div>
                 </div>
-                <div class="col-sm-1">
+                <div class="col-1">
                   <div class='dropdown pull-right'>
                     <button class='btn' id='dropdownMenuButton' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false' style='background-color: transparent; border-radius: 50px;'>
                       <i class='fa fa-ellipsis-v' style="font-size: 20px;"></i>

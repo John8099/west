@@ -47,7 +47,23 @@ $systemInfo = systemInfo();
       top: 0 !important;
       /* move doc up into empty bar space */
     }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
+    }
   </style>
+
 </head>
 
 <body class="hold-transition layout-top-nav">

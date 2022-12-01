@@ -32,9 +32,19 @@ $systemInfo = systemInfo();
       text-shadow: 4px 5px 3px #414447 !important;
     }
 
+    #left {
+      height: 100vh;
+      width: 99vw;
+    }
+
     @media only screen and (max-width: 980px) {
       #right {
-        display: none;
+        display: none !important;
+      }
+
+      #left {
+        width: 100% !important;
+        padding: 20px;
       }
     }
   </style>
@@ -48,8 +58,8 @@ $systemInfo = systemInfo();
 
       <!-- Main content -->
       <div class="content" style="padding: 0; overflow: hidden;">
-        <div class="row" style="height: 100vh; width: 99vw;">
-          <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" style="height: 100%;">
+        <div class="row">
+          <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" id="left">
             <div class="card card-outline card-primary rounded-0 shadow col-lg-10 col-sm-12">
               <div class="card-header">
                 <h5 class="card-title text-center text-dark"><b>Login</b></h5>

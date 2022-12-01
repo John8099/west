@@ -32,6 +32,21 @@ $systemInfo = systemInfo();
     #searchNav::after {
       content: none
     }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
 

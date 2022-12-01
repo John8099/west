@@ -32,9 +32,19 @@ $systemInfo = systemInfo();
       text-shadow: 4px 5px 3px #414447 !important;
     }
 
-    @media only screen and (max-width: 980px) {
+    #left {
+      height: auto;
+      width: 99vw;
+    }
+
+    @media only screen and (max-width: 800px) {
       #right {
-        display: none;
+        display: none !important;
+      }
+
+      #left {
+        width: 100% !important;
+        padding: 20px;
       }
     }
   </style>
@@ -47,9 +57,9 @@ $systemInfo = systemInfo();
     <div class="content-wrapper">
 
       <!-- Main content -->
-      <div class="content" style="padding: 0;">
-        <div class="row" style="width: 99vw;">
-          <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" style="height: 100%;">
+      <div class="content" style="padding: 0;  overflow: hidden;">
+        <div class="row">
+          <div class="col-md-5 col-sm-12 d-flex justify-content-center align-items-center bg-navy" id="left">
             <div class="card card-outline card-primary rounded-0 shadow col-lg-10 col-sm-12 mt-2">
               <div class="card-header">
                 <h5 class="card-title text-center text-dark"><b>Registration</b></h5>

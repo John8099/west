@@ -24,9 +24,25 @@ $systemInfo = systemInfo();
   <link rel="stylesheet" href="../assets/plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="../assets/dist/css/adminlte.min.css">
+
   <style>
     #searchNav::after {
       content: none
+    }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
     }
   </style>
 </head>

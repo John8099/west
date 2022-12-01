@@ -28,6 +28,21 @@ $user = get_user_by_username($_SESSION['username']);
     #searchNav::after {
       content: none
     }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
+    }
   </style>
 
 </head>
@@ -104,7 +119,7 @@ $user = get_user_by_username($_SESSION['username']);
             <?php endif; ?>
 
             <!-- Feedbacks -->
-            <table class="table table-bordered table-hover table-striped mt-4" >
+            <table class="table table-bordered table-hover table-striped mt-4">
               <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
                 <h5>Feedbacks</h5>
               </caption>

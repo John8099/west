@@ -27,17 +27,25 @@ $systemInfo = systemInfo();
 
   <!-- Full calendar -->
   <link rel="stylesheet" href="../../assets/plugins/fullcalendar/main.css">
+
   <style>
     #searchNav::after {
       content: none
     }
 
-    .cursor-pointer {
-      cursor: pointer !important;
+    .linkNav {
+      margin: auto !important;
     }
 
-    .fc-toolbar-chunk button {
-      text-transform: capitalize !important;
+    @media screen and (max-width: 800px) {
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
     }
   </style>
 </head>

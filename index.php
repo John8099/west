@@ -56,6 +56,42 @@ $systemInfo = systemInfo();
       color: white !important;
       text-shadow: 4px 5px 3px #414447 !important;
     }
+
+    .linkNav {
+      margin: auto !important;
+    }
+
+    .navbar-toggler {
+      color: rgba(0, 0, 0, .5);
+      border-color: rgba(0, 0, 0, .1);
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='rgba%280, 0, 0, 0.5%29' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    .navbar-toggler-icon {
+      display: inline-block;
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: middle;
+      content: "";
+      background: 50%/100% 100% no-repeat;
+    }
+
+    @media screen and (max-width: 800px) {
+      .site-title {
+        font-size: 3em !important;
+      }
+
+      .divSearch {
+        width: 100% !important;
+      }
+
+      .linkNav {
+        margin: 0 !important;
+      }
+    }
   </style>
 </head>
 
