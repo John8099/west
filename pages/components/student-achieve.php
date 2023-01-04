@@ -2,6 +2,13 @@
 $leader = $isLeader ? $user : get_user_by_id($user->leader_id);
 $documents = getAllSubmittedDocument($leader);
 foreach ($documents as $document) :
+  $color = "warning";
+
+  if ($document->concept_status == "APPROVED") {
+    $color = "success";
+  } else if ($document->concept_status == "DECLINED") {
+    $color = "danger";
+  }
 ?>
   <div class="card card-outline card-primary shadow rounded-0">
     <div class="card-header">
@@ -10,6 +17,9 @@ foreach ($documents as $document) :
           <strong>
             <?= ucwords($document->title) ?>
           </strong>
+          <span class="badge badge-<?= $color ?> rounded-pill px-4" style="font-size: 18px">
+            <em><?= strtoupper($document->concept_status) ?></em>
+          </span>
         </h2>
       </div>
       <div class="card-tools">

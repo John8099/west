@@ -11,6 +11,7 @@ if (isset($_GET['update'])) :
   }
 
   $groupGrades = json_decode($ratingData->group_grade, true);
+  $leader = get_user_by_id($ratingData->leader_id);
 ?>
   <div class="container">
     <div class="card card-outline rounded-0 card-navy mt-2">
@@ -42,77 +43,7 @@ if (isset($_GET['update'])) :
               </div>
             </div>
           </div>
-          <?php if ($ratingData->rating_type == "concept") : ?>
-            <div class="form-group">
-              <label class="control-label">Rating</label>
-              <table class="table table-bordered">
-                <thead>
-                  <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
-                    Group Rating <span class="text-danger">*</span>
-                  </caption>
-                  <tr>
-                    <th>Criteria</th>
-                    <th>Max Points</th>
-                    <th>Panel</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  foreach ($groupGrades as $groupGrade) :
-                  ?>
-                    <tr>
-                      <td><?= $groupGrade["title"] ?></td>
-                      <td><?= $groupGrade["max"] ?></td>
-                      <td>
-                        <div class="form-group">
-                          <input type="number" name="<?= $groupGrade["name"] ?>" value="<?= intval($groupGrade["grade"]) ?>" class="form-control" min="1" max="<?= $groupGrade["max"] ?>" required>
-                        </div>
-                      </td>
-                    </tr>
-                  <?php
-                  endforeach;
-                  ?>
-                </tbody>
-              </table>
-
-              <table class="table table-bordered">
-                <thead>
-                  <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
-                    Individual Grade <span class="text-danger">*</span>
-                  </caption>
-                  <tr>
-                    <th>Group members:</th>
-                    <th>Grade (Max 100%)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php
-                  $individualGrades = json_decode($ratingData->individual_grade, true);
-                  foreach ($individualGrades as $individualGrade) :
-                    $user_details = get_user_by_id($individualGrade["id"]);
-                  ?>
-                    <tr>
-                      <td>
-                        <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
-                          <div class="mr-1">
-                            <img src="<?= $user_details->avatar != null ? $SERVER_NAME . $user_details->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
-                          </div>
-                          <div>
-                            <?= ucwords("$user_details->first_name " . ($user_details->middle_name != null ? $user_details->middle_name[0] . "." : "") . " $user_details->last_name") ?>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div class="form-group">
-                          <input type="number" name="<?= $user_details->id . "_grade" ?>" class="form-control" value="<?= $individualGrade["grade"] ?>" min="1" max="100" required>
-                        </div>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-          <?php else : ?>
+          <?php if ($ratingData->rating_type != "concept") : ?>
             <table class="table table-bordered">
               <thead>
 

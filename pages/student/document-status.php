@@ -58,7 +58,7 @@ $user = get_user_by_username($_SESSION['username']);
       <div class="container" style="padding-top: 9rem">
         <?php
         $leader = $isLeader ? $user : get_user_by_id($user->leader_id);
-        $document = getSubmittedDocuments($leader);
+        $document = getApprovedDocument($leader);
         ?>
         <div class="card card-outline card-primary shadow rounded-0">
           <div class="card-header">
@@ -294,7 +294,7 @@ $user = get_user_by_username($_SESSION['username']);
                               </div>
                               <div class="modal-body">
                                 <div class="row">
-                                  <div class="col-12">
+                                  <!-- <div class="col-12">
                                     Action taken:
                                     <?php if ($feedbackData->action == "Approved") : ?>
                                       <span class="badge badge-success rounded-pill px-2" style="font-size: 14px">
@@ -305,7 +305,7 @@ $user = get_user_by_username($_SESSION['username']);
                                         Disapproved
                                       </span>
                                     <?php endif; ?>
-                                  </div>
+                                  </div> -->
                                   <div class="col-12 mt-2">
                                     <label class="form-label">Comment/Suggestions</label>
                                     <div class="jumbotron mb-0 p-3">

@@ -776,11 +776,11 @@ function saveRating()
   if (!hasPanelRating($panelId, $type, $documentId)) {
     $leaderId = $post["leaderId"];
 
-    $comment = nl2br($post["comment"]);
+    $comment = isset($post["comment"]) ? nl2br($post["comment"]) : NULL;
     $actionTaken = $post["actionTaken"];
-    $individualGrade = json_encode($post["individualGrade"]);
+    $individualGrade = isset($post["individualGrade"]) ? json_encode($post["individualGrade"]) : 'null';
 
-    $groupGrade = $type == "concept" ? json_encode($post["groupGrade"]) : json_encode($post["otherGroupGrade"]);
+    $groupGrade = isset($post["otherGroupGrade"]) ? $post["otherGroupGrade"] : 'null';
 
     $query = mysqli_query(
       $conn,
@@ -792,6 +792,9 @@ function saveRating()
       $response["message"] = "Group successfully rated.";
       updateDocumentPanelStatus($leaderId, $type, $documentId);
       updateDocumentsToPublished($documentId, $leaderId, $type);
+      if (hasRateAllPanelInConcept(get_user_by_id($leaderId))) {
+        updateDocumentConcept(get_user_by_id($leaderId));
+      }
     } else {
       $response["success"] = false;
       $response["message"] = mysqli_error($conn);
@@ -802,6 +805,88 @@ function saveRating()
   }
 
   returnResponse($response);
+}
+
+function updateDocumentConcept($leader)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * 
+    FROM 
+    panel_ratings p
+    INNER JOIN
+    documents d
+    ON p.document_id = d.id
+    WHERE p.rating_type = 'concept'
+    and p.action = 'Approved'
+    and p.leader_id = '$leader->id'"
+  );
+
+  $docIds = array();
+
+  while ($row = mysqli_fetch_object($query)) {
+    if (!array_key_exists($row->document_id, $docIds)) {
+      $docIds[$row->document_id] = array("approved" => 1);
+    } else {
+      $docIds[$row->document_id]["approved"]++;
+    }
+  }
+
+  $value = max($docIds);
+  $key = array_search($value, $docIds);
+
+  try {
+    $docQ = mysqli_query(
+      $conn,
+      "SELECT id, leader_id FROM documents WHERE leader_id='$leader->id'"
+    );
+
+    $allDocData = mysqli_fetch_all($docQ);
+
+    $allDocIds = array();
+    foreach ($allDocData as $docData => $data) {
+      array_push($allDocIds, $data[0]);
+    }
+
+    foreach ($allDocIds as $docId => $id) {
+      mysqli_query(
+        $conn,
+        "UPDATE documents SET concept_status='" . ($key == $id ? "APPROVED" : "DECLINED") . "' WHERE id='$id'"
+      );
+    }
+  } catch (Exception $e) {
+  }
+}
+
+function hasRateAllPanelInConcept($leader)
+{
+  global $conn;
+
+  $query = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id'"
+  );
+
+  if (mysqli_num_rows($query) > 0) {
+    $panel_ids = json_decode(mysqli_fetch_object($query)->panel_ids);
+    $ratingCount = 0;
+    foreach ($panel_ids as $panel_id) {
+      $ratingQ = mysqli_query(
+        $conn,
+        "SELECT * FROM panel_ratings WHERE rating_type='concept' and panel_id='$panel_id'"
+      );
+      if (mysqli_num_rows($ratingQ) == 3) {
+        $ratingCount++;
+      }
+    }
+    if ($ratingCount == count($panel_ids)) {
+      return true;
+    }
+    return false;
+  }
+  return false;
 }
 
 function panelNameType($type)
@@ -1484,13 +1569,13 @@ function saveDocument()
   returnResponse($response);
 }
 
-function getSubmittedDocuments($currentUser)
+function getApprovedDocument($currentUser)
 {
   global $conn;
 
   $query = mysqli_query(
     $conn,
-    "SELECT * FROM documents WHERE leader_id ='$currentUser->id'"
+    "SELECT * FROM documents WHERE leader_id ='$currentUser->id' and concept_status='APPROVED'"
   );
 
   if (mysqli_num_rows($query) > 0) {

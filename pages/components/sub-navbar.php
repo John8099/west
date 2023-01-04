@@ -36,9 +36,10 @@
                 $thesisGroupData = mysqli_fetch_object($query);
               }
 
-              $hasSubmittedDocuments = hasSubmittedDocuments($leader);
-              if ($value["title"] == "Document Status" && !$hasSubmittedDocuments) {
-                continue;
+              if ($value["title"] == "Document Status" && hasSubmittedThreeDocuments($leader)) {
+                if (!hasRateAllPanelInConcept($leader)) {
+                  continue;
+                }
               }
 
               if ($value["title"] == "Messages" && $thesisGroupData != null && $thesisGroupData->instructor_id == null) {

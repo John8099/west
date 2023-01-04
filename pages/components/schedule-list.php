@@ -105,6 +105,13 @@ while ($schedule = mysqli_fetch_object($query)) :
   $leaderName = ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name");
   $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
   $courseData = getCourseData($leader->course_id);
+
+  $groupQ = mysqli_query(
+    $conn,
+    "SELECT * FROM thesis_groups WHERE group_leader_id='$leader->id'"
+  );
+  $groupData = mysqli_fetch_object($groupQ);
+  $panel_ids = $groupData->panel_ids ? json_decode($groupData->panel_ids) : null;
 ?>
   <div class="modal fade" id="preview<?= $schedule->id ?>">
     <div class="modal-dialog">
@@ -152,6 +159,27 @@ while ($schedule = mysqli_fetch_object($query)) :
                   </div>
                 <?php endforeach; ?>
               </dd>
+              <?php if ($user->role == "panel") : ?>
+                <dd class="pl-4">
+                  <h6>Panels:</h6>
+                  <?php
+                  if ($panel_ids) :
+                    foreach ($panel_ids as $panel_id) :
+                      $panelData = get_user_by_id($panel_id);
+                      $panelName = ucwords("$panelData->first_name " . ($panelData->middle_name != null ? $panelData->middle_name[0] . "." : "") . " $panelData->last_name");
+                  ?>
+                      <div class="mt-2 mb-2 d-flex justify-content-start align-items-center">
+                        <div class="mr-1">
+                          <img src="<?= $panelData->avatar != null ? $SERVER_NAME . $panelData->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                        </div>
+                        <div>
+                          <?= $panelName ?>
+                        </div>
+                      </div>
+                  <?php endforeach;
+                  endif; ?>
+                </dd>
+              <?php endif; ?>
               <dt class="text-muted">Category</dt>
               <dd class="pl-4"><?= $category->name ?></dd>
               <dt class="text-muted">Schedule Start</dt>
@@ -177,8 +205,12 @@ while ($schedule = mysqli_fetch_object($query)) :
           <?php if ($taskBy->username == $_SESSION['username']) : ?>
             <button type="button" class="btn btn-primary btn-gradient-primary m-1" data-dismiss="modal" onclick="handleOnClickEdit('<?= $schedule->id ?>', 'openEdit')">Edit</button>
             <button type="button" class="btn btn-danger btn-gradient-danger m-1" onclick="handleDeleteSchedule('<?= $schedule->id ?>')">Delete</button>
+          <?php endif;
+          if ($panel_ids && in_array($user->id, $panel_ids) && hasSubmittedThreeDocuments($leader) && $category->name == "Concept Presentation") :
+          ?>
+            <button type="button" class="btn btn-primary btn-gradient-primary m-1" onclick="return window.location.href = 'panel-preview-concept?leader_id=<?= $leader->id ?>'">Preview Concept</button>
           <?php endif; ?>
-          
+
           <button type="button" class="btn btn-dark m-1" data-dismiss="modal">Close</button>
         </div>
       </div>
@@ -210,6 +242,26 @@ while ($schedule = mysqli_fetch_object($query)) :
                   ?>
                     <option value="<?= $category->id ?>" <?= $schedule->category_id == $category->id ? "selected" : "" ?>>
                       <?= $category->name ?>
+                    </option>
+                  <?php endwhile; ?>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="leader_id" class="control-label">Leader</label>
+                <select name="leader_id" class="form-control" required>
+                  <option value="" selected disabled>-- select leader --</option>
+                  <?php
+                  $leaderQ = mysqli_query(
+                    $conn,
+                    "SELECT * FROM users u INNER JOIN courses c ON u.course_id = c.course_id WHERE u.role='student' and u.id='$schedule->leader_id'"
+                  );
+                  while ($leaderData = mysqli_fetch_object($leaderQ)) :
+                    $leader = get_user_by_id($leaderData->id);
+                  ?>
+                    <option value="<?= $leader->id ?>" <?= $leader->id == $schedule->leader_id ? "selected" : "" ?>>
+                      <?=
+                      ucwords("$leader->first_name " . ($leader->middle_name != null ? $leader->middle_name[0] . "." : "") . " $leader->last_name") . " (Group #$leader->group_number $leaderData->short_name $leader->year_and_section)"
+                      ?>
                     </option>
                   <?php endwhile; ?>
                 </select>

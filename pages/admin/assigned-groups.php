@@ -512,12 +512,13 @@ $systemInfo = systemInfo();
               swal.close();
               modalRatingData.type = value;
               if (value === "concept") {
-                $(`#modalConcept${modalId}`).modal({
-                  show: true,
-                  backdrop: "static",
-                  keyboard: false,
-                  focus: true,
-                });
+                window.location.href = "panel-preview-concept?leader_id=<?= $leader->id ?>"
+                // $(`#modalConcept${modalId}`).modal({
+                //   show: true,
+                //   backdrop: "static",
+                //   keyboard: false,
+                //   focus: true,
+                // });
               } else {
                 $(`#modalRate${modalId}`).modal({
                   show: true,

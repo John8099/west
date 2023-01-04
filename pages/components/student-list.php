@@ -47,17 +47,20 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                 <?php
                 $feedbacks = getPanelRating($panelId, $document->id);
                 foreach ($feedbacks as $feedbackData) :
+                  $isConcept = $feedbackData->rating_type == "concept" ? true : false;
                 ?>
                   <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                    <?php if ($feedbackData->action == "Approved") : ?>
-                      <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
-                        Approved
-                      </span>
-                    <?php else : ?>
-                      <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
-                        Disapproved
-                      </span>
-                    <?php endif; ?>
+                    <?php if (!$isConcept) :
+                      if ($feedbackData->action == "Approved") : ?>
+                        <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
+                          Approved
+                        </span>
+                      <?php else : ?>
+                        <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
+                          Disapproved
+                        </span>
+                    <?php endif;
+                    endif; ?>
                     <span>
                       &#8226;
                       <strong>
@@ -85,16 +88,18 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                         <div class="modal-body">
                           <div class="row">
                             <div class="col-12">
-                              Action taken:
-                              <?php if ($feedbackData->action == "Approved") : ?>
-                                <span class="badge badge-success rounded-pill px-2" style="font-size: 14px">
-                                  Approved
-                                </span>
-                              <?php else : ?>
-                                <span class="badge badge-danger rounded-pill px-2" style="font-size: 14px">
-                                  Disapproved
-                                </span>
-                              <?php endif; ?>
+                              <?php if (!$isConcept) :
+                                echo "Action taken:";
+                                if ($feedbackData->action == "Approved") : ?>
+                                  <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
+                                    Approved
+                                  </span>
+                                <?php else : ?>
+                                  <span class="badge badge-danger rounded-pill px-2" style="float:right;font-size: 14px">
+                                    Disapproved
+                                  </span>
+                              <?php endif;
+                              endif; ?>
                             </div>
                             <div class="col-12 mt-2">
                               <label class="form-label">Comment/Suggestions</label>
@@ -103,7 +108,6 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                               </div>
                             </div>
                             <div class="col-12 mt-2">
-                              <label class="control-label">Rating</label>
                               <?php include("../components/feedbacks.php"); ?>
                             </div>
                           </div>

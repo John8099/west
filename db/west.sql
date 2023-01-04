@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 01, 2022 at 02:27 PM
+-- Generation Time: Jan 04, 2023 at 06:16 PM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 7.4.27
 
@@ -113,6 +113,7 @@ CREATE TABLE `documents` (
   `adviser_feedback` text DEFAULT NULL,
   `instructor_feedback` text DEFAULT NULL,
   `panel_rate_status` enum('APPROVED','DISAPPROVED') DEFAULT NULL,
+  `concept_status` enum('APPROVED','DECLINED','PENDING') DEFAULT 'PENDING',
   `publish_status` enum('PENDING','TO PUBLISH','PUBLISHED') NOT NULL,
   `date_created` timestamp NOT NULL DEFAULT current_timestamp(),
   `date_updated` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -122,10 +123,10 @@ CREATE TABLE `documents` (
 -- Dumping data for table `documents`
 --
 
-INSERT INTO `documents` (`id`, `leader_id`, `title`, `type_id`, `year`, `description`, `img_banner`, `project_document`, `adviser_feedback`, `instructor_feedback`, `panel_rate_status`, `publish_status`, `date_created`, `date_updated`) VALUES
-(1, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, NULL, 'PENDING', '2022-11-19 13:15:07', '2022-11-28 13:25:43'),
-(4, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, NULL, 'PENDING', '2022-11-19 13:15:07', '2022-11-28 13:25:52'),
-(5, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, NULL, 'PENDING', '2022-11-19 13:15:07', '2022-11-28 13:25:59');
+INSERT INTO `documents` (`id`, `leader_id`, `title`, `type_id`, `year`, `description`, `img_banner`, `project_document`, `adviser_feedback`, `instructor_feedback`, `panel_rate_status`, `concept_status`, `publish_status`, `date_created`, `date_updated`) VALUES
+(1, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, 'DISAPPROVED', 'DECLINED', 'PENDING', '2022-11-19 13:15:07', '2023-01-04 16:45:03'),
+(4, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, 'APPROVED', 'APPROVED', 'PENDING', '2022-11-19 13:15:07', '2023-01-04 16:45:04'),
+(5, 9, 'Sample title', 1, '2022', '<p>Sample description</p>', '/media/documents/banner/11192022-091507_Screenshot 2022-11-19 211410.jpg', '/media/documents/files/11192022-091507_pdfjs-express-demo.pdf', NULL, NULL, 'DISAPPROVED', 'DECLINED', 'PENDING', '2022-11-19 13:15:07', '2023-01-04 16:45:04');
 
 -- --------------------------------------------------------
 
@@ -180,7 +181,7 @@ CREATE TABLE `panel_ratings` (
   `leader_id` int(11) NOT NULL,
   `panel_id` int(11) NOT NULL,
   `rating_type` enum('concept','20percent','50percent','final') NOT NULL,
-  `comment` text NOT NULL,
+  `comment` text DEFAULT NULL,
   `action` enum('Approved','Disapproved') NOT NULL,
   `group_grade` text DEFAULT NULL,
   `individual_grade` text DEFAULT NULL
@@ -191,12 +192,18 @@ CREATE TABLE `panel_ratings` (
 --
 
 INSERT INTO `panel_ratings` (`rating_id`, `document_id`, `leader_id`, `panel_id`, `rating_type`, `comment`, `action`, `group_grade`, `individual_grade`) VALUES
-(2, 1, 9, 4, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"18\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"25\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"25\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"80\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"80\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"80\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"80\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"80\"}]'),
-(3, 1, 9, 5, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
-(4, 1, 9, 7, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"18\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"25\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"25\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"80\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"80\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"80\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"80\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"80\"}]'),
-(5, 1, 9, 8, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
-(6, 1, 9, 6, 'concept', '<p>test</p>', 'Approved', '[{\"title\":\"Complexity and Innovativeness of the proposal\",\"name\":\"complexity\",\"max\":20,\"grade\":\"2\"},{\"title\":\"Content and appropriateness of the Document\",\"name\":\"content\",\"max\":50,\"grade\":\"2\"},{\"title\":\"Group Delivery and presentation\",\"name\":\"delivery\",\"max\":30,\"grade\":\"2\"}]', '[{\"id\":\"9\",\"name\":\" Leader L. Leader\",\"grade\":\"61\"},{\"id\":\"10\",\"name\":\" Student  One\",\"grade\":\"61\"},{\"id\":\"11\",\"name\":\" Student  Two\",\"grade\":\"61\"},{\"id\":\"12\",\"name\":\" Student  Three\",\"grade\":\"61\"},{\"id\":\"13\",\"name\":\" Student  Four\",\"grade\":\"61\"}]'),
-(12, 1, 9, 5, '20percent', '<p>test</p>', 'Approved', '{\"documentation\":{\"title\":\"Documentation\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Significant Improvement from previous document\",\"name\":\"documentation_a\",\"rating\":\"5\"},{\"title\":\"Applied and Implemented previous suggestions/recommendations\",\"name\":\"documentation_b\",\"rating\":\"3\"},{\"title\":\"Well researched as shown by the use of references\",\"name\":\"documentation_c\",\"rating\":\"2\"}]},\"system\":{\"title\":\"System/Program\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Significant improvement from previous system presented\",\"name\":\"system_a\",\"rating\":\"1\"},{\"title\":\"Continuity of the development of the system (not another system presented)\",\"name\":\"system_b\",\"rating\":\"2\"},{\"title\":\"Applied/integrated previous comments/suggestions/recommendation\",\"name\":\"system_c\",\"rating\":\"3\"},{\"title\":\"Completeness deliverable\",\"name\":\"system_d\",\"rating\":\"4\"}]},\"presentation\":{\"title\":\"Group Presentation\",\"remarks\":\"test1\",\"ratings\":[{\"title\":\"Preparedness/Use of Visual Aids\",\"name\":\"presentation_a\",\"rating\":\"1\"},{\"title\":\"Collaboration/cooperation\",\"name\":\"presentation_b\",\"rating\":\"2\"},{\"title\":\"Mastery of the Study\",\"name\":\"presentation_c\",\"rating\":\"3\"},{\"title\":\"Over-all Impact of the presentation\",\"name\":\"presentation_d\",\"rating\":\"4\"}]}}', '[{\"id\":\"9\",\"name\":\"Leader L. Leader\",\"rating\":\"1\",\"remarks\":\"test1\"},{\"id\":\"10\",\"name\":\"Student  One\",\"rating\":\"2\",\"remarks\":\"test1\"},{\"id\":\"11\",\"name\":\"Student  Two\",\"rating\":\"3\",\"remarks\":\"test1\"},{\"id\":\"12\",\"name\":\"Student  Three\",\"rating\":\"4\",\"remarks\":\"test1\"},{\"id\":\"13\",\"name\":\"Student  Four\",\"rating\":\"5\",\"remarks\":\"test1\"}]');
+(13, 1, 9, 4, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(18, 4, 9, 4, 'concept', '<p>test</p>', 'Approved', 'null', 'null'),
+(19, 5, 9, 4, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(20, 1, 9, 5, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(21, 4, 9, 5, 'concept', '<p>test</p>', 'Approved', 'null', 'null'),
+(22, 5, 9, 5, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(23, 1, 9, 6, 'concept', '<p>test</p>', 'Approved', 'null', 'null'),
+(24, 4, 9, 6, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(25, 5, 9, 6, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(27, 1, 9, 7, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(28, 4, 9, 7, 'concept', '<p>test</p>', 'Approved', 'null', 'null'),
+(37, 5, 9, 7, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null');
 
 -- --------------------------------------------------------
 
@@ -223,7 +230,7 @@ CREATE TABLE `schedule_list` (
 --
 
 INSERT INTO `schedule_list` (`id`, `user_id`, `category_id`, `leader_id`, `title`, `description`, `schedule_from`, `schedule_to`, `is_whole`, `date_created`, `date_updated`) VALUES
-(3, 1, 1, 9, 'test', 'test', '2022-11-30 08:25:00', '2022-11-30 09:25:00', 0, '2022-11-30 08:26:04', '2022-11-30 08:26:04');
+(6, 1, 1, 9, 'test', 'test', '2022-12-29 12:09:00', '2022-12-29 14:11:00', 0, '2022-12-29 12:09:51', '2022-12-29 12:09:51');
 
 -- --------------------------------------------------------
 
@@ -332,8 +339,8 @@ INSERT INTO `users` (`id`, `roll`, `course_id`, `first_name`, `middle_name`, `la
 (3, NULL, NULL, 'adviser', 'adviser', 'adviser', NULL, NULL, NULL, '/media/avatar/11192022-084828_avatar5.png', 'adviser-adviser-icTsV1HGgQW7', 'adviser@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$clBqU0kxdVRQYkN6N0pCQQ$kR6XnFaD4SQJago7F1JBnyR0daH3MYX4qgb80f4jkY0', 'adviser', NULL, NULL, 0, '2022-11-19 20:48:27', '2022-11-27 02:56:23'),
 (4, NULL, NULL, 'panel', NULL, 'one', NULL, NULL, NULL, '/media/avatar/11192022-085150_user1-128x128.jpg', 'panel-one-iuhpigLFyXAi', 'panel_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Z29lME5weGtzRndwVFIvUw$qXh99wqFL6XiczKcJG6wGP/LVwUsA1pfKRJnags/fv4', 'panel', NULL, NULL, 0, '2022-11-19 20:51:50', '2022-11-19 14:19:11'),
 (5, NULL, NULL, 'panel', NULL, 'two', NULL, NULL, NULL, '/media/avatar/11192022-085253_user2-160x160.jpg', 'panel-two-z2P1xZQ8HUC', 'panel_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$TUtKdXdlOXFNUWE4QXZ1Zw$Yn4C9uS1C7dv40+yiCSxZGn+bkPilAge2P7+Lh2aZz4', 'panel', NULL, NULL, 0, '2022-11-19 20:52:53', '2022-11-20 03:46:19'),
-(6, NULL, NULL, 'panel', NULL, 'three', NULL, NULL, NULL, '/media/avatar/11192022-085421_user3-128x128.jpg', 'panel-three-UMRcDuxaaFdK', 'panel_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$QWVyL05SVjhGU2NTLjhBTw$Vz/EIBmnN02nJ8AnsVNiZHCSkCl8yk+DmrY/wepIIAY', 'panel', NULL, NULL, 1, '2022-11-19 20:54:21', '2022-11-19 12:54:21'),
-(7, NULL, NULL, 'panel', NULL, 'four', NULL, NULL, NULL, '/media/avatar/11192022-085520_user4-128x128.jpg', 'panel-four-zhOwMXLTVM7i', 'panel_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$S3VtSUtVSVBSaWtlN3NoVA$28a1VF24JPzNqE4YmTQbT0SsnyzYcQGKRjhzdfBLjRY', 'panel', NULL, NULL, 1, '2022-11-19 20:55:19', '2022-11-19 12:55:20'),
+(6, NULL, NULL, 'panel', NULL, 'three', NULL, NULL, NULL, '/media/avatar/11192022-085421_user3-128x128.jpg', 'panel-three-UMRcDuxaaFdK', 'panel_three@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$Z09mMG5RUWdqZDMuTllCTQ$gBc7eVHqJxSZKmYqQEM/HV8bAho0ge+hRMSkhjEGamE', 'panel', NULL, NULL, 0, '2022-11-19 20:54:21', '2023-01-04 13:44:55'),
+(7, NULL, NULL, 'panel', NULL, 'four', NULL, NULL, NULL, '/media/avatar/11192022-085520_user4-128x128.jpg', 'panel-four-zhOwMXLTVM7i', 'panel_four@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$M3B5Q21rdnJNazhiMjlpbQ$78Q0MhWC0ks+3W0kcj/3xEBPfp6kTjwvW7pfFcMO+wE', 'panel', NULL, NULL, 0, '2022-11-19 20:55:19', '2023-01-04 16:22:07'),
 (9, '2468', 3, 'leader', 'leader', 'leader', 'SY: 2021-23', 1, '4-A', NULL, 'leader-leader-CAE4ZGsOtp4D', 'leader@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$U1plbnVHUzFabWZaYkZzVQ$aGENFN5EPdwTipO8FOvqApI/GVkoIyWBC8Biaww/wHo', 'student', 1, NULL, 0, '2022-11-19 20:59:36', '2022-11-27 03:01:21'),
 (10, '1357', 3, 'student', NULL, 'one', 'SY: 2021-22', 1, '4-A', NULL, 'student-one-9Z5ldidSW02B', 'student_one@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$aFh2ak42OWsxdzk3U09mNg$KzCFzg8okp0DbK+7tK6yF3IBB2OdWjDw74X2p8e2M/s', 'student', NULL, 9, 0, '2022-11-19 21:05:34', '2022-11-20 14:44:08'),
 (11, '12345', 3, 'student', NULL, 'two', 'SY: 2021-22', 1, '4-A', NULL, 'student-two-VtiFj9Rr1aAk', 'student_two@gmail.com', '$argon2i$v=19$m=65536,t=4,p=1$YTVJUUVDNkREZTZLcURUeg$9xB67KpblUoVOgZ4r0fBgFkuYDHoaAnQdV22CG8ZxdY', 'student', NULL, 9, 0, '2022-11-19 21:06:16', '2022-11-20 14:44:08'),
@@ -468,13 +475,13 @@ ALTER TABLE `invite`
 -- AUTO_INCREMENT for table `panel_ratings`
 --
 ALTER TABLE `panel_ratings`
-  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `schedule_list`
 --
 ALTER TABLE `schedule_list`
-  MODIFY `id` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `system_config`

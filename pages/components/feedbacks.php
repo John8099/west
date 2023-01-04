@@ -1,6 +1,7 @@
 <?php
 if ($feedbackData->rating_type == "concept") :
 ?>
+  <!-- <label class="control-label">Rating</label>
   <table class="table table-bordered">
     <thead>
       <caption style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
@@ -64,8 +65,9 @@ if ($feedbackData->rating_type == "concept") :
         </tr>
       <?php endforeach; ?>
     </tbody>
-  </table>
+  </table> -->
 <?php else : ?>
+  <label class="control-label">Rating</label>
   <table class="table table-bordered">
     <thead>
       <caption class="p-0" style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">

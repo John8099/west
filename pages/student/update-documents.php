@@ -90,7 +90,7 @@ $systemInfo = systemInfo();
                   <div class="container-fluid">
                     <form method="POST" id="archive-form" enctype="multipart/form-data">
                       <?php
-                      $document = getSubmittedDocuments($user);
+                      $document = getApprovedDocument($user);
                       ?>
                       <input type="text" name="documentId" value="<?= $document->id ?>" hidden readonly>
                       <div class="form-group">
