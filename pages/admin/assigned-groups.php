@@ -547,6 +547,8 @@ $systemInfo = systemInfo();
                 title: 'Success!',
                 text: resp.message,
                 icon: 'success',
+              }).then(() => {
+                window.history.back()
               })
             } else {
               swal.fire({

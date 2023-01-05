@@ -621,10 +621,17 @@ function updatePanelRating()
   $nameType = panelNameType($panelRatings->rating_type);
 
   $comment = nl2br($_POST["comment"]);
-  $action = $_POST["action"];
+  $action = $panelRatings->rating_type == "final" ? "Approved" : $_POST["action"];
 
-  $newGroupGrade = json_encode(newGroupGrade($panelRatings, $_POST, $panelRatings->rating_type));
-  $newIndividualGrade = json_encode(newIndividualGrade($panelRatings, $panelRatings->rating_type, $_POST));
+  $newIndividualGrade = $panelRatings->rating_type == "final" || $panelRatings->rating_type == "concept" ? "null" : json_encode(newIndividualGrade($panelRatings, $panelRatings->rating_type, $_POST));
+
+  $newGroupGrade = 'null';
+
+  if ($panelRatings->rating_type == "final") {
+    $newGroupGrade = mysqli_escape_string($conn, json_encode(newFinalGroupGrade($panelRatings, $_POST)));
+  } else if ($panelRatings->rating_type != "final" && $panelRatings->rating_type != "concept") {
+    $newGroupGrade = json_encode(newGroupGrade($panelRatings, $_POST, $panelRatings->rating_type));
+  }
 
   $query = mysqli_query(
     $conn,
@@ -636,12 +643,38 @@ function updatePanelRating()
     $response["message"] = "$nameType rating updated successfully.";
     updateDocumentPanelStatus($panelRatings->leader_id, $panelRatings->rating_type, $panelRatings->document_id);
     updateDocumentsToPublished($panelRatings->document_id, $panelRatings->leader_id, $panelRatings->rating_type);
+    if (hasRateAllPanelInConcept(get_user_by_id($panelRatings->leader_id))) {
+      updateDocumentConcept(get_user_by_id($panelRatings->leader_id));
+    }
   } else {
     $response["success"] = false;
     $response["message"] = mysqli_error($conn);
   }
 
   returnResponse($response);
+}
+
+function newFinalGroupGrade($panelRatings, $post)
+{
+  $oldGroupGrades = json_decode($panelRatings->group_grade, true);
+  $newGroupGrade = array();
+
+  foreach ($oldGroupGrades as $index => $value) {
+    $newGroupGrade[$index] = array(
+      "title" => $value["title"],
+      "ratings" => array()
+    );
+    foreach ($value["ratings"] as $rating) {
+      array_push($newGroupGrade[$index]["ratings"], array(
+        "title" => $rating["title"],
+        "description" => $rating["description"],
+        "name" => $rating["name"],
+        "rating" => $post[$rating["name"]]
+      ));
+    }
+  }
+
+  return $newGroupGrade;
 }
 
 function newIndividualGrade($panelRatings, $ratingType, $post = null)
@@ -777,10 +810,15 @@ function saveRating()
     $leaderId = $post["leaderId"];
 
     $comment = isset($post["comment"]) ? nl2br($post["comment"]) : NULL;
-    $actionTaken = $post["actionTaken"];
-    $individualGrade = isset($post["individualGrade"]) ? json_encode($post["individualGrade"]) : 'null';
+    $actionTaken = $type != "final" ? $post["actionTaken"] : 'Approved';
+    $individualGrade = isset($post["individualGrade"]) && $type != "final" ? json_encode($post["individualGrade"]) : 'null';
 
-    $groupGrade = isset($post["otherGroupGrade"]) ? $post["otherGroupGrade"] : 'null';
+    $groupGrade = 'null';
+    if (isset($post["otherGroupGrade"]) && $type != "final") {
+      $groupGrade = json_encode($post["otherGroupGrade"]);
+    } else if (isset($post["finalGroupGrade"]) && $type == "final") {
+      $groupGrade = mysqli_escape_string($conn, json_encode($post["finalGroupGrade"]));
+    }
 
     $query = mysqli_query(
       $conn,
@@ -1007,14 +1045,14 @@ function hasPanelRating($panelId, $ratingType, $documentId)
   return false;
 }
 
-function generateTextareaTdRadio($len, $name, $grade = null)
+function generateTextareaTdRadio($len, $name, $grade = null, $type = "")
 {
   $tds = array();
 
   for ($i = 1; $i <= $len; $i++) {
     array_push($tds, "<td class='v-align-middle'>
                         <div class='form-group' style='margin: 0;'>
-                          <input type='radio' value='$i' name='$name' class='radio-big rating-radio' " . ($grade != null && $i == $grade ? "checked" : "") . " required>
+                          <input type='radio' value='$i' name='$name' class='radio-big rating-radio " . ($type != "" ? $type : "") . "' " . ($grade != null && $i == $grade ? "checked" : "") . " required>
                         </div>
                       </td>");
   }

@@ -66,6 +66,62 @@ if ($feedbackData->rating_type == "concept") :
       <?php endforeach; ?>
     </tbody>
   </table> -->
+<?php elseif ($feedbackData->rating_type == "final") : ?>
+  <label class="control-label">Rating</label>
+  <table class="table table-bordered">
+    <thead>
+      <caption class="p-0" style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
+        <strong>
+          <pre>Rating Scale:	6=Excellent;    5=Very Good;    4=Good;    3=Fair;    2=Poor;    1=Very Poor</pre>
+        </strong>
+      </caption>
+      <tr>
+        <th>Areas</th>
+        <th class="text-center">Rating</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php
+      $groupRating = json_decode($feedbackData->group_grade, true);
+      $groupTotal = 0;
+      $groupCount = 0;
+      foreach ($groupRating as $ratingData) :
+      ?>
+        <tr>
+          <td colspan="3">
+            <strong>
+              <?= $ratingData["title"] ?>
+            </strong>
+          </td>
+        </tr>
+        <?php
+        for ($i = 0; $i < count($ratingData["ratings"]); $i++) :
+          $rating = $ratingData["ratings"][$i];
+          $groupCount++;
+          $groupTotal += intval($rating["rating"]);
+        ?>
+          <tr>
+            <td class="v-align-middle">
+              <h6 style="font-weight: bold;">
+                <?= $rating["title"] ?>
+              </h6>
+              <?= $rating["description"] ?>
+            </td>
+            <td class="text-center" style="vertical-align: middle;"><?= $rating["rating"] ?></td>
+          </tr>
+      <?php
+        endfor;
+      endforeach; ?>
+      <tr>
+        <td style="font-weight: bold;">Total</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $groupTotal ?></td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Average</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $groupTotal / $groupCount ?></td>
+      </tr>
+    </tbody>
+  </table>
 <?php else : ?>
   <label class="control-label">Rating</label>
   <table class="table table-bordered">
@@ -84,6 +140,8 @@ if ($feedbackData->rating_type == "concept") :
     <tbody>
       <?php
       $groupRating = json_decode($feedbackData->group_grade, true);
+      $groupTotal = 0;
+      $groupCount = 0;
       foreach ($groupRating as $ratingData) :
       ?>
         <tr>
@@ -96,6 +154,8 @@ if ($feedbackData->rating_type == "concept") :
         <?php
         for ($i = 0; $i < count($ratingData["ratings"]); $i++) :
           $rating = $ratingData["ratings"][$i];
+          $groupCount++;
+          $groupTotal += intval($rating["rating"]);
         ?>
           <tr>
             <td><?= $rating["title"] ?></td>
@@ -110,6 +170,14 @@ if ($feedbackData->rating_type == "concept") :
         endfor;
       endforeach; ?>
       <tr>
+        <td style="font-weight: bold;">Total</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $groupTotal ?></td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Average</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $groupTotal / $groupCount ?></td>
+      </tr>
+      <tr>
         <td colspan="3">
           <strong>
             Individual Performance
@@ -118,8 +186,12 @@ if ($feedbackData->rating_type == "concept") :
       </tr>
       <?php
       $individualGrades = json_decode($feedbackData->individual_grade, true);
+      $individualTotal = 0;
+      $count = 0;
       foreach ($individualGrades as $individualGrade) :
         $user_details = get_user_by_id($individualGrade["id"]);
+        $individualTotal += intval($individualGrade["rating"]);
+        $count++;
       ?>
         <tr>
           <td>
@@ -136,6 +208,14 @@ if ($feedbackData->rating_type == "concept") :
           <td><?= $individualGrade["remarks"] ?></td>
         </tr>
       <?php endforeach ?>
+      <tr>
+        <td style="font-weight: bold;">Total</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $individualTotal ?></td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Average</td>
+        <td colspan="2" class="text-center" style="font-weight: bold;"><?= $individualTotal / $count ?></td>
+      </tr>
     </tbody>
   </table>
 <?php endif; ?>

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 04, 2023 at 06:16 PM
+-- Generation Time: Jan 05, 2023 at 03:16 PM
 -- Server version: 10.4.22-MariaDB
 -- PHP Version: 7.4.27
 
@@ -183,8 +183,8 @@ CREATE TABLE `panel_ratings` (
   `rating_type` enum('concept','20percent','50percent','final') NOT NULL,
   `comment` text DEFAULT NULL,
   `action` enum('Approved','Disapproved') NOT NULL,
-  `group_grade` text DEFAULT NULL,
-  `individual_grade` text DEFAULT NULL
+  `group_grade` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`group_grade`)),
+  `individual_grade` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`individual_grade`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
@@ -203,7 +203,8 @@ INSERT INTO `panel_ratings` (`rating_id`, `document_id`, `leader_id`, `panel_id`
 (25, 5, 9, 6, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
 (27, 1, 9, 7, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
 (28, 4, 9, 7, 'concept', '<p>test</p>', 'Approved', 'null', 'null'),
-(37, 5, 9, 7, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null');
+(37, 5, 9, 7, 'concept', '<p>test</p>', 'Disapproved', 'null', 'null'),
+(46, 4, 9, 4, 'final', '<p>test</p>', 'Approved', '{\"technical\":{\"title\":\"General Technical Criteria\",\"ratings\":[{\"title\":\"RELIABILITY\",\"description\":\"Extent to which a software can be expected to perform Its intended function with required precision (i.e. dependable. the probability of failure is low)\",\"name\":\"technical_a\",\"rating\":\"6\"},{\"title\":\"EFFICIENCY\",\"description\":\"Minimal amount of computing resources and code required by the software to perform its function\",\"name\":\"technical_b\",\"rating\":\"5\"},{\"title\":\"USABILITY\",\"description\":\"Effort required to learn and operate the in a user friendly manner (i.e. interface is consistent and stimulates user\'s, appropriate environment, easy to use)\",\"name\":\"technical_c\",\"rating\":\"5\"},{\"title\":\"UNDERSTANDABILITY\",\"description\":\"Degree to which source provides meaningful documentation, interactions of the sofWare components can be quickly understood, and the design is well\",\"name\":\"technical_d\",\"rating\":\"5\"},{\"title\":\"APPROPRIATENESS OF FEEDBACK TO USER\",\"description\":\"Instructions of error message and understandable and directions are clear as to what the user must do to use the software effectively\",\"name\":\"technical_e\",\"rating\":\"5\"},{\"title\":\"NAVIGATION AND ORGANIZATION\",\"description\":\"Users can progress Intuitively throughout the entre software in a logical path to find information. All buttons and navigational tools work\",\"name\":\"technical_f\",\"rating\":\"5\"}]},\"presentation\":{\"title\":\"General Presentation Criteria\",\"ratings\":[{\"title\":\"PREPARATION\",\"description\":\"Proponents hae adequately prepared for the presentation as indicated by smooth, comprehensive. concise and efficient delivery and quick and accurate responses to jurors\' questions\",\"name\":\"presentation_a\",\"rating\":\"5\"},{\"title\":\"SYNTHESIS\",\"description\":\"Proponents have a grasp of the objectives ot the thesis and SAD principles and methods\",\"name\":\"presentation_b\",\"rating\":\"5\"}]},\"multimedia\":{\"title\":\" Specific Technical Criteria for Multimedia Technologies (Educational, Interactive or Game)\",\"ratings\":[{\"title\":\"CONTENT AND DESIGN\",\"description\":\"<div>\\n                      <div>\\n                        <label>\\n                          <i>(For Educational\\/Interactive) <\\/i>\\n                        <\\/label>\\n                      <\\/div>\\n                      There is clear attention given to balance, proportion, harmony and restraint. The synergy reaches the intended audience with style.\\n                    <\\/div>\\n                    <div>\\n                      <div>\\n                        <label>\\n                          <i>(For Game)<\\/i>\\n                        <\\/label>\\n                      <\\/div>\\n                      The user easily the goal of the game, functionality (the way the game works) changes relative to adjustments made by the user, and it uses facts, statistics, reference materials or tools in the actual activity.\\n                    <\\/div>\",\"name\":\"multimedia_a\",\"rating\":\"5\"},{\"title\":\" USE OF ENHANCEMENT\",\"description\":\" Graphics, video, audio, or other enhancements are used effectively to enrich the experience. Enhancement contribute significantly to convey the intended\",\"name\":\"multimedia_b\",\"rating\":\"5\"}]},\"information\":{\"title\":\"Specific Technical Criteria for Information Systems & Prototype Software Systems\",\"ratings\":[{\"title\":\"CORRECTNESS\",\"description\":\"Extent to which a program satisfies Its specification and fulfill end-user\'s objective (I.e. specifications and software are equivalent)\",\"name\":\"information_a\",\"rating\":\"5\"},{\"title\":\"INTEGRITY\",\"description\":\"Extent to which access to software or data can be controlled by the security feature of the program.\",\"name\":\"information_b\",\"rating\":\"4\"}]}}', 'null');
 
 -- --------------------------------------------------------
 
@@ -230,7 +231,8 @@ CREATE TABLE `schedule_list` (
 --
 
 INSERT INTO `schedule_list` (`id`, `user_id`, `category_id`, `leader_id`, `title`, `description`, `schedule_from`, `schedule_to`, `is_whole`, `date_created`, `date_updated`) VALUES
-(6, 1, 1, 9, 'test', 'test', '2022-12-29 12:09:00', '2022-12-29 14:11:00', 0, '2022-12-29 12:09:51', '2022-12-29 12:09:51');
+(6, 1, 1, 9, 'test', 'test', '2022-12-29 12:09:00', '2022-12-29 14:11:00', 0, '2022-12-29 12:09:51', '2022-12-29 12:09:51'),
+(8, 1, 4, 9, 'test', 'test', '2023-01-05 09:07:00', '2023-01-05 10:07:00', 0, '2023-01-05 09:07:36', '2023-01-05 21:45:41');
 
 -- --------------------------------------------------------
 
@@ -475,13 +477,13 @@ ALTER TABLE `invite`
 -- AUTO_INCREMENT for table `panel_ratings`
 --
 ALTER TABLE `panel_ratings`
-  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `rating_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
 -- AUTO_INCREMENT for table `schedule_list`
 --
 ALTER TABLE `schedule_list`
-  MODIFY `id` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(30) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `system_config`

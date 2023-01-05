@@ -168,6 +168,11 @@ $systemInfo = systemInfo();
                       }
                       ?>
                       <button type="button" class="btn btn-success m-1" onclick="handleRateConcept('<?= $document->id ?>')" <?= $disabled ? "disabled" : "" ?>>Rate Concept</button>
+                      <?php
+                      if ($disabled) :
+                      ?>
+                        <button type="button" class="btn btn-primary m-1" onclick="return window.location.href = 'assigned-groups?update&&documentId=<?= $document->id ?>&&type=concept'">Preview Concept Rating</button>
+                      <?php endif; ?>
                       <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" onclick="return window.open('./preview-document?d=<?= urlencode($document->project_document) ?>')">
                         Open document in new tab
                       </button>

@@ -27,6 +27,8 @@ $systemInfo = systemInfo();
   <link rel="stylesheet" href="../../assets/dist/css/adminlte.min.css">
   <!-- Full calendar -->
   <link rel="stylesheet" href="../../assets/plugins/fullcalendar/main.css">
+  <!-- summernote -->
+  <link rel="stylesheet" href="../../assets/plugins/summernote/summernote-bs4.min.css" />
   <style>
     .cursor-pointer {
       cursor: pointer !important;
@@ -34,6 +36,20 @@ $systemInfo = systemInfo();
 
     .fc-toolbar-chunk button {
       text-transform: capitalize !important;
+    }
+
+    .v-align-middle {
+      vertical-align: middle !important;
+    }
+
+    .radio-big {
+      width: 19px;
+      height: 19px;
+    }
+
+    .swalCustom {
+      margin: 1em 2em 3px;
+      width: auto;
     }
   </style>
 </head>
@@ -71,6 +87,7 @@ $systemInfo = systemInfo();
 
   <!-- jQuery -->
   <script src="../../assets/plugins/jquery/jquery.min.js"></script>
+  <script src="../../assets/plugins/jquery-validation/jquery.validate.min.js"></script>
   <!-- Bootstrap 4 -->
   <script src="../../assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
   <!-- overlayScrollbars -->
@@ -83,10 +100,14 @@ $systemInfo = systemInfo();
   <script src="../../assets/dist/js/demo.js"></script>
   <!-- Full calendar -->
   <script src="../../assets/plugins/fullcalendar/main.js"></script>
-
+  <!-- Summernote -->
+  <script src="../../assets/plugins/summernote/summernote-bs4.min.js"></script>
+  <!-- iCheck for checkboxes and radio inputs -->
+  <link rel="stylesheet" href="../../assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css" />
   <script>
     const scheds = $.parseJSON('<?= getAllSchedules() ? json_encode(getAllSchedules()) : '{}' ?>')
     let events = []
+    // $(`#modalFinalRate8`).modal("toggle");
     $(document).ready(function() {
 
       if (Object.keys(scheds).length > 0) {
@@ -130,7 +151,609 @@ $systemInfo = systemInfo();
       calendar.render();
     })
 
-    function handleOpenModal(modalId, action) {
+    const defaultRatingData = {
+      comment: ``,
+      type: "",
+      actionTaken: "",
+      groupGrade: [{
+          title: "Complexity and Innovativeness of the proposal",
+          name: "complexity",
+          max: 20,
+          grade: 0,
+        },
+        {
+          title: "Content and appropriateness of the Document",
+          name: "content",
+          max: 50,
+          grade: 0,
+        },
+        {
+          title: "Group Delivery and presentation",
+          name: "delivery",
+          max: 30,
+          grade: 0,
+        },
+      ],
+      otherGroupGrade: {
+        documentation: {
+          title: "Documentation",
+          remarks: "",
+          ratings: [{
+            title: "Significant Improvement from previous document",
+            name: "documentation_a",
+            rating: "",
+          }, {
+            title: "Applied and Implemented previous suggestions/recommendations",
+            name: "documentation_b",
+            rating: "",
+          }, {
+            title: "Well researched as shown by the use of references",
+            name: "documentation_c",
+            rating: "",
+          }]
+        },
+        system: {
+          title: "System/Program",
+          remarks: "",
+          ratings: [{
+            title: "Significant improvement from previous system presented",
+            name: "system_a",
+            rating: "",
+          }, {
+            title: "Continuity of the development of the system (not another system presented)",
+            name: "system_b",
+            rating: "",
+          }, {
+            title: "Applied/integrated previous comments/suggestions/recommendation",
+            name: "system_c",
+            rating: "",
+          }, {
+            title: "Completeness deliverable",
+            name: "system_d",
+            rating: "",
+          }]
+        },
+        presentation: {
+          title: "Group Presentation",
+          remarks: "",
+          ratings: [{
+            title: "Preparedness/Use of Visual Aids",
+            name: "presentation_a",
+            rating: "",
+          }, {
+            title: "Collaboration/cooperation",
+            name: "presentation_b",
+            rating: "",
+          }, {
+            title: "Mastery of the Study",
+            name: "presentation_c",
+            rating: "",
+          }, {
+            title: "Over-all Impact of the presentation",
+            name: "presentation_d",
+            rating: "",
+          }]
+        },
+      },
+      finalGroupGrade: {
+        technical: {
+          title: "General Technical Criteria",
+          ratings: [{
+            title: "RELIABILITY",
+            description: "Extent to which a software can be expected to perform Its intended function with required precision (i.e. dependable. the probability of failure is low)",
+            name: "technical_a",
+            rating: "",
+          }, {
+            title: "EFFICIENCY",
+            description: "Minimal amount of computing resources and code required by the software to perform its function",
+            name: "technical_b",
+            rating: "",
+          }, {
+            title: "USABILITY",
+            description: "Effort required to learn and operate the in a user friendly manner (i.e. interface is consistent and stimulates user's, appropriate environment, easy to use)",
+            name: "technical_c",
+            rating: "",
+          }, {
+            title: "UNDERSTANDABILITY",
+            description: "Degree to which source provides meaningful documentation, interactions of the sofWare components can be quickly understood, and the design is well",
+            name: "technical_d",
+            rating: "",
+          }, {
+            title: "APPROPRIATENESS OF FEEDBACK TO USER",
+            description: "Instructions of error message and understandable and directions are clear as to what the user must do to use the software effectively",
+            name: "technical_e",
+            rating: "",
+          }, {
+            title: "NAVIGATION AND ORGANIZATION",
+            description: "Users can progress Intuitively throughout the entre software in a logical path to find information. All buttons and navigational tools work",
+            name: "technical_f",
+            rating: "",
+          }]
+        },
+        presentation: {
+          title: "General Presentation Criteria",
+          ratings: [{
+            title: "PREPARATION",
+            description: "Proponents hae adequately prepared for the presentation as indicated by smooth, comprehensive. concise and efficient delivery and quick and accurate responses to jurors' questions",
+            name: "presentation_a",
+            rating: "",
+          }, {
+            title: "SYNTHESIS",
+            description: "Proponents have a grasp of the objectives ot the thesis and SAD principles and methods",
+            name: "presentation_b",
+            rating: "",
+          }]
+        },
+        multimedia: {
+          title: " Specific Technical Criteria for Multimedia Technologies (Educational, Interactive or Game)",
+          ratings: [{
+            title: "CONTENT AND DESIGN",
+            description: `<div>
+                      <div>
+                        <label>
+                          <i>(For Educational/Interactive) </i>
+                        </label>
+                      </div>
+                      There is clear attention given to balance, proportion, harmony and restraint. The synergy reaches the intended audience with style.
+                    </div>
+                    <div>
+                      <div>
+                        <label>
+                          <i>(For Game)</i>
+                        </label>
+                      </div>
+                      The user easily the goal of the game, functionality (the way the game works) changes relative to adjustments made by the user, and it uses facts, statistics, reference materials or tools in the actual activity.
+                    </div>`,
+            name: "multimedia_a",
+            rating: "",
+          }, {
+            title: " USE OF ENHANCEMENT",
+            description: " Graphics, video, audio, or other enhancements are used effectively to enrich the experience. Enhancement contribute significantly to convey the intended",
+            name: "multimedia_b",
+            rating: "",
+          }]
+        },
+        information: {
+          title: "Specific Technical Criteria for Information Systems & Prototype Software Systems",
+          ratings: [{
+            title: "CORRECTNESS",
+            description: "Extent to which a program satisfies Its specification and fulfill end-user's objective (I.e. specifications and software are equivalent)",
+            name: "information_a",
+            rating: "",
+          }, {
+            title: "INTEGRITY",
+            description: "Extent to which access to software or data can be controlled by the security feature of the program.",
+            name: "information_b",
+            rating: "",
+          }]
+        },
+      },
+      individualGrade: [],
+      documentId: "",
+      leaderId: "",
+      panelId: "",
+    };
+
+    let modalRatingData = {
+      comment: ``,
+      type: "",
+      actionTaken: "",
+      groupGrade: [{
+          title: "Complexity and Innovativeness of the proposal",
+          name: "complexity",
+          max: 20,
+          grade: 0,
+        },
+        {
+          title: "Content and appropriateness of the Document",
+          name: "content",
+          max: 50,
+          grade: 0,
+        },
+        {
+          title: "Group Delivery and presentation",
+          name: "delivery",
+          max: 30,
+          grade: 0,
+        },
+      ],
+      otherGroupGrade: {
+        documentation: {
+          title: "Documentation",
+          remarks: "",
+          ratings: [{
+            title: "Significant Improvement from previous document",
+            name: "documentation_a",
+            rating: "",
+          }, {
+            title: "Applied and Implemented previous suggestions/recommendations",
+            name: "documentation_b",
+            rating: "",
+          }, {
+            title: "Well researched as shown by the use of references",
+            name: "documentation_c",
+            rating: "",
+          }]
+        },
+        system: {
+          title: "System/Program",
+          remarks: "",
+          ratings: [{
+            title: "Significant improvement from previous system presented",
+            name: "system_a",
+            rating: "",
+          }, {
+            title: "Continuity of the development of the system (not another system presented)",
+            name: "system_b",
+            rating: "",
+          }, {
+            title: "Applied/integrated previous comments/suggestions/recommendation",
+            name: "system_c",
+            rating: "",
+          }, {
+            title: "Completeness deliverable",
+            name: "system_d",
+            rating: "",
+          }]
+        },
+        presentation: {
+          title: "Group Presentation",
+          remarks: "",
+          ratings: [{
+            title: "Preparedness/Use of Visual Aids",
+            name: "presentation_a",
+            rating: "",
+          }, {
+            title: "Collaboration/cooperation",
+            name: "presentation_b",
+            rating: "",
+          }, {
+            title: "Mastery of the Study",
+            name: "presentation_c",
+            rating: "",
+          }, {
+            title: "Over-all Impact of the presentation",
+            name: "presentation_d",
+            rating: "",
+          }]
+        },
+      },
+      finalGroupGrade: {
+        technical: {
+          title: "General Technical Criteria",
+          ratings: [{
+            title: "RELIABILITY",
+            description: "Extent to which a software can be expected to perform Its intended function with required precision (i.e. dependable. the probability of failure is low)",
+            name: "technical_a",
+            rating: "",
+          }, {
+            title: "EFFICIENCY",
+            description: "Minimal amount of computing resources and code required by the software to perform its function",
+            name: "technical_b",
+            rating: "",
+          }, {
+            title: "USABILITY",
+            description: "Effort required to learn and operate the in a user friendly manner (i.e. interface is consistent and stimulates user's, appropriate environment, easy to use)",
+            name: "technical_c",
+            rating: "",
+          }, {
+            title: "UNDERSTANDABILITY",
+            description: "Degree to which source provides meaningful documentation, interactions of the sofWare components can be quickly understood, and the design is well",
+            name: "technical_d",
+            rating: "",
+          }, {
+            title: "APPROPRIATENESS OF FEEDBACK TO USER",
+            description: "Instructions of error message and understandable and directions are clear as to what the user must do to use the software effectively",
+            name: "technical_e",
+            rating: "",
+          }, {
+            title: "NAVIGATION AND ORGANIZATION",
+            description: "Users can progress Intuitively throughout the entre software in a logical path to find information. All buttons and navigational tools work",
+            name: "technical_f",
+            rating: "",
+          }]
+        },
+        presentation: {
+          title: "General Presentation Criteria",
+          ratings: [{
+            title: "PREPARATION",
+            description: "Proponents hae adequately prepared for the presentation as indicated by smooth, comprehensive. concise and efficient delivery and quick and accurate responses to jurors' questions",
+            name: "presentation_a",
+            rating: "",
+          }, {
+            title: "SYNTHESIS",
+            description: "Proponents have a grasp of the objectives ot the thesis and SAD principles and methods",
+            name: "presentation_b",
+            rating: "",
+          }]
+        },
+        multimedia: {
+          title: " Specific Technical Criteria for Multimedia Technologies (Educational, Interactive or Game)",
+          ratings: [{
+            title: "CONTENT AND DESIGN",
+            description: `<div>
+                      <div>
+                        <label>
+                          <i>(For Educational/Interactive) </i>
+                        </label>
+                      </div>
+                      There is clear attention given to balance, proportion, harmony and restraint. The synergy reaches the intended audience with style.
+                    </div>
+                    <div>
+                      <div>
+                        <label>
+                          <i>(For Game)</i>
+                        </label>
+                      </div>
+                      The user easily the goal of the game, functionality (the way the game works) changes relative to adjustments made by the user, and it uses facts, statistics, reference materials or tools in the actual activity.
+                    </div>`,
+            name: "multimedia_a",
+            rating: "",
+          }, {
+            title: " USE OF ENHANCEMENT",
+            description: " Graphics, video, audio, or other enhancements are used effectively to enrich the experience. Enhancement contribute significantly to convey the intended",
+            name: "multimedia_b",
+            rating: "",
+          }]
+        },
+        information: {
+          title: "Specific Technical Criteria for Information Systems & Prototype Software Systems",
+          ratings: [{
+            title: "CORRECTNESS",
+            description: "Extent to which a program satisfies Its specification and fulfill end-user's objective (I.e. specifications and software are equivalent)",
+            name: "information_a",
+            rating: "",
+          }, {
+            title: "INTEGRITY",
+            description: "Extent to which access to software or data can be controlled by the security feature of the program.",
+            name: "information_b",
+            rating: "",
+          }]
+        },
+      },
+      individualGrade: [],
+      documentId: "",
+      leaderId: "",
+      panelId: "",
+    };
+
+
+    const validateConfig = {
+      errorElement: "span",
+      errorPlacement: function(error, element) {
+        error.addClass("invalid-feedback");
+        element.closest(".form-group").append(error);
+      },
+      highlight: function(element, errorClass, validClass) {
+        $(element).addClass("is-invalid");
+      },
+      unhighlight: function(element, errorClass, validClass) {
+        $(element).removeClass("is-invalid");
+      },
+    }
+
+    function handleSaveRating(ids) {
+      const dataIds = JSON.parse($(`#ids${ids}`).val());
+      modalRatingData.documentId = dataIds.document_id;
+      modalRatingData.leaderId = dataIds.leader_id;
+      modalRatingData.panelId = dataIds.panel_id;
+      modalRatingData.type = $(`#type${ids}`).val()
+      const formName = modalRatingData.type == "final" ? `modalFinalRate_form${ids}` : `modalRate_form${ids}`;
+
+      $(`#${formName}`).validate(validateConfig);
+
+      console.log(modalRatingData)
+
+      if ($(`#${formName}`).valid()) {
+        swal.showLoading();
+        $.post(
+          "../../backend/nodes?action=saveRating", {
+            data: JSON.stringify(modalRatingData)
+          },
+          (data, status) => {
+            const resp = JSON.parse(data)
+            if (resp.success) {
+              swal.fire({
+                title: 'Success!',
+                text: resp.message,
+                icon: 'success',
+              }).then(() => {
+                window.location.reload()
+              })
+            } else {
+              swal.fire({
+                title: 'Error!',
+                text: resp.message,
+                icon: 'error',
+              })
+            }
+          }).fail(function(e) {
+          swal.fire({
+            title: 'Error!',
+            text: e.statusText,
+            icon: 'error',
+          })
+        });
+      } else {
+        swal.fire({
+          title: "Error!",
+          text: "Please check error fields",
+          icon: "error",
+        });
+      }
+    }
+
+    function handleIndividualRemarks(id, name, remarks) {
+      const individualGrade = modalRatingData.individualGrade;
+      const indexOfIndividualGrade =
+        individualGrade[individualGrade.map((data) => data.id).indexOf(id)];
+
+      if (indexOfIndividualGrade === undefined) {
+        modalRatingData.individualGrade.push({
+          id: id,
+          name: name,
+          rating: "",
+          remarks: remarks
+        });
+      } else {
+        individualGrade[
+          individualGrade.map((data) => data.id).indexOf(id)
+        ].remarks = remarks;
+      }
+
+    }
+
+    function handleAddRemarks(title, el) {
+      if (title === "documentation") {
+        modalRatingData.otherGroupGrade.documentation.remarks = $(el).val()
+      } else if (title === "system") {
+        modalRatingData.otherGroupGrade.system.remarks = $(el).val()
+      } else if (title === "presentation") {
+        modalRatingData.otherGroupGrade.presentation.remarks = $(el).val()
+      }
+    }
+
+    function handleGroupGradeChange(name, grade) {
+      const groupGrade = modalRatingData.groupGrade;
+
+      if (grade === "") {
+        groupGrade[
+          groupGrade.map((data) => data.name).indexOf(name)
+        ].grade = 0;
+      } else {
+        groupGrade[groupGrade.map((data) => data.name).indexOf(name)].grade =
+          grade;
+      }
+
+      if (groupGrade.length > 0) {
+        total = 0;
+        for (let i = 0; i < groupGrade.length; i++) {
+          total += Number(groupGrade[i].grade);
+        }
+        $(".gradeTotal").html(total)
+      }
+
+      console.log(modalRatingData);
+    }
+
+    function handleIndividualGrade(id, name, grade) {
+      const individualGrade = modalRatingData.individualGrade;
+      const indexOfIndividualGrade =
+        individualGrade[individualGrade.map((data) => data.id).indexOf(id)];
+      const inputGrade = grade ? grade : 0;
+
+      if (indexOfIndividualGrade === undefined) {
+        modalRatingData.individualGrade.push({
+          id: id,
+          name: name,
+          grade: inputGrade,
+        });
+      } else {
+        individualGrade[
+          individualGrade.map((data) => data.id).indexOf(id)
+        ].grade = inputGrade;
+      }
+
+      console.log(individualGrade);
+    }
+
+    $(".rating-radio").on("change", function(e) {
+      const radioName = e.target.name
+
+      if (e.target.className.includes("final")) {
+        if (radioName.includes("technical")) {
+          const technical = modalRatingData.finalGroupGrade.technical
+          const index = technical.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          technical.ratings[index].rating = e.target.value
+        } else if (radioName.includes("presentation")) {
+          const presentation = modalRatingData.finalGroupGrade.presentation
+          const index = presentation.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          presentation.ratings[index].rating = e.target.value
+        } else if (radioName.includes("multimedia")) {
+          const multimedia = modalRatingData.finalGroupGrade.multimedia
+          const index = multimedia.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          multimedia.ratings[index].rating = e.target.value
+
+        } else if (radioName.includes("information")) {
+          const information = modalRatingData.finalGroupGrade.information
+          const index = information.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          information.ratings[index].rating = e.target.value
+        }
+      } else {
+        if (radioName.includes("documentation")) {
+          const documentation = modalRatingData.otherGroupGrade.documentation
+          const index = documentation.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          documentation.ratings[index].rating = e.target.value
+
+        } else if (radioName.includes("system")) {
+          const system = modalRatingData.otherGroupGrade.system
+          const index = system.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          system.ratings[index].rating = e.target.value
+
+        } else if (radioName.includes("presentation")) {
+          const presentation = modalRatingData.otherGroupGrade.presentation
+          const index = presentation.ratings.findIndex(object => {
+            return object.name === radioName;
+          });
+
+          presentation.ratings[index].rating = e.target.value
+
+        } else if (radioName.includes("individual")) {
+          const rate = e.target.value;
+          const id = e.target.name.split("_").pop();
+
+          const individualGrade = modalRatingData.individualGrade;
+          const indexOfIndividualGrade =
+            individualGrade[individualGrade.map((data) => data.id).indexOf(id)];
+
+          if (indexOfIndividualGrade === undefined) {
+            modalRatingData.individualGrade.push({
+              id: id,
+              name: $(`#individual_name${id}`).val(),
+              rating: rate,
+              remarks: $(`#individual_remarks${id}`).val()
+            });
+          } else {
+            individualGrade[
+              individualGrade.map((data) => data.id).indexOf(id)
+            ].rating = rate;
+          }
+
+        }
+      }
+
+      // console.log(modalRatingData)
+
+    })
+
+    $("input[name=action]").on("change", function(e) {
+      modalRatingData.actionTaken = e.target.value;
+    });
+
+    $(".summernote").on("summernote.change", function(e) {
+      // callback as jquery custom event
+      modalRatingData.comment = $(this).summernote("code");
+    });
+
+    function handleOpenModal(modalId, action, ratingType = "") {
       if (action === "preview") {
         $(`#preview${modalId}`).modal({
           show: true,
@@ -138,6 +761,29 @@ $systemInfo = systemInfo();
           keyboard: false,
           focus: true
         })
+      } else if (action == "documentPreview") {
+        $(`#previewDocument${modalId}`).modal({
+          show: true,
+          backdrop: 'static',
+          keyboard: false,
+          focus: true
+        })
+      } else if (action == "modalRate") {
+        if (ratingType === "") {
+          $(`#modalRate${modalId}`).modal({
+            show: true,
+            backdrop: 'static',
+            keyboard: false,
+            focus: true
+          })
+        } else {
+          $(`#modalFinalRate${modalId}`).modal({
+            show: true,
+            backdrop: 'static',
+            keyboard: false,
+            focus: true
+          })
+        }
       } else {
         $(`#editScheduleModal${modalId}`).modal({
           show: true,
@@ -147,6 +793,41 @@ $systemInfo = systemInfo();
         })
       }
     }
+
+    function handleCloseModal(modalId, modalName) {
+      $(`#${modalName}${modalId}`).modal("toggle");
+      $(`#${modalName}_form${modalId}`)[0].reset();
+      $(`#${modalName}_form${modalId}`).validate(validateConfig).resetForm();
+      $(".summernote").summernote("reset");
+      modalRatingData = defaultRatingData;
+      $(".gradeTotal").html("")
+    }
+
+    $(".summernote").summernote({
+      height: 200,
+      toolbar: [
+        ["style", ["style"]],
+        [
+          "font",
+          [
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "superscript",
+            "subscript",
+            "clear",
+          ],
+        ],
+        ["fontname", ["fontname"]],
+        ["fontsize", ["fontsize"]],
+        ["color", ["color"]],
+        ["para", ["ol", "ul", "paragraph", "height"]],
+        ["table", ["table"]],
+        ["insert", ["link", "picture"]],
+        ["view", ["undo", "redo", "fullscreen", "codeview", "help"]],
+      ],
+    });
 
     function handleOnClickEdit(modalId, action) {
       if (action == "openEdit") {

@@ -22,7 +22,8 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
     <div class="card-body">
       <div class="row mt-2 justify-content-start">
         <?php
-        $document = getDocumentByLeaderId($_GET['leaderId']);
+        $leader = get_user_by_id($_GET['leaderId']);
+        $document = getApprovedDocument($leader);
         $panelsQ = mysqli_query(
           $conn,
           "SELECT * FROM thesis_groups WHERE group_leader_id='$_GET[leaderId]' and group_number='$_GET[groupNumber]'"
@@ -48,9 +49,10 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                 $feedbacks = getPanelRating($panelId, $document->id);
                 foreach ($feedbacks as $feedbackData) :
                   $isConcept = $feedbackData->rating_type == "concept" ? true : false;
+                  $isFinal = $feedbackData->rating_type == "final" ? true : false;
                 ?>
                   <blockquote class="blockquote my-2 mx-0" style="font-size: 14px; overflow: hidden;">
-                    <?php if (!$isConcept) :
+                    <?php if (!$isConcept && !$isFinal) :
                       if ($feedbackData->action == "Approved") : ?>
                         <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">
                           Approved
@@ -88,7 +90,7 @@ if (isset($_GET['rating']) && isset($_GET['leaderId']) && isset($_GET['groupNumb
                         <div class="modal-body">
                           <div class="row">
                             <div class="col-12">
-                              <?php if (!$isConcept) :
+                              <?php if (!$isConcept && !$isFinal) :
                                 echo "Action taken:";
                                 if ($feedbackData->action == "Approved") : ?>
                                   <span class="badge badge-success rounded-pill px-2" style="float:right;font-size: 14px">

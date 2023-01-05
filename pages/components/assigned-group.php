@@ -26,24 +26,27 @@ if (isset($_GET['update'])) :
             <label class="control-label">Comments/Suggestions</label>
             <textarea type="text" class="form-control form-control-sm summernote" name="comment"><?= nl2br($ratingData->comment) ?></textarea>
           </div>
-          <div class="form-group">
-            <label class="control-label">Action Taken <span class="text-danger">*</span></label>
-            <div class="row">
-              <div class="col-md-6 text-center">
-                <div class="icheck-success d-inline">
-                  <input type="radio" name="action" id="actionApprovedConcept" value="Approved" <?= $ratingData->action == "Approved" ? "checked" : "" ?> required>
-                  <label for="actionApprovedConcept">Approved</label>
+          <?php if ($ratingData->rating_type != "final") : ?>
+            <div class="form-group">
+              <label class="control-label">Action Taken <span class="text-danger">*</span></label>
+              <div class="row">
+                <div class="col-md-6 text-center">
+                  <div class="icheck-success d-inline">
+                    <input type="radio" name="action" id="actionApprovedConcept" value="Approved" <?= $ratingData->action == "Approved" ? "checked" : "" ?> required>
+                    <label for="actionApprovedConcept">Approved</label>
+                  </div>
                 </div>
-              </div>
-              <div class="col-md-6 text-center">
-                <div class="icheck-danger d-inline">
-                  <input type="radio" name="action" id="actionDisapprovedConcept" value="Disapproved" <?= $ratingData->action == "Disapproved" ? "checked" : "" ?> required>
-                  <label for="actionDisapprovedConcept">Disapproved</label>
+                <div class="col-md-6 text-center">
+                  <div class="icheck-danger d-inline">
+                    <input type="radio" name="action" id="actionDisapprovedConcept" value="Disapproved" <?= $ratingData->action == "Disapproved" ? "checked" : "" ?> required>
+                    <label for="actionDisapprovedConcept">Disapproved</label>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <?php if ($ratingData->rating_type != "concept") : ?>
+          <?php endif; ?>
+
+          <?php if ($ratingData->rating_type != "concept" && $ratingData->rating_type != "final") : ?>
             <table class="table table-bordered">
               <thead>
 
@@ -131,6 +134,64 @@ if (isset($_GET['update'])) :
                     </td>
                   </tr>
                 <?php endforeach ?>
+              </tbody>
+            </table>
+          <?php endif; ?>
+
+          <?php if ($ratingData->rating_type == "final") : ?>
+            <table class="table table-bordered">
+              <thead>
+
+                <caption class="p-0" style="color: black; text-align: center; caption-side: top; border: 1px solid #dee2e6">
+                  <strong>
+                    <pre>Rating Scale:	6=Excellent;    5=Very Good;    4=Good;    3=Fair;    2=Poor;    1=Very Poor</pre>
+                  </strong>
+                </caption>
+                <tr>
+                  <th rowspan="2" style="border-bottom: 1px solid transparent;">Areas</th>
+                  <th colspan="6" class="text-center">Rating</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td></td>
+                  <td>1</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>4</td>
+                  <td>5</td>
+                  <td>6</td>
+                </tr>
+                <?php
+                $groupRating = json_decode($ratingData->group_grade, true);
+                foreach ($groupRating as $index => $groupRatingData) :
+                ?>
+                  <tr>
+                    <td colspan="5">
+                      <strong>
+                        <?= $groupRatingData["title"] ?>
+                      </strong>
+                    </td>
+                  </tr>
+                  <?php
+                  for ($i = 0; $i < count($groupRatingData["ratings"]); $i++) :
+                    $rating = $groupRatingData["ratings"][$i];
+
+                    $radioName = $groupRatingData["ratings"][$i]["name"];
+                    $checkedVal = $groupRatingData["ratings"][$i]["rating"];
+                  ?>
+                    <tr>
+                      <td class="v-align-middle">
+                        <h6 style="font-weight: bold;">
+                          <?= $rating["title"] ?>
+                        </h6>
+                        <?= $rating["description"] ?>
+                        <?= generateTextareaTdRadio(6, $radioName, $checkedVal, 'final') ?>
+                      </td>
+                    </tr>
+                <?php
+                  endfor;
+                endforeach; ?>
               </tbody>
             </table>
           <?php endif; ?>
