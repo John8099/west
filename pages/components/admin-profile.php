@@ -50,8 +50,6 @@ $systemInfo = systemInfo();
               <div class="card card-outline card-primary shadow rounded-0 mt-2 container">
                 <div class="card-header rounded-0">
                   <h5 class="card-title">My Profile</h5>
-                  <br>
-                  <?= $user->username ?>
                 </div>
                 <div class="card-body rounded-0">
                   <div class="container-fluid">

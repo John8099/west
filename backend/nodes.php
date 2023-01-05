@@ -2204,7 +2204,7 @@ function addAdmin()
 
   $courseSectionHandled = array();
 
-  if ($role == "instructor") {
+  if ($role == "instructor" && $courseIds != null) {
     for ($i = 0; $i < count($sections); $i++) {
       $courseData = getCourseData($courseIds[$i]);
       array_push($courseSectionHandled, array(
@@ -2310,7 +2310,7 @@ function getCourseData($courseId)
 
 function hasCourseDuplicate($courseIds)
 {
-  if ($courseIds) {
+  if (is_array($courseIds)) {
     $count = array_count_values($courseIds);
 
     foreach ($count as $index => $value) {
@@ -2729,7 +2729,7 @@ function updateUser()
 
   $courseSectionHandled = array();
 
-  if ($_POST["role"] == "instructor") {
+  if ($_POST["role"] == "instructor" && $sections != null) {
     for ($i = 0; $i < count($sections); $i++) {
       $courseData = getCourseData($courseIds[$i]);
       array_push($courseSectionHandled, array(
