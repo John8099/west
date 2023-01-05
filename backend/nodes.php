@@ -913,7 +913,7 @@ function hasRateAllPanelInConcept($leader)
     foreach ($panel_ids as $panel_id) {
       $ratingQ = mysqli_query(
         $conn,
-        "SELECT * FROM panel_ratings WHERE rating_type='concept' and panel_id='$panel_id'"
+        "SELECT * FROM panel_ratings WHERE rating_type='concept' and panel_id='$panel_id' and leader_id='$leader->id'"
       );
       if (mysqli_num_rows($ratingQ) == 3) {
         $ratingCount++;

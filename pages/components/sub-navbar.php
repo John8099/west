@@ -35,9 +35,21 @@
               if (mysqli_num_rows($query) > 0) {
                 $thesisGroupData = mysqli_fetch_object($query);
               }
-
-              if ($value["title"] == "Document Status" && hasSubmittedThreeDocuments($leader)) {
-                if (!hasRateAllPanelInConcept($leader)) {
+              $a = hasSubmittedThreeDocuments($leader);
+              $b = hasRateAllPanelInConcept($leader);
+              if ($value["title"] == "Document Status") {
+                $toContinue = false;
+                if (!hasSubmittedDocuments($leader)) {
+                  $toContinue = true;
+                }
+                if ($thesisGroupData == null) {
+                  $toContinue = true;
+                }
+                if (getApprovedDocument($leader) == null) {
+                  $toContinue = true;
+                }
+                
+                if ($toContinue) {
                   continue;
                 }
               }

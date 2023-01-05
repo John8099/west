@@ -64,25 +64,27 @@ $systemInfo = systemInfo();
                   </div>
                 </fieldset>
                 <div class="col-md-12">
-                  <legend class="text-navy">Project Members:</legend>
-                  <div class="pl-4">
-                    <?php
-                    $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
-                    foreach ($memberData as $member) :
-                      $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
-                    ?>
-                      <div style="float:left">
-                        <div class="m-2 d-flex justify-content-start align-items-center">
-                          <div class="mr-1">
-                            <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
-                          </div>
-                          <div>
-                            <?= $memberName ?>
+                  <?php $memberData = json_decode(getMemberData($leader->group_number, $leader->id));
+                  if (count($memberData) > 0) : ?>
+                    <legend class="text-navy">Project Members:</legend>
+                    <div class="pl-4">
+                      <?php
+                      foreach ($memberData as $member) :
+                        $memberName = ucwords("$member->first_name " . ($member->middle_name != null ? $member->middle_name[0] . "." : "") . " $member->last_name");
+                      ?>
+                        <div style="float:left">
+                          <div class="m-2 d-flex justify-content-start align-items-center">
+                            <div class="mr-1">
+                              <img src="<?= $member->avatar != null ? $SERVER_NAME . $member->avatar : $SERVER_NAME . "/public/default.png" ?>" class="img-circle" style="width: 3rem; height: 3rem" alt="User Image">
+                            </div>
+                            <div>
+                              <?= $memberName ?>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    <?php endforeach; ?>
-                  </div>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
                 </div>
               </div>
             </div>
@@ -158,21 +160,23 @@ $systemInfo = systemInfo();
                     </div>
                     <div class="card-footer d-flex justify-content-end">
                       <?php
-                      $disabled = false;
-                      $ratingQ = mysqli_query(
-                        $conn,
-                        "SELECT * FROM panel_ratings WHERE document_id='$document->id' and panel_id='$user->id' and rating_type='concept'"
-                      );
-                      if (mysqli_num_rows($ratingQ) > 0) {
-                        $disabled = true;
-                      }
+                      if ($user->role == "panel") :
+                        $disabled = false;
+                        $ratingQ = mysqli_query(
+                          $conn,
+                          "SELECT * FROM panel_ratings WHERE document_id='$document->id' and panel_id='$user->id' and rating_type='concept'"
+                        );
+                        if (mysqli_num_rows($ratingQ) > 0) {
+                          $disabled = true;
+                        }
                       ?>
-                      <button type="button" class="btn btn-success m-1" onclick="handleRateConcept('<?= $document->id ?>')" <?= $disabled ? "disabled" : "" ?>>Rate Concept</button>
-                      <?php
-                      if ($disabled) :
-                      ?>
-                        <button type="button" class="btn btn-primary m-1" onclick="return window.location.href = 'assigned-groups?update&&documentId=<?= $document->id ?>&&type=concept'">Preview Concept Rating</button>
-                      <?php endif; ?>
+                        <button type="button" class="btn btn-success m-1" onclick="handleRateConcept('<?= $document->id ?>')" <?= $disabled ? "disabled" : "" ?>>Rate Concept</button>
+                        <?php
+                        if ($disabled) :
+                        ?>
+                          <button type="button" class="btn btn-primary m-1" onclick="return window.location.href = 'assigned-groups?update&&documentId=<?= $document->id ?>&&type=concept'">Preview Concept Rating</button>
+                      <?php endif;
+                      endif; ?>
                       <button type="button" class="btn btn-secondary btn-gradient-secondary m-1" onclick="return window.open('./preview-document?d=<?= urlencode($document->project_document) ?>')">
                         Open document in new tab
                       </button>

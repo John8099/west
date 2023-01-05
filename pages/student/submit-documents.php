@@ -247,7 +247,7 @@ $systemInfo = systemInfo();
             title: 'Success!',
             text: resp.message,
             icon: 'success',
-          }).then(() => window.location.href = "document-status")
+          }).then(() => window.location.href = "my-groupings")
         } else {
           swal.fire({
             title: 'Error!',
